@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB2B1 — AN2 Boost Pressure Reader — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB2B1 AN2 Boost Pressure Reader</span></nav>
+<h3 id="0xb2b1-an2-boost-pressure-reader">0xB2B1 — AN2 Boost Pressure Reader</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB2B1</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>47 bytes (0xB2B1–0xB2DF)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P0 (0xAAD1 at 0xAC0D)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>1 — iir_filter (0xB2E0)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Reads ADC channel 2 (AN2) result and stores it as the boost pressure value at $3314. Called from scheduler priority 0 (1/20 ticks, lowest priority, last in P0 group). Uses an alternating-call pattern controlled by $302D bit 1: on even calls it reads and processes the ADC result; on odd calls it simply toggles the flag and returns. This halves the effective sampling rate for the boost pressure channel compared to other ADC readers.</p>
+<h4 id="algorithm-detail">Algorithm Detail</h4>
+<ol>
+<li><code>BBC $20,#$08,$B2B1</code> — spin until ADC conversion complete</li>
+<li>Check $302D bit 1:<ul>
+<li><strong>If set</strong> (odd call): clear $302D bit 1 and return immediately (skip processing)</li>
+<li><strong>If clear</strong> (even call): proceed with processing</li>
+</ul>
+</li>
+<li>Switch to 16-bit mode (CLM), load result from dp+$22</li>
+<li>X = $3314 (destination)</li>
+<li>If $3166 bit 7 already set: call IIR filter (0xB2E0) to blend with previous</li>
+<li>Set $3166 bit 7 (init flag)</li>
+<li>Store filtered result to [X] ($3314)</li>
+<li>Shift right by 2, switch to 8-bit mode</li>
+<li>Store 8-bit value to $3794 (diagnostic mirror)</li>
+<li>Set $302D bit 1 (flag for next-call skip)</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><strong>dp+$20</strong> — ADC status register (bit 3: conversion complete)</li>
+<li><strong>dp+$22</strong> — ADC result (16-bit)</li>
+<li><strong>$302D</strong> — alternation flag (bit 1)</li>
+<li><strong>$3166</strong> — initialization flags (bit 7: filter initialized)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><strong>$3314</strong> — filtered boost pressure value (16-bit)</li>
+<li><strong>$3794</strong> — 8-bit diagnostic mirror (boost pressure &gt;&gt; 2)</li>
+<li><strong>$302D</strong> — bit 1 toggled each call</li>
+<li><strong>$3166</strong> — bit 7 set after first call</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x302D</td>
+<td>alternation_flags</td>
+<td>Bit 1: skip/process toggle</td>
+</tr>
+<tr>
+<td>0x3166</td>
+<td>init_flags</td>
+<td>Bit 7: IIR filter initialized for boost channel</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3314</td>
+<td>boost_pressure</td>
+<td>Filtered boost pressure ADC reading (16-bit)</td>
+</tr>
+<tr>
+<td>0x3794</td>
+<td>diag_mirror_boost</td>
+<td>8-bit diagnostic mirror (boost &gt;&gt; 2)</td>
+</tr>
+<tr>
+<td>0x302D</td>
+<td>alternation_flags</td>
+<td>Bit 1: toggled each call</td>
+</tr>
+<tr>
+<td>0x3166</td>
+<td>init_flags</td>
+<td>Bit 7 set on first execution</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<p>None.</p>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xAFF5.html">0xAFF5 Throttle Rate-of-Change Processor</a><a class="nav-next" href="0xB2F7.html">0xB2F7 Engine Load Calculator</a></nav>
+</body>
+</html>

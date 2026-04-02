@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xCA37 — Load Threshold Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xCA37 Load Threshold Controller</span></nav>
+<h3 id="0xca37-load-threshold-controller">0xCA37 — Load Threshold Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xCA37</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>227 bytes (0xCA37–0xCB19)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>34</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (irq_handler_AAD1 main loop at 0xABF8)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Multi-stage load threshold evaluator that determines whether the engine is operating above critical load levels and, when conditions are met, drives a ramp output (0x3120) and scaled diagnostic values. Uses ramp_enable_flags (0x3023) as its primary state register. Stage 1 compares airflow_load against throttle_position via a hysteresis-gated 2D lookup (table 0x43E0) to set 0x3023 bit 3. Stage 2 performs a second 2D lookup (table 0x43A0) on airflow_load, scales the result and compares against engine_load (0x313C) with optional ROM offset (0x4042) to set 0x3023 bit 2. Stage 3, when both bits 2 and 3 are set, classifies engine_run_counter (0x30B6) into four speed tiers via ROM thresholds and compares a counter (0x30D1) against speed-tier-indexed thresholds (0x48A8) to determine the final ramp enable (0x3023 bit 0) or ramp-up-pending (0x3023 bit 6). The output at 0x3120 is right-shifted 5 bits and stored to 0x374E and IO port 0x013E.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x306F (airflow_load): primary input for both 2D lookups</li>
+<li>0x3044 (throttle_position): comparison target for stage 1</li>
+<li>0x313C (engine_load): comparison target for stage 2</li>
+<li>0x30B6 (engine_run_counter): speed tier classifier input</li>
+<li>0x30D1 (load_ramp_counter): ramp comparison counter</li>
+<li>0x305A (system_control_flags): bit 2 gates early clear of 0x30D1</li>
+<li>0x3051 (map_mode_control): bit 2 gates early clear of 0x30D1</li>
+<li>0x305C (system_control_flags_b): bit 2 — inhibit gate</li>
+<li>0x402E (ROM): all-bits check — alternate inhibit gate</li>
+<li>0x3023 (ramp_enable_flags): state register — bits read and written</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3023 (ramp_enable_flags): bits 0–6<ul>
+<li>bit 0 (0x01): ramp enabled (load thresholds exceeded, counter at max)</li>
+<li>bit 2 (0x04): engine_load threshold exceeded</li>
+<li>bit 3 (0x08): throttle load threshold exceeded (hysteresis)</li>
+<li>bit 6 (0x40): ramp-up pending (threshold exceeded, counter not at max)</li>
+</ul>
+</li>
+<li>0x30D1 (load_ramp_counter): set 0xFF when conditions met, 0x00 when not</li>
+<li>0x3120 (ramp_accumulator): cleared to 0 when conditions not met</li>
+<li>0x374E (load_ramp_output): 0x3120 &gt;&gt; 5 — scaled output</li>
+<li>0x013E (IO port): same as 0x374E</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6000 — graph_lookup_2d (2 calls: airflow through 0x43E0, airflow through 0x43A0)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x306F (airflow_load)</li>
+<li>0x3044 (throttle_position)</li>
+<li>0x313C (engine_load)</li>
+<li>0x30B6 (engine_run_counter)</li>
+<li>0x30D1 (load_ramp_counter)</li>
+<li>0x305A (system_control_flags)</li>
+<li>0x3051 (map_mode_control)</li>
+<li>0x305C (system_control_flags_b)</li>
+<li>0x3023 (ramp_enable_flags)</li>
+<li>0x3120 (ramp_accumulator)</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x3023 (ramp_enable_flags)</li>
+<li>0x300B (scratch): table lookup result</li>
+<li>0x30D1 (load_ramp_counter)</li>
+<li>0x3120 (ramp_accumulator)</li>
+<li>0x374E (load_ramp_output)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x43E0 (airflow_to_throttle_table): 2D lookup — airflow_load to expected throttle threshold</li>
+<li>0x4053 (throttle_hysteresis_offset): subtracted from lookup result for hysteresis clear path</li>
+<li>0x43A0 (airflow_to_load_table): 2D lookup — airflow_load to load threshold</li>
+<li>0x4042 (load_offset_correction): added to scaled result when 0x3023 bit 2 is clear</li>
+<li>0x4058, 0x405A, 0x405C (speed_tier_thresholds): engine_run_counter breakpoints for 4-tier classification</li>
+<li>0x48A8 (speed_tier_ramp_limits): 4-entry table indexed by speed tier — counter comparison thresholds</li>
+<li>0x402E (inhibit_check): all-bits check for alternate inhibit path</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xC9DD.html">0xC9DD Coolant-Based Fuel Correction</a><a class="nav-next" href="0xCB1A.html">0xCB1A Three-Map Ramp Integrator</a></nav>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x7588 — Fault Threshold Evaluator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x7588 Fault Threshold Evaluator</span></nav>
+<h3 id="0x7588-fault-threshold-evaluator">0x7588 — Fault Threshold Evaluator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x7588</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~396 bytes (0x7588–0x7713)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>71</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 (health_check_dispatcher 0x6B14, slot 23)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Multi-channel fault threshold evaluator that examines engine operating conditions against ROM-defined thresholds and accumulates per-channel debounce counters. Uses six independent debounce counters (0x3343–0x3348) to track fault conditions across different operating zones. When any counter reaches its trip threshold, sets status bits in 0x333B (bits 2, 3, 4) and promotes to confirmed fault via 0x3331 bit 5.</p>
+<p>The function has three major phases:</p>
+<p><strong>Phase 1 — Gate checks (0x7588–0x759F):</strong> Checks three control registers (0x332E bit 4, 0x332F bit 4, 0x3331 bit 4). If any is set, clears all six counters and exits. Otherwise checks 0x3291 bit 3 — if clear, jumps to a &quot;clear all&quot; path.</p>
+<p><strong>Phase 2 — Counter evaluation (0x75B6–0x76FE):</strong> Six parallel evaluation channels, each gated by coolant temperature (0x3044) compared against ROM threshold pairs. When temperature exceeds the threshold AND additional conditions are met (load vs ROM table, speed vs threshold, turbo duty vs threshold), the corresponding counter is incremented via saturating_increment. Counters are cleared when conditions are not met.</p>
+<ul>
+<li>Channel 1 (0x3343): Coolant &gt; ROM[0x4830], load lookup via table 0x49C0 compared to turbo_duty_feedback (0x32AE)</li>
+<li>Channel 2 (0x3344): Coolant &gt; ROM[0x4832], load (0x3304) &gt; ROM[0x4833]</li>
+<li>Channel 3 (0x3345): Coolant &gt; ROM[0x4835], load (0x3304) &gt;= ROM[0x4836]</li>
+<li>Channel 4 (0x3346): Coolant &gt; ROM[0x4838], turbo_duty_feedback &gt;= ROM[0x4839]; requires 0x3275 bit 2 SET</li>
+<li>Channel 5 (0x3347): Coolant &gt; ROM[0x483B], load lookup via table 0x49D0 compared to load (0x3304)</li>
+<li>Channel 6 (0x3348): Speed (0x3279) lookup via table 0x5580 compared to turbo_duty_feedback (0x32AE)</li>
+</ul>
+<p><strong>Phase 3 — Threshold check and flag promotion (0x767B–0x7713):</strong> Compares each counter against its individual ROM trip threshold (0x4831, 0x4834, 0x4837, 0x483A, 0x483C, 0x483D). If any counter reaches its threshold, sets the corresponding bit in 0x333B. Final check: if 0x333B bits 2+3+4 (mask 0x1C) have any set, promotes to 0x3331 bit 5.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x332E bit 4, 0x332F bit 4, 0x3331 bit 4: gate flags (any set = clear all)</li>
+<li>0x3291 bit 3: map control register (must be set for evaluation)</li>
+<li>0x333B bit 5: inhibit flag (blocks channel 1)</li>
+<li>0x3044 (coolant_temp): compared against per-channel ROM thresholds</li>
+<li>0x3304 (load_value): compared against per-channel ROM thresholds</li>
+<li>0x306F (airflow): lookup input for table interpolation</li>
+<li>0x3279 (turbo_speed_threshold): lookup input for channel 6</li>
+<li>0x32AE (turbo_duty_feedback): comparison value for channels 1, 4, 6</li>
+<li>0x3275 bit 2: turbo active flag (gates channel 4, inhibits channels 1-3)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3343–0x3348: six per-channel debounce counters</li>
+<li>0x333B bits 2, 3, 4: individual channel trip flags</li>
+<li>0x3331 bit 5: confirmed fault aggregate flag</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6000 (1d_table_interpolation): channels 1, 5</li>
+<li>0x601A (1d_table_interpolation_16): channel 1 (speed multiplier), channel 6</li>
+<li>0x633D (saturating_increment): all six channels</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4830–0x483D: threshold constants — verified from binary:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+<th>Channel</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4830</td>
+<td>0xBB</td>
+<td>Ch1</td>
+<td>Coolant temp gate</td>
+</tr>
+<tr>
+<td>0x4831</td>
+<td>0x62</td>
+<td>Ch1</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x4832</td>
+<td>0x5E</td>
+<td>Ch2</td>
+<td>Coolant temp gate</td>
+</tr>
+<tr>
+<td>0x4833</td>
+<td>0x5B</td>
+<td>Ch2</td>
+<td>Load threshold</td>
+</tr>
+<tr>
+<td>0x4834</td>
+<td>0x62</td>
+<td>Ch2</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x4835</td>
+<td>0x5E</td>
+<td>Ch3</td>
+<td>Coolant temp gate</td>
+</tr>
+<tr>
+<td>0x4836</td>
+<td>0x99</td>
+<td>Ch3</td>
+<td>Load threshold</td>
+</tr>
+<tr>
+<td>0x4837</td>
+<td>0x62</td>
+<td>Ch3</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x4838</td>
+<td>0xFF</td>
+<td>Ch4</td>
+<td>Coolant temp gate (disabled — turbo-active path)</td>
+</tr>
+<tr>
+<td>0x4839</td>
+<td>0xFF</td>
+<td>Ch4</td>
+<td>Turbo duty threshold (disabled)</td>
+</tr>
+<tr>
+<td>0x483A</td>
+<td>0xFF</td>
+<td>Ch4</td>
+<td>Trip threshold (disabled)</td>
+</tr>
+<tr>
+<td>0x483B</td>
+<td>0x5E</td>
+<td>Ch5</td>
+<td>Coolant temp gate</td>
+</tr>
+<tr>
+<td>0x483C</td>
+<td>0x62</td>
+<td>Ch5</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x483D</td>
+<td>0x88</td>
+<td>Ch6</td>
+<td>Trip threshold (136 cycles)</td>
+</tr>
+</tbody></table>
+<p>Channels 1, 2, 3, 5, 6 are <strong>active</strong> with real thresholds. Only channel 4 (turbo-active overboost) is disabled (0xFF). The coolant gates at 0x5E/0xBB correspond to approximately 50–80°C operating range.</p>
+<ul>
+<li>0x49C0: 1D lookup table for channel 1 load calculation</li>
+<li>0x49D0: 1D lookup table for channel 5 load comparison</li>
+<li>0x5580: 16-entry lookup table for channel 6 speed/duty calculation</li>
+</ul>
+<h4 id="dtc-output">DTC Output</h4>
+<ul>
+<li>0x3331 bit 5 maps to <strong>DTC code 66</strong> (6 long + 6 short blinks) via the lookup table at 0x79A7 (see 0x7928.md)</li>
+<li>Code 66 = turbo duty threshold fault — the turbo system&#39;s operating parameters (duty cycle) are outside expected range for current load/speed/temperature conditions</li>
+<li>This is distinct from individual solenoid wiring faults (codes 62–64, 67 via sub_73AF–sub_74C3) and boost solenoid feedback fault (code 24 via sub_71AA)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x751F.html">0x751F Auxiliary Sensor / EGT Fault Check</a><a class="nav-next" href="0x7714.html">0x7714 Fault Output Stage</a></nav>
+</body>
+</html>

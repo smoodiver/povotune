@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8ED2 — Boost Duty Floor Enforcer — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8ED2 Boost Duty Floor Enforcer</span></nav>
+<h3 id="0x8ed2-boost-duty-floor-enforcer">0x8ED2 — Boost Duty Floor Enforcer</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8ED2</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>58 bytes (0x8ED2–0x8F0B)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (boost_control_main at 0x8B22)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Conditionally enforces a minimum duty floor (0x324E) for boost control. First validates multiple preconditions: (1) boost output value 0x30EF must be below a threshold at ROM[0x4B00], (2) RPM must be within a window defined by ROM[0x4B01..0x4B04] (16-bit), (3) secondary_condition_value must be &gt;= ROM[0x4AFC]. If preconditions pass, selects a floor value from one of two ROM offsets (0x4B0A or 0x4B07, indexed from X=0x4B00) depending on 0x305F bits 1 and 3, and writes it to 0x324E if it is greater than the current value.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>8ED2  LDX #$4B00             ; X = ROM parameter block base
+8ED5  LDA $30EF              ; load boost output value
+8ED8  CMP $00,X              ; compare vs ROM[0x4B00] threshold
+8EDA  BCS $8F0A              ; if &gt;= threshold, exit (no floor needed)
+8EDC  CLM                    ; 16-bit mode
+8EDD  LDA $3062              ; load RPM
+8EE0  CMP $01,X              ; compare vs RPM lower bound [0x4B01]
+8EE2  BCC $8F0A              ; if below, exit
+8EE4  CMP $03,X              ; compare vs RPM upper bound [0x4B03]
+8EE6  BCS $8F0A              ; if above/equal, exit
+8EE8  LDA $30B6              ; load secondary_condition_value
+8EEB  CMP $4AFC              ; compare vs load threshold
+8EEE  BCC $8F0A              ; if below, exit
+8EF0  BBC $305F,#$02,$8EFA   ; if bit 1 clear, try bit 3
+8EF6  LDA $0A,X              ; load ROM[0x4B0A] (high floor)
+8EF8  BRA $8F02              ; goto comparison
+8EFA  BBC $305F,#$08,$8F0A   ; if bit 3 also clear, exit
+8F00  LDA $07,X              ; load ROM[0x4B07] (low floor)
+8F02  CMP $324E              ; compare floor vs current minimum
+8F05  BCC $8F0A              ; if floor &lt; current, don&#39;t update
+8F07  STA $324E              ; update duty floor
+8F0A  SEM                    ; 8-bit mode
+8F0B  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x30EF: current boost output value</li>
+<li>0x3062 (rpm): engine speed (16-bit)</li>
+<li>0x30B6 (secondary_condition_value): load/pressure input</li>
+<li>0x305F bits 1, 3: boost rate-of-change state flags</li>
+<li>0x324E: current duty floor (16-bit)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x324E: updated duty floor (only if new floor &gt; current)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x30EF, 0x3062, 0x30B6, 0x305F, 0x324E</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x324E</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4B00 -- parameter block base (8 bytes minimum):<ul>
+<li>+0x00: boost output threshold (8-bit)</li>
+<li>+0x01..0x02: RPM lower bound (16-bit)</li>
+<li>+0x03..0x04: RPM upper bound (16-bit)</li>
+<li>+0x07..0x08: low duty floor value (16-bit)</li>
+<li>+0x0A..0x0B: high duty floor value (16-bit)</li>
+</ul>
+</li>
+<li>0x4AFC -- secondary condition threshold</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8EB1.html">0x8EB1 Vehicle Speed Hysteresis Check</a><a class="nav-next" href="0x8F0C.html">0x8F0C Duty Floor Decay</a></nav>
+</body>
+</html>

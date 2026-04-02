@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA947 — Knock Sensor Mode Classifier — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA947 Knock Sensor Mode Classifier</span></nav>
+<h3 id="0xa947-knock-sensor-mode-classifier">0xA947 — Knock Sensor Mode Classifier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA947</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>93 bytes (0xA947–0xA9A3)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR Phase 0 (0x98A1 at 0x99D6)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Classifies knock sensor operating mode and sets up the knock correction enable flag (<code>$31C2</code>) and sensor activity flag (<code>$31C1</code>). Also evaluates RPM and airflow conditions to determine whether to enable knock correction feedback via <code>$31FC</code> bit 6.</p>
+<p>The function performs three tasks:</p>
+<ol>
+<li><strong>Knock correction enable</strong>: Tests <code>$316B</code> (lookup_input_b) against threshold 0x57 and external acquisition state to set <code>$31C2</code> to 0x01 or 0x00.</li>
+<li><strong>Sensor activity</strong>: Tests direct-page <code>$0B</code> bit 2 to determine sensor mode — sets <code>$31C1</code> to 0x00 (active mode) or 0x88 (inactive/diagnostic mode).</li>
+<li><strong>Knock feedback gate</strong>: Checks airflow load (<code>$306F</code>) and a signed RPM-derived value (<code>$326A</code>) against ROM thresholds. If both exceed thresholds, loads a ROM constant and optionally enables feedback.</li>
+</ol>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- knock correction enable ---
+A947  LDA $316B           ; load lookup_input_b
+A94A  CMP #$57            ; compare against threshold
+A94C  BCC $A962           ; if &lt; 0x57, -&gt; skip enable check
+A94E  BBS $325A,#$80,$A958 ; if ext_acq running, -&gt; enable
+A953  BBS $3253,#$20,$A95E ; if port bit 5 set, -&gt; disable
+A958  LDM $31C2,#$01      ; enable knock correction
+A95C  BRA $A962
+A95E  LDM $31C2,#$00      ; disable knock correction
+; --- sensor activity ---
+A962  LDA #$00            ; default: active mode
+A964  BBS $0B,#$02,$A96A  ; if direct-page $0B bit 2 set, keep 0x00
+A968  LDA #$88            ; else: inactive mode = 0x88
+A96A  STA $31C1           ; store sensor_activity_flags
+A96D  STA $0216           ; mirror to diagnostic output
+; --- cylinder ID update ---
+A970  LDA $31CB           ; load knock_correction_combined
+A973  STA $31C3           ; store as current_cylinder_id
+; --- knock feedback gate ---
+A976  LDA $306F           ; load airflow_load
+A979  CMP $445A           ; compare against ROM airflow threshold
+A97C  BCC $A995           ; if below threshold, -&gt; check existing
+A97E  LDX $326A           ; load RPM-derived value (signed)
+A981  BMI $A995           ; if negative, -&gt; check existing
+A983  CPX $4458           ; compare against ROM RPM threshold
+A986  BCC $A995           ; if below, -&gt; check existing
+A988  LDA $445B           ; load ROM feedback constant
+A98B  STA $32C9           ; store to knock feedback register
+A98E  BBC $35A4,#$01,$A995 ; if diag self-test bit 0 clear, -&gt; check existing
+A993  BRA $A99F           ; else -&gt; enable feedback
+; --- check existing state ---
+A995  LDA $32C9           ; load current knock feedback register
+A998  BNE $A99F           ; if nonzero, -&gt; enable feedback
+A99A  CLB $31FC,#$40      ; clear knock enable flag
+A99E  RTS
+; --- enable feedback ---
+A99F  SEB $31FC,#$40      ; set knock enable flag
+A9A3  RTS
+</code></pre>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x316B</td>
+<td>lookup_input_b</td>
+<td>Compared against 0x57 for correction enable</td>
+</tr>
+<tr>
+<td>0x325A</td>
+<td>ext_acq_control</td>
+<td>Bit 7: external acquisition running</td>
+</tr>
+<tr>
+<td>0x3253</td>
+<td>port_mirror</td>
+<td>Bit 5: port state for correction disable</td>
+</tr>
+<tr>
+<td>0x000B</td>
+<td>direct_page_0B</td>
+<td>Bit 2: sensor mode selector</td>
+</tr>
+<tr>
+<td>0x31CB</td>
+<td>knock_correction_combined</td>
+<td>Copied to current cylinder ID</td>
+</tr>
+<tr>
+<td>0x306F</td>
+<td>airflow_load</td>
+<td>Compared against airflow threshold</td>
+</tr>
+<tr>
+<td>0x326A</td>
+<td>rpm_derived_signed</td>
+<td>Signed RPM-derived value</td>
+</tr>
+<tr>
+<td>0x35A4</td>
+<td>diag_self_test_status</td>
+<td>Bit 0: self-test active</td>
+</tr>
+<tr>
+<td>0x32C9</td>
+<td>knock_feedback_register</td>
+<td>Feedback enable state</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31C2</td>
+<td>knock_corr_enable</td>
+<td>Set to 0x01 or 0x00</td>
+</tr>
+<tr>
+<td>0x31C1</td>
+<td>sensor_activity_flags</td>
+<td>Set to 0x00 or 0x88</td>
+</tr>
+<tr>
+<td>0x0216</td>
+<td>diag_sensor_mirror</td>
+<td>Diagnostic output mirror of sensor activity</td>
+</tr>
+<tr>
+<td>0x31C3</td>
+<td>current_cylinder_id</td>
+<td>Updated from knock_correction_combined</td>
+</tr>
+<tr>
+<td>0x32C9</td>
+<td>knock_feedback_register</td>
+<td>Set from ROM constant when thresholds met</td>
+</tr>
+<tr>
+<td>0x31FC</td>
+<td>knock_enable_flags</td>
+<td>Bit 6: set/cleared based on feedback state</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x445A</td>
+<td>1 byte</td>
+<td>Airflow load threshold for knock feedback enable</td>
+</tr>
+<tr>
+<td>0x4458</td>
+<td>2 bytes</td>
+<td>RPM-derived threshold for knock feedback enable</td>
+</tr>
+<tr>
+<td>0x445B</td>
+<td>1 byte</td>
+<td>Knock feedback constant (loaded when thresholds met)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA8B8.html">0xA8B8 Knock Correction Clamp</a><a class="nav-next" href="0xA9A4.html">0xA9A4 Knock Timing Interval Counter</a></nav>
+</body>
+</html>

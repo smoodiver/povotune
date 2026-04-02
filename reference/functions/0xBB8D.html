@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xBB8D — Injection Pulse Width & Cylinder Distribution — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xBB8D Injection Pulse Width & Cylinder Distribution</span></nav>
+<h3 id="0xbb8d-injection-pulse-width-cylinder-distribution">0xBB8D — Injection Pulse Width & Cylinder Distribution</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xBB8D</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>395 bytes (0xBB8D–0xBD17)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>57</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 at 0xAB68)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Takes the base fuel pulse width from the enrichment calculator and applies O2 feedback correction, warmup enrichment, and cranking compensation to produce per-cylinder injection base pulse values. The function has four major phases:</p>
+<ol>
+<li><p><strong>Load scaling</strong> (0xBB8D–0xBBAA): Multiplies the duty accumulator (<code>$30A2</code>) by engine load (<code>$313C</code>), producing a 32-bit result. The upper 16 bits (shifted right 4) are written to SSM diagnostic port <code>$014C</code>.</p>
+</li>
+<li><p><strong>O2 feedback application</strong> (0xBBAF–0xBBEC): Takes the load-scaled product and multiplies by the O2 feedback integrator (<code>$32F2</code>). If warmup enrichment base (<code>$30B8</code>) is nonzero, adds the boost pressure reading (<code>$3094</code>) with saturation, then multiplies again by the O2-feedback-scaled result. If the product exceeds 0x2000 in the high word, saturates to 0xFFFF; otherwise left-shifts by 3 via <code>JSR $6304</code>. The result is stored to <code>$3128</code> as the enrichment-adjusted pulse width.</p>
+</li>
+<li><p><strong>Cranking/minimum pulse width</strong> (0xBBEC–0xBC83): Adds the duty complement (<code>$3056</code>) to the enrichment result with saturation, clamps to a minimum of 0x0019 (25 decimal), and stores to <code>$300A</code>. Computes <code>$300A * 4</code> and writes the high byte to SSM diagnostic port <code>$0108</code>. Compares the warmup enrichment value (<code>$3058</code>) against either the computed pulse width or the ROM cranking value (<code>$4410</code>), selecting the larger, and stores to <code>$30BE</code> (cranking pulse width). Also computes a doubled version of the enrichment result + duty complement and compares against the doubled cranking value to set/clear <code>$3022</code> bit 3 (hysteresis flag), storing the winner to <code>$30BC</code>. Writes <code>$30BE * 4</code> high byte to SSM port <code>$010E</code>.</p>
+</li>
+<li><p><strong>Cylinder distribution</strong> (0xBC83–0xBD17): Distributes the injection pulse width to four per-cylinder base pulse registers (<code>$3170</code>–<code>$3176</code>) based on the closed-loop readiness level (<code>$3211</code>), limiter flags (<code>$314E</code> bits 6/7), and speed/map mode flags (<code>$302A</code> bit 4, <code>$323F</code> bit 0). The distribution logic selects between three strategies:</p>
+<ul>
+<li><strong>Normal</strong>: all 4 cylinders get the enrichment-compensated value (from <code>$30BC</code>)</li>
+<li><strong>Partial cut</strong>: cylinders 3-4 get <code>$30BC</code>, cylinders 1-2 get the duty complement (<code>$3056</code>)</li>
+<li><strong>Enriched cut</strong>: all 4 cylinders get the enriched value from <code>JSR $BD18</code> (enrichment * 2 + duty complement)</li>
+</ul>
+<p>The final <code>$30BC</code> value is right-shifted 4 bits and written to SSM port <code>$0104</code> and <code>$3742</code>. The <code>$3170</code> value is right-shifted 6 bits and conditionally written to <code>$3746</code> (gated by <code>$3051</code> bit 2).</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$30A2</code>: 16-bit duty accumulator</li>
+<li><code>$313C</code> (engine_load): engine load value</li>
+<li><code>$32F2</code>: O2 feedback integrator (from 0xB811)</li>
+<li><code>$30B8</code>: secondary fuel value (from 0xBAA3)</li>
+<li><code>$3094</code> (throttle_correction_output): boost pressure / throttle correction</li>
+<li><code>$3056</code> (duty_complement_16): 16-bit duty complement</li>
+<li><code>$3058</code> (warmup_enrichment_16): 16-bit warmup enrichment</li>
+<li><code>$3128</code>: enrichment-adjusted pulse width (computed internally)</li>
+<li><code>$3022</code> (isr_sync_flags): bit 3 hysteresis flag</li>
+<li><code>$3051</code> (map_mode_control): bit 2 gates <code>$3746</code> output, bit 3 selects cranking comparison</li>
+<li><code>$3211</code> (closed_loop_readiness_level): determines cylinder distribution strategy</li>
+<li><code>$314E</code> (limiter_flags): bits 6/7 force partial-cut distribution</li>
+<li><code>$302A</code> (speed_control_flags): bit 3 inhibits, bit 4 selects distribution path</li>
+<li><code>$323F</code>: bit 0 forces partial-cut distribution</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$3128</code>: enrichment-adjusted injection pulse width</li>
+<li><code>$30BC</code>: final injection base pulse width (selected via hysteresis)</li>
+<li><code>$30BE</code> (cranking_pulse_width): cranking/minimum pulse width</li>
+<li><code>$3170</code> (inj_base_pulse_ch1): injection base pulse, cylinder 1</li>
+<li><code>$3172</code> (inj_base_pulse_ch2): injection base pulse, cylinder 2</li>
+<li><code>$3174</code> (inj_base_pulse_ch3): injection base pulse, cylinder 3</li>
+<li><code>$3176</code> (inj_base_pulse_ch4): injection base pulse, cylinder 4</li>
+<li><code>$3742</code>: pulse width diagnostic (shifted)</li>
+<li><code>$3746</code>: injection diagnostic (shifted, conditional)</li>
+<li><code>$0104</code>: SSM diagnostic — pulse width &gt;&gt; 4</li>
+<li><code>$0108</code>: SSM diagnostic — minimum pulse * 4 high byte</li>
+<li><code>$010E</code>: SSM diagnostic — cranking pulse * 4 high byte</li>
+<li><code>$014C</code>: SSM diagnostic — load * duty &gt;&gt; 4</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$4410</td>
+<td>cranking_pulse_base</td>
+<td>Base cranking injection pulse width</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6304</td>
+<td>shift_left_BA_by_3</td>
+<td>Left-shift the O2-corrected value by 3 (multiply by 8)</td>
+</tr>
+<tr>
+<td>0xBD18</td>
+<td>enrichment_double_add</td>
+<td>Computes enrichment * 2 + duty complement for enriched-cut distribution</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xBAA3.html">0xBAA3 Fuel Enrichment Calculator</a><a class="nav-next" href="0xBD28.html">0xBD28 Fuel Pulse Diagnostic Flag</a></nav>
+</body>
+</html>

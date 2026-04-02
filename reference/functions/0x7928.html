@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x7928 — Fault Code Bit Scanner — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x7928 Fault Code Bit Scanner</span></nav>
+<h3 id="0x7928-fault-code-bit-scanner">0x7928 — Fault Code Bit Scanner</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x7928</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~127 bytes (0x7928–0x79A6)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>25</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>2 (MIL lamp driver 0x77E6 at 0x78A8 and 0x78E3)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Scans a 4-byte fault flag register (pointed to by X) to find the next set bit, using a rotating bit position counter (0x3194) and a walking bitmask (0x3195). When a set bit is found, looks up the corresponding DTC code from a ROM table at 0x79A7 and stores it in 0x3192 for the blink pattern generator to output.</p>
+<p>The scanner implements a round-robin search across 32 bit positions (4 bytes x 8 bits). On each call:</p>
+<ol>
+<li>Increments the bit position counter (0x3194), wrapping from 0x1F back to 0x00</li>
+<li>Shifts the walking bitmask (0x3195) left by one position (ASL with ROL for carry propagation)</li>
+<li>At each byte boundary (positions 0, 8, 16, 24), loads the corresponding byte from the fault register (X+0 through X+3) and checks if any bits are set</li>
+<li>ANDs the walking bitmask with the current fault byte</li>
+<li>If a match is found, uses the bit position as an index into the DTC lookup table at 0x79A7</li>
+<li>The table entry becomes the DTC code stored in 0x3192</li>
+</ol>
+<p>The byte boundary detection at 0x7941–0x7961 handles the case where position counter is exactly at a boundary (0, 8, 16, 24). The mid-byte path at 0x7963–0x7976 handles positions between boundaries by comparing against 0x08, 0x10, 0x18 to select the correct byte.</p>
+<p>When no match is found (AND result = 0), the function loops back to 0x7928 to try the next bit position.</p>
+<p><strong>DTC Table (0x79A7–0x79C6):</strong> 32 bytes mapping bit positions to DTC codes. The scanner scans registers 0x332E (byte 0), 0x332F (byte 1), 0x3330 (byte 2), 0x3331 (byte 3). Bit 0 of each byte maps to the lowest position in that group.</p>
+<p>Raw bytes: <code>00 00 00 44 45 00 51 00 21 22 23 24 31 32 33 38 11 12 13 14 15 16 17 00 61 62 63 64 65 66 67 68</code></p>
+<table>
+<thead>
+<tr>
+<th>Pos</th>
+<th>Register</th>
+<th>Bit</th>
+<th>DTC</th>
+<th>Source</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0x332E</td>
+<td>0</td>
+<td>—</td>
+<td>—</td>
+<td>Unused</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0x332E</td>
+<td>1</td>
+<td>—</td>
+<td>—</td>
+<td>Unused</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0x332E</td>
+<td>2</td>
+<td>—</td>
+<td>—</td>
+<td>Unused</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0x332E</td>
+<td>3</td>
+<td><strong>44</strong></td>
+<td>sub_72B8</td>
+<td>O2 sensor heater fault</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0x332E</td>
+<td>4</td>
+<td><strong>45</strong></td>
+<td>sub_6E13</td>
+<td>Idle speed fault</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0x332E</td>
+<td>5</td>
+<td>—</td>
+<td>—</td>
+<td>Unused</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0x332E</td>
+<td>6</td>
+<td><strong>51</strong></td>
+<td>sub_7340</td>
+<td>Ignition signal fault</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0x332E</td>
+<td>7</td>
+<td>—</td>
+<td>—</td>
+<td>Unused</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0x332F</td>
+<td>0</td>
+<td><strong>21</strong></td>
+<td>sub_6CDA</td>
+<td>VSS/idle combined fault</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0x332F</td>
+<td>1</td>
+<td><strong>22</strong></td>
+<td>sub_6E7A</td>
+<td>Crank position signal loss</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0x332F</td>
+<td>2</td>
+<td><strong>23</strong></td>
+<td>sub_6C68</td>
+<td>Idle control debounce</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0x332F</td>
+<td>3</td>
+<td><strong>24</strong></td>
+<td>sub_71AA</td>
+<td>Boost solenoid feedback</td>
+</tr>
+<tr>
+<td>12</td>
+<td>0x332F</td>
+<td>4</td>
+<td><strong>31</strong></td>
+<td>sub_6D01</td>
+<td>Intake air temp sensor</td>
+</tr>
+<tr>
+<td>13</td>
+<td>0x332F</td>
+<td>5</td>
+<td><strong>32</strong></td>
+<td>sub_6D89</td>
+<td>Catalyst/turbo solenoid condition</td>
+</tr>
+<tr>
+<td>14</td>
+<td>0x332F</td>
+<td>6</td>
+<td><strong>33</strong></td>
+<td>sub_6EFA</td>
+<td>Ignition coil signal</td>
+</tr>
+<tr>
+<td>15</td>
+<td>0x332F</td>
+<td>7</td>
+<td><strong>38</strong></td>
+<td>sub_7247</td>
+<td>Coolant fan relay</td>
+</tr>
+<tr>
+<td>16</td>
+<td>0x3330</td>
+<td>0</td>
+<td><strong>11</strong></td>
+<td>sub_6C0F</td>
+<td>Vehicle speed sensor</td>
+</tr>
+<tr>
+<td>17</td>
+<td>0x3330</td>
+<td>1</td>
+<td><strong>12</strong></td>
+<td>sub_6FBC</td>
+<td>Neutral/park switch</td>
+</tr>
+<tr>
+<td>18</td>
+<td>0x3330</td>
+<td>2</td>
+<td><strong>13</strong></td>
+<td>sub_6C26</td>
+<td>Coolant temp sensor</td>
+</tr>
+<tr>
+<td>19</td>
+<td>0x3330</td>
+<td>3</td>
+<td><strong>14</strong></td>
+<td>sub_7049</td>
+<td>Knock sensor ch1</td>
+</tr>
+<tr>
+<td>20</td>
+<td>0x3330</td>
+<td>4</td>
+<td><strong>15</strong></td>
+<td>sub_709B</td>
+<td>Knock sensor ch2</td>
+</tr>
+<tr>
+<td>21</td>
+<td>0x3330</td>
+<td>5</td>
+<td><strong>16</strong></td>
+<td>sub_70E9</td>
+<td>Knock sensor ch3</td>
+</tr>
+<tr>
+<td>22</td>
+<td>0x3330</td>
+<td>6</td>
+<td><strong>17</strong></td>
+<td>sub_7137</td>
+<td>Knock sensor ch4</td>
+</tr>
+<tr>
+<td>23</td>
+<td>0x3330</td>
+<td>7</td>
+<td>—</td>
+<td>—</td>
+<td>Unused</td>
+</tr>
+<tr>
+<td>24</td>
+<td>0x3331</td>
+<td>0</td>
+<td><strong>61</strong></td>
+<td>sub_7353</td>
+<td>Fuel injector pair 1</td>
+</tr>
+<tr>
+<td>25</td>
+<td>0x3331</td>
+<td>1</td>
+<td><strong>62</strong></td>
+<td>sub_73AF</td>
+<td>Turbo solenoid A</td>
+</tr>
+<tr>
+<td>26</td>
+<td>0x3331</td>
+<td>2</td>
+<td><strong>63</strong></td>
+<td>sub_740B</td>
+<td>Turbo solenoid B</td>
+</tr>
+<tr>
+<td>27</td>
+<td>0x3331</td>
+<td>3</td>
+<td><strong>64</strong></td>
+<td>sub_7467</td>
+<td>Turbo solenoid C</td>
+</tr>
+<tr>
+<td>28</td>
+<td>0x3331</td>
+<td>4</td>
+<td><strong>65</strong></td>
+<td>sub_751F</td>
+<td>Auxiliary sensor / EGT</td>
+</tr>
+<tr>
+<td>29</td>
+<td>0x3331</td>
+<td>5</td>
+<td><strong>66</strong></td>
+<td>sub_7588</td>
+<td>Turbo duty threshold fault (overboost/duty monitoring)</td>
+</tr>
+<tr>
+<td>30</td>
+<td>0x3331</td>
+<td>6</td>
+<td><strong>67</strong></td>
+<td>sub_74C3</td>
+<td>Turbo solenoid D</td>
+</tr>
+<tr>
+<td>31</td>
+<td>0x3331</td>
+<td>7</td>
+<td><strong>68</strong></td>
+<td>sub_7261</td>
+<td>Idle/closed-throttle switch</td>
+</tr>
+</tbody></table>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>X register: pointer to 4-byte fault flag register (0x332E for test mode, 0x350A for clear-codes mode)</li>
+<li>0x3194: current bit position counter (0–31, wrapping)</li>
+<li>0x3195: walking bitmask</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3194: updated bit position counter</li>
+<li>0x3195: updated walking bitmask</li>
+<li>0x3192: DTC code from lookup table (for blink pattern generator)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x79A7–0x79C6: 32-byte DTC code lookup table (fully populated — see table above)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x77E6.html">0x77E6 MIL Lamp Driver</a><a class="nav-next" href="0x79C7.html">0x79C7 Blink Pattern Generator</a></nav>
+</body>
+</html>

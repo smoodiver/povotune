@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB5CB — Acceleration Enrichment Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB5CB Acceleration Enrichment Calculator</span></nav>
+<h3 id="0xb5cb-acceleration-enrichment-calculator">0xB5CB — Acceleration Enrichment Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB5CB</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>196 bytes (0xB5CB–0xB68E)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 via 0xAB53)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>JSR 0x6000 (1D table interpolation), JSR 0x6307 (shift left B:A by 2)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes acceleration enrichment (fuel adder) based on the fuel map index and engine load. This function determines how much extra fuel to inject during throttle tip-in events by looking up a per-cylinder enrichment duration from a ROM table indexed by fuel map selection, then computing an enrichment amount using a 1D table lookup scaled by engine load. The result is stored to 0x312A (injection enrichment adder) and mirrored to IO 0x018C. On first entry after a tip-in, it initializes the 4-cylinder enrichment countdown timers (0x31D2–0x31D5) from a ROM constant.</p>
+<h4 id="flow">Flow</h4>
+<ol>
+<li><strong>Mode gate:</strong> Checks 0x31B4 bits 0+1 (both must be set = 0x03). If not both set, clears 0x31D2–0x31D5 (all 4 enrichment countdowns) and 0x018C, returns. This requires the engine to be in a running state with active injection.</li>
+<li><strong>RPM ceiling:</strong> If 0x306E &gt;= ROM 0x4402 (0x50 = 80), clears all enrichment and returns. Above this RPM threshold, acceleration enrichment is disabled.</li>
+<li><strong>First-entry detection:</strong> Checks all four countdown timers (0x31D2–0x31D5). If all are zero and 0x3749 (fuel map raw) &lt; 6, sets 0x3020 bit 7 (enrichment init request flag).</li>
+<li><strong>Fuel map index:</strong> Reads 0x3749 (fuel map raw), clamps to max 5. Uses this as an index into ROM table at 0x4280 (6-entry byte table: 0x20, 0x1E, 0x1C, 0x00, 0x00, 0x00). Stores the per-map enrichment duration to 0x312D.</li>
+<li><strong>Load-based enrichment amount:</strong> Takes 0x313C (engine load, 16-bit), shifts right 3 to get 8-bit (clamped to 0xFF). Uses this as input to 1D table lookup at ROM 0x4290, storing result to 0x312E.</li>
+<li><strong>Enrichment computation:</strong> Multiplies 0x312D * 0x312E, stores intermediate to scratch. Then multiplies the high byte of 0x312E (fractional part) by the scratch result, and — if 0x302A bit 3 is set — applies an additional correction factor from ROM 0x4405 (0x95 = 149) via JSR 0x6307 (multiply by 4). XAB gives the final enrichment value.</li>
+<li><strong>Output:</strong> Stores result to 0x312A (injection enrichment adder, 16-bit). Shifts right 4 to get 8-bit, stores to IO 0x018C.</li>
+<li><strong>Countdown initialization:</strong> If 0x3020 bit 7 is set (from step 3), loads ROM 0x4403 (0x01) and initializes all four countdown timers (0x31D2–0x31D5) to this value. Clears 0x3020 bit 7.</li>
+</ol>
+<h4 id="ram-variables">RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31B4</td>
+<td>engine_state_flags</td>
+<td>R</td>
+<td>Bits 0+1: both must be set for enrichment to run</td>
+</tr>
+<tr>
+<td>0x306E</td>
+<td>knock_sensor_raw</td>
+<td>R</td>
+<td>RPM indicator; &gt;= 0x50 disables enrichment</td>
+</tr>
+<tr>
+<td>0x31D2</td>
+<td>enrich_countdown_ch1</td>
+<td>RW</td>
+<td>Channel 1 enrichment countdown timer</td>
+</tr>
+<tr>
+<td>0x31D3</td>
+<td>enrich_countdown_ch2</td>
+<td>RW</td>
+<td>Channel 2 enrichment countdown timer</td>
+</tr>
+<tr>
+<td>0x31D4</td>
+<td>enrich_countdown_ch3</td>
+<td>RW</td>
+<td>Channel 3 enrichment countdown timer</td>
+</tr>
+<tr>
+<td>0x31D5</td>
+<td>enrich_countdown_ch4</td>
+<td>RW</td>
+<td>Channel 4 enrichment countdown timer</td>
+</tr>
+<tr>
+<td>0x3749</td>
+<td>fuel_map_raw</td>
+<td>R</td>
+<td>Fuel map selector (0–5), indexes ROM table 0x4280</td>
+</tr>
+<tr>
+<td>0x3020</td>
+<td>turbo_state_control</td>
+<td>RW</td>
+<td>Bit 7: enrichment init request flag</td>
+</tr>
+<tr>
+<td>0x312D</td>
+<td>enrich_duration</td>
+<td>W</td>
+<td>Per-map enrichment duration from ROM 0x4280</td>
+</tr>
+<tr>
+<td>0x312E</td>
+<td>enrich_load_factor</td>
+<td>W</td>
+<td>Load-based enrichment factor from ROM 0x4290</td>
+</tr>
+<tr>
+<td>0x313C</td>
+<td>engine_load</td>
+<td>R</td>
+<td>Engine load (16-bit), shifted right 3 for table input</td>
+</tr>
+<tr>
+<td>0x312A</td>
+<td>inj_enrichment_adder</td>
+<td>W</td>
+<td>Final enrichment adder (16-bit)</td>
+</tr>
+<tr>
+<td>0x302A</td>
+<td>system_control_flags</td>
+<td>R</td>
+<td>Bit 3: enables additional correction factor</td>
+</tr>
+</tbody></table>
+<h4 id="rom-constants">ROM Constants</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4402</td>
+<td>0x50</td>
+<td>RPM ceiling for acceleration enrichment</td>
+</tr>
+<tr>
+<td>0x4403</td>
+<td>0x01</td>
+<td>Initial countdown timer value for all 4 channels</td>
+</tr>
+<tr>
+<td>0x4405</td>
+<td>0x95</td>
+<td>Additional correction factor (149/256, applied if 0x302A bit 3 set)</td>
+</tr>
+<tr>
+<td>0x4280</td>
+<td>6 bytes</td>
+<td>Per-fuel-map enrichment duration: [0x20, 0x1E, 0x1C, 0x00, 0x00, 0x00]</td>
+</tr>
+<tr>
+<td>0x4290</td>
+<td>1D table</td>
+<td>Load-to-enrichment lookup (input: engine load &gt;&gt; 3)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB44B.html">0xB44B Turbo Feedback Sensor Processor</a><a class="nav-next" href="0xB68F.html">0xB68F Fuel Correction Blender</a></nav>
+</body>
+</html>

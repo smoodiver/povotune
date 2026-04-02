@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xACE1 — Measure Airflow — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xACE1 Measure Airflow</span></nav>
+<h3 id="0xace1-measure-airflow">0xACE1 — Measure Airflow</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xACE1</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>61 bytes (0xACE1–0xAD1D)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — irq_handler_AAD1 P2 task group (0xAAD1 at 0xAB41)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>2 — sub_63E0 (16-bit table interpolation), sub_AD1E (airflow_rate_calc)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Reads the airflow meter (AFM) sensor via an ADC conversion result and processes it through a 16-bit lookup table interpolation. Waits for the ADC conversion to complete (busy-wait on dp+$20 bit 3), reads the raw result from dp+$22, performs a 16-bit table lookup against the ROM table at 0x4080, then stores the raw and processed results to multiple RAM locations and diagnostic mirrors. Calls sub_AD1E (airflow_rate_calc) for rate-of-change processing.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>ACE1  BBC $20,#$08,$ACE1     ; busy-wait until ADC ready (dp+$20 bit 3)
+ACE5  CLM                    ; 16-bit mode
+ACE6  LDA $22                ; read ADC result from dp+$22 (16-bit)
+ACE8  STA $303E              ; save raw ADC value
+ACEB  LDX #$4080             ; table base address
+ACEE  STX $300A              ; set table_base_ptr for sub_63E0
+ACF1  JSR $63E0              ; 16-bit table interpolation
+ACF4  STA $3018              ; store raw AFM result (16-bit)
+ACF7  LDA $303E              ; reload raw ADC value
+ACFA  LSR A                  ; shift right 2 (divide by 4, 16-bit)
+ACFB  LSR A
+ACFC  SEM                    ; back to 8-bit mode
+ACFD  STA $3747              ; diagnostic mirror: AFM high byte / 4
+AD00  STA $0110              ; IO diagnostic mirror
+AD03  JSR $AD1E              ; call airflow_rate_calc
+AD06  SEM                    ; ensure 8-bit mode
+AD07  SEB $3025,#$02         ; set airflow_init_flags bit 2 (initialized)
+AD0B  CLM                    ; 16-bit mode
+AD0C  STA $301A              ; store processed airflow value (16-bit)
+AD0F  LSR A                  ; shift right 7 (divide by 128, 16-bit)
+AD10  LSR A
+AD11  LSR A
+AD12  LSR A
+AD13  LSR A
+AD14  LSR A
+AD15  LSR A
+AD16  SEM                    ; back to 8-bit mode
+AD17  STA $3748              ; diagnostic mirror: processed AFM / 128
+AD1A  STA $011A              ; IO diagnostic mirror
+AD1D  RTS
+</code></pre>
+<h4 id="logic">Logic</h4>
+<ol>
+<li><strong>ADC wait</strong> (0xACE1): Busy-waits in a tight loop polling dp+$20 bit 3, which signals ADC conversion complete.</li>
+<li><strong>Raw read</strong> (0xACE5–0xACE8): Reads the 16-bit ADC result from dp+$22 and saves it to 0x303E.</li>
+<li><strong>Table lookup</strong> (0xACEB–0xACF4): Sets the table base pointer (0x300A) to 0x4080 and calls the 16-bit table interpolation routine (0x63E0). The result is the linearized AFM reading, stored to 0x3018 (afm_raw).</li>
+<li><strong>Diagnostic mirror 1</strong> (0xACF7–0xAD00): The raw ADC value is shifted right 2 bits (divide by 4) and the low byte is written to 0x3747 and IO port 0x0110 as a diagnostic output.</li>
+<li><strong>Rate calculation</strong> (0xAD03): Calls airflow_rate_calc (0xAD1E) which computes rate-of-change with smoothing, returning the processed airflow value in A.</li>
+<li><strong>Init flag</strong> (0xAD07): Sets 0x3025 bit 2 to indicate the airflow subsystem has been initialized (first valid reading taken).</li>
+<li><strong>Processed output</strong> (0xAD0C–0xAD1A): The processed value is stored to 0x301A (afm_processed), then shifted right 7 bits and the low byte written to 0x3748 and IO port 0x011A as a second diagnostic output.</li>
+</ol>
+<h4 id="key-ram-variables">Key RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Access</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x303E</td>
+<td>afm_channel_select</td>
+<td>W/R</td>
+<td>Saved raw ADC value during processing</td>
+</tr>
+<tr>
+<td>0x300A</td>
+<td>table_base_ptr</td>
+<td>W</td>
+<td>Set to 0x4080 for 16-bit table interpolation</td>
+</tr>
+<tr>
+<td>0x3018</td>
+<td>afm_raw</td>
+<td>W</td>
+<td>Raw AFM result from 16-bit table lookup</td>
+</tr>
+<tr>
+<td>0x301A</td>
+<td>afm_processed</td>
+<td>W</td>
+<td>Processed airflow after rate-of-change filtering</td>
+</tr>
+<tr>
+<td>0x3747</td>
+<td>afm_diag_raw</td>
+<td>W</td>
+<td>Diagnostic: raw ADC &gt;&gt; 2 (8-bit)</td>
+</tr>
+<tr>
+<td>0x3748</td>
+<td>afm_diag_processed</td>
+<td>W</td>
+<td>Diagnostic: processed AFM &gt;&gt; 7 (8-bit)</td>
+</tr>
+<tr>
+<td>0x3025</td>
+<td>airflow_init_flags</td>
+<td>W</td>
+<td>Bit 2: set once first valid AFM reading is taken</td>
+</tr>
+</tbody></table>
+<h4 id="key-io-ports">Key IO Ports</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Access</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dp+$20</td>
+<td>R</td>
+<td>ADC status register; bit 3 = conversion complete</td>
+</tr>
+<tr>
+<td>dp+$22</td>
+<td>R</td>
+<td>ADC result register (16-bit)</td>
+</tr>
+<tr>
+<td>0x0110</td>
+<td>W</td>
+<td>Diagnostic output mirror of raw AFM / 4</td>
+</tr>
+<tr>
+<td>0x011A</td>
+<td>W</td>
+<td>Diagnostic output mirror of processed AFM / 128</td>
+</tr>
+</tbody></table>
+<h4 id="key-rom-constants">Key ROM Constants</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4080</td>
+<td>afm_linearization_table</td>
+<td>16-bit lookup table for AFM sensor linearization</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xACBB.html">0xACBB Target A/F Ratio</a><a class="nav-next" href="0xAD1E.html">0xAD1E Airflow Rate Calculator</a></nav>
+</body>
+</html>

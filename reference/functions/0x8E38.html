@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8E38 — Boost Qualification Gate — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8E38 Boost Qualification Gate</span></nav>
+<h3 id="0x8e38-boost-qualification-gate">0x8E38 — Boost Qualification Gate</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8E38</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>39 bytes (0x8E38–0x8E5E)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>2 call sites (boost_control_main at 0x892E, 0x89E1)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Multi-condition qualification gate for boost closed-loop operation. Checks three conditions in sequence: (1) mode flag 0x305E bit 3 must be set, (2) RAM value 0x3178 must be &gt;= ROM threshold 0x4602, (3) coolant_temp_raw must be &gt;= ROM threshold 0x4BF6, (4) secondary_condition_value must be &gt;= ROM threshold 0x4604. If all pass, sets 0x305F bit 5; if any fail, clears it.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>8E38  BBC $305E,#$08,$8E5A  ; if bit 3 clear, fail
+8E3D  LDX $3178              ; load timer/counter value
+8E40  CPX $4602              ; compare vs threshold
+8E43  BCC $8E5A              ; if below, fail
+8E45  LDA $3092              ; load coolant_temp_raw
+8E48  CMP $4BF6              ; compare vs temp threshold
+8E4B  BCC $8E5A              ; if below, fail
+8E4D  LDX $30B6              ; load secondary_condition_value
+8E50  CPX $4604              ; compare vs threshold
+8E53  BCC $8E5A              ; if below, fail
+8E55  SEB $305F,#$20         ; set bit 5 = qualified
+8E59  RTS
+8E5A  CLB $305F,#$20         ; clear bit 5 = not qualified
+8E5E  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x305E bit 3: mode flag (must be set)</li>
+<li>0x3178: timer or counter value</li>
+<li>0x3092 (coolant_temp_raw): engine temperature</li>
+<li>0x30B6 (secondary_condition_value): load/pressure input</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x305F bit 5: boost qualification flag (set if all conditions met, cleared otherwise)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x305E, 0x3178, 0x3092, 0x30B6</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x305F (bit 5)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4602 -- timer threshold</li>
+<li>0x4604 -- secondary condition threshold</li>
+<li>0x4BF6 -- coolant temperature threshold</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8E28.html">0x8E28 Weighted Accumulate (B_high >> 2)</a><a class="nav-next" href="0x8E5F.html">0x8E5F Boost Ramp Integrator</a></nav>
+</body>
+</html>

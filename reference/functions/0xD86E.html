@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xD86E — Boost Target Pressure Adjustment — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xD86E Boost Target Pressure Adjustment</span></nav>
+<h3 id="0xd86e-boost-target-pressure-adjustment">0xD86E — Boost Target Pressure Adjustment</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xD86E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>66 bytes (0xD86E–0xD8AF)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — multi_rate_timer_dispatcher (0xC458) 10-tick path at 0xC47D</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Adjusts the 16-bit boost target pressure accumulator ($30F8) by adding or subtracting a correction value derived from $30E0. Called every 10 P5 scheduler ticks. The direction of adjustment is controlled by $305E bit 0: when set, the correction is subtracted (reducing boost target); when clear, it is added (increasing boost target). Result is clamped to 0x0000–0xFFFF.</p>
+<p><strong>Entry gate</strong>: If $35A4 bit 0 is set, returns immediately (system inhibit). Then checks $3051 bit 2: if clear, loads a constant 0x4000 into $30F8 and returns (reset to midpoint). If $305E bit 3 is clear, also returns early (precondition not met).</p>
+<p><strong>Correction path</strong>: Loads $30E0 (correction magnitude), masks to 8-bit (AND #$FF), stores to workspace $3008. Loads current $30F8, then branches on $305E bit 0:</p>
+<ul>
+<li><strong>Bit 0 set</strong> (subtract): $30F8 = $30F8 - $3008, clamped at 0x0000</li>
+<li><strong>Bit 0 clear</strong> (add): $30F8 = $30F8 + $3008, clamped at 0xFFFF</li>
+</ul>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>D86E  BBS $35A4,#$01,$D8AF  ; if system inhibit, return
+D873  CLM                    ; 16-bit mode
+D874  BBS $3051,#$04,$D87F  ; if map_mode bit 2 set, continue
+D87A  LDA #$4000             ; else load midpoint constant
+D87D  BRA $D8AB              ; -&gt; store and exit
+D87F  BBC $305E,#$08,$D8AE  ; if engine_state bit 3 clear, exit (SEM+RTS)
+D885  LDA $30E0              ; load correction magnitude
+D888  AND #$FF               ; mask to 8-bit
+D88B  STA $3008              ; store to workspace
+D88E  LDA $30F8              ; load current boost target
+D891  BBC $305E,#$01,$D8A2  ; if bit 0 clear, -&gt; add path
+D897  SEC                    ; subtract path
+D898  SBC $3008              ; target = target - correction
+D89B  BCS $D8AB              ; if no underflow, store
+D89D  LDA #$00               ; clamp at zero
+D8A0  BRA $D8AB
+D8A2  CLC                    ; add path
+D8A3  ADC $3008              ; target = target + correction
+D8A6  BCC $D8AB              ; if no overflow, store
+D8A8  LDA #$FFFF             ; clamp at max
+D8AB  STA $30F8              ; store updated boost target
+D8AE  SEM                    ; 8-bit mode
+D8AF  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$35A4</td>
+<td>system_inhibit_flags</td>
+<td>Bit 0: system inhibit gate</td>
+</tr>
+<tr>
+<td>$3051</td>
+<td>map_mode_control</td>
+<td>Bit 2: operating mode gate</td>
+</tr>
+<tr>
+<td>$305E</td>
+<td>engine_state_flags_e</td>
+<td>Bit 3: precondition gate; bit 0: adjustment direction</td>
+</tr>
+<tr>
+<td>$30E0</td>
+<td>boost_correction_magnitude</td>
+<td>8-bit correction value (low byte used)</td>
+</tr>
+<tr>
+<td>$30F8</td>
+<td>boost_target_pressure</td>
+<td>Current 16-bit target (read-modify-write)</td>
+</tr>
+</tbody></table>
+<h4 id="outputs">Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$30F8</td>
+<td>boost_target_pressure</td>
+<td>Updated 16-bit boost target</td>
+</tr>
+<tr>
+<td>$3008</td>
+<td>workspace</td>
+<td>Temporary storage for masked correction</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xCC9F.html">0xCC9F Twin Turbo Duty Controller</a><a class="nav-next" href="0xD8C0.html">0xD8C0 Twin Turbo Switching Port Controller</a></nav>
+</body>
+</html>

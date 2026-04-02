@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xAE20 — Stall/Cranking Detector — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xAE20 Stall/Cranking Detector</span></nav>
+<h3 id="0xae20-stall-cranking-detector">0xAE20 — Stall/Cranking Detector</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xAE20</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>126 bytes (0xAE20–0xAE9D)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler ISR (0xAAD1) P4 dispatch at 0xAB4A</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>1 — JSR $A3C7 (shift_right_BA_by_2, divide by 4)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Detects engine stall and cranking conditions, and computes a boost startup / cranking injection base value. Runs in the scheduler P4 priority slot (every 20th tick). The function monitors the cylinder event counter ($319C), system flags ($305A bit 4), and knock sensor reading ($306E) to determine cranking state. When cranking is detected, it sets the cranking-active flag ($3020 bit 3) and the cranking-init-request flag ($330A bit 2). It also computes the boost startup value ($3130) by selecting from a ROM lookup table ($43F8) based on knock level and operating conditions, then writes a scaled copy to the IO diagnostic port ($018A).</p>
+<h4 id="detailed-flow">Detailed Flow</h4>
+<p><strong>Stall detection (0xAE20–0xAE40):</strong></p>
+<pre><code>AE20  LDA $319C           ; cylinder event counter
+AE23  BEQ $AE38           ; if zero → engine stalled
+AE25  BBC $305A,#$10,$AE41 ; if system bit 4 clear → normal path
+AE2A  LDA $312C           ; stall counter
+AE2D  INA                 ; increment (saturating at 0xFF)
+AE2E  BEQ $AE33           ; if wrapped to 0, don&#39;t store
+AE30  STA $312C           ; store incremented counter
+AE33  CLB $3020,#$08      ; clear cranking-active flag
+AE37  RTS
+</code></pre>
+<p>When $319C is zero (no cylinder events), the function clears the cranking flag, zeros the stall counter, and returns. When $305A bit 4 is set (system in a known-good state), it simply increments the stall counter and clears cranking.</p>
+<p><strong>Cranking detection (0xAE41–0xAE5E):</strong></p>
+<pre><code>AE41  BBS $3020,#$08,$AE62 ; if already cranking → skip to boost calc
+AE46  LDA $306E           ; knock sensor reading
+AE49  CMP $4402           ; compare against low threshold
+AE4C  BCS $AE38           ; if above → not cranking, clear and return
+AE4E  LDA $312C           ; stall counter
+AE51  CMP $4405           ; compare against stall count threshold
+AE54  BCC $AE38           ; if below → not enough stall counts yet
+AE56  LDM $312C,#$00      ; reset stall counter
+AE5A  SEB $3020,#$08      ; set cranking-active flag
+AE5E  SEB $330A,#$04      ; set cranking-init-request flag
+</code></pre>
+<p>Cranking is detected when: (1) the knock sensor ($306E) reads below the low threshold ($4402), AND (2) the stall counter ($312C) has reached the required count ($4405). This prevents false cranking detection from brief signal dropouts.</p>
+<p><strong>Boost startup calculation (0xAE62–0xAE9D):</strong></p>
+<pre><code>AE62  LDX #$43F8          ; base of 4-entry ROM table
+AE65  LDA $306E           ; knock sensor reading
+AE68  CMP $4404           ; compare against high threshold
+AE6B  BCC $AE6E           ; if below, use base index
+AE6D  INX                 ; +1 for high knock
+AE6E  BBC $302A,#$08,$AE75 ; check operating condition flag
+AE73  INX                 ; +2 for alternate condition
+AE74  INX
+AE75  LDA $00,X           ; load table value
+AE77  MPY $312F           ; multiply by correction factor
+AE7B  JSR $A3C7           ; divide by 4 (shift right B:A by 2)
+</code></pre>
+<p>The table index selects from 4 entries: {base, high-knock, alt-condition, alt+high-knock}. After multiplication and scaling:</p>
+<pre><code>AE86  LDA $3008           ; scaled result
+AE89  CLC
+AE8A  ADC $3056           ; add offset
+AE8D  BCC $AE92
+AE8F  LDA #$FFFF          ; saturate on overflow
+AE92  STA $3130           ; store as boost_startup_value
+AE95  LSR A               ; divide by 16 (4x LSR)
+AE96  LSR A
+AE97  LSR A
+AE98  LSR A
+AE99  SEM                 ; 8-bit mode
+AE9A  STA $018A           ; write to IO diagnostic port
+AE9D  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Address</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RAM</td>
+<td>$319C</td>
+<td>Cylinder event counter (from Timer A ISR)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$305A</td>
+<td>System flags — bit 4 = system initialized/running</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$3020</td>
+<td>Engine state flags — bit 3 = cranking active</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$306E</td>
+<td>Knock sensor reading</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$312C</td>
+<td>Stall counter (incremented each call while running)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$312F</td>
+<td>Boost startup correction factor (multiplier)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$302A</td>
+<td>Operating condition flags — bit 3 selects table offset</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$3056</td>
+<td>Boost startup offset added to scaled result</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$4402</td>
+<td>Knock threshold low — below this = potential cranking</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$4404</td>
+<td>Knock threshold high — selects higher startup value</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$4405</td>
+<td>Stall count threshold — minimum stall counts before cranking detect</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$43F8</td>
+<td>4-entry boost startup multiplier table</td>
+</tr>
+</tbody></table>
+<h4 id="outputs">Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$3020</td>
+<td>Bit 3: cranking-active flag (set on cranking detect, cleared on stall/running)</td>
+</tr>
+<tr>
+<td>$330A</td>
+<td>Bit 2: cranking-init-request flag (set on cranking detect, consumed by 0xAE9E)</td>
+</tr>
+<tr>
+<td>$312C</td>
+<td>Stall counter — incremented when running, zeroed on stall or cranking detect</td>
+</tr>
+<tr>
+<td>$3130</td>
+<td>Boost startup / cranking injection base value (16-bit)</td>
+</tr>
+<tr>
+<td>$018A</td>
+<td>IO diagnostic port — boost startup value &gt;&gt; 4 (8-bit)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xAD1E.html">0xAD1E Airflow Rate Calculator</a><a class="nav-next" href="0xAE9E.html">0xAE9E Cranking Initialization</a></nav>
+</body>
+</html>

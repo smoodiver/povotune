@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xACBB — Target A/F Ratio — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xACBB Target A/F Ratio</span></nav>
+<h3 id="0xacbb-target-a-f-ratio">0xACBB — Target A/F Ratio</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xACBB</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>38 bytes (0xACBB–0xACE0)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — irq_handler_AAD1 P4 task group (0xAAD1 at 0xABB1)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Calculates the target air-fuel ratio byte and writes it to 0x32C8. Reads the engine load value from 0x313C, shifts it right by 5 bits (divides by 32) to produce a 3-bit index, and compares it against the ROM threshold at 0x4D87. If the shifted value is below the threshold, the default A/F ratio from ROM 0x4D88 is used; otherwise a fixed value of 0x20 is used. Bit 7 of the result is then set or cleared based on the af_ratio_mode flag at 0x31CC.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>ACBB  CLM                    ; 16-bit accumulator mode
+ACBC  LDA $313C              ; load engine_load (16-bit)
+ACBF  LSR A                  ; shift right x5 (divide by 32)
+ACC0  LSR A
+ACC1  LSR A
+ACC2  LSR A
+ACC3  LSR A
+ACC4  SEM                    ; back to 8-bit mode
+ACC5  CMP $4D87              ; compare against af_ratio_threshold
+ACC8  BCS $ACCF              ; if &gt;= threshold, use fixed value
+ACCA  LDA $4D88              ; load af_ratio_default
+ACCD  BRA $ACD1              ; skip to mode flag check
+ACCF  LDA #$20               ; fixed value 0x20 (rich target)
+ACD1  LDB $31CC              ; load af_ratio_mode
+ACD5  BNE $ACDB              ; if nonzero, set bit 7
+ACD7  AND #$7F               ; clear bit 7
+ACD9  BRA $ACDD
+ACDB  ORA #$80               ; set bit 7
+ACDD  STA $32C8              ; write target_af_ratio
+ACE0  RTS
+</code></pre>
+<h4 id="logic">Logic</h4>
+<ol>
+<li><strong>Load and scale</strong>: Engine load (0x313C) is loaded in 16-bit mode, then shifted right 5 times to extract the upper bits as a coarse load index (0–7 range from a 0x00–0xFF byte).</li>
+<li><strong>Threshold comparison</strong>: The scaled load is compared against ROM 0x4D87. Below threshold selects the ROM default from 0x4D88 (lean/cruise target); at or above threshold selects the fixed value 0x20 (rich/power target).</li>
+<li><strong>Mode flag</strong>: If 0x31CC (af_ratio_mode) is nonzero, bit 7 is set in the output, signaling a different fueling mode to downstream consumers. If zero, bit 7 is cleared.</li>
+<li><strong>Output</strong>: Final value stored to 0x32C8 (target_af_ratio).</li>
+</ol>
+<h4 id="key-ram-variables">Key RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Access</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x313C</td>
+<td>engine_load</td>
+<td>R</td>
+<td>16-bit engine load value (shifted right 5 to get index)</td>
+</tr>
+<tr>
+<td>0x31CC</td>
+<td>af_ratio_mode</td>
+<td>R</td>
+<td>Mode flag: nonzero sets bit 7 in output</td>
+</tr>
+<tr>
+<td>0x32C8</td>
+<td>target_af_ratio</td>
+<td>W</td>
+<td>Computed target A/F ratio byte</td>
+</tr>
+</tbody></table>
+<h4 id="key-rom-constants">Key ROM Constants</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4D87</td>
+<td>af_ratio_threshold</td>
+<td>Load threshold: below = default, at/above = 0x20</td>
+</tr>
+<tr>
+<td>0x4D88</td>
+<td>af_ratio_default</td>
+<td>Default A/F ratio for low-load conditions</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xAC26.html">0xAC26 Speed Counter</a><a class="nav-next" href="0xACE1.html">0xACE1 Measure Airflow</a></nav>
+</body>
+</html>

@@ -1,0 +1,9074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Tables — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../index.html">PovoTune</a><span class="sep">/</span><a href="index.html">Reference</a><span class="sep">/</span><span>Memory Tables</span></nav>
+<nav class="toc">
+  <div class="toc-title">Contents</div>
+    <a href="#axes">Axes</a>
+    <a href="#notes">Notes</a>
+    <a href="#maps">Maps</a>
+    <a href="#lookup-tables">Lookup Tables</a>
+    <a href="#constants-thresholds">Constants / Thresholds</a>
+    <a href="#twin-turbo-duty-maps">Twin Turbo Duty Maps</a>
+    <a href="#eeprom">EEPROM</a>
+    <a href="#timer-a-isr-constants-tables">Timer A ISR Constants & Tables</a>
+    <a href="#isr-callee-rom-tables-timer-a-isr-chain">ISR Callee ROM Tables (Timer A ISR chain)</a>
+    <a href="#knock-feedback-thresholds">Knock Feedback Thresholds</a>
+    <a href="#timing-recovery-window">Timing Recovery Window</a>
+    <a href="#dashpot-parameters">Dashpot Parameters</a>
+    <a href="#serial-protocol">Serial Protocol</a>
+</nav><h1 id="rom-tables-bd5a">ROM Tables — BD5A</h1>
+<p>ROM data tables and constants reference for the BD5A Subaru Legacy RS ECU ROM. One entry per table/constant, grouped by data type.</p>
+<p><strong>Source key:</strong> <code>bd5a</code> = derived from BD5A firmware function analysis. <code>historical</code> = from original manual reverse engineering (historical-analysis.md).</p>
+<hr>
+<h3 id="axes">Axes</h3>
+<h3 id="0x4100-rpm-axis-primary">0x4100 — RPM Axis (Primary)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4100</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x1 unsigned 8-bit breakpoint table</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>value x 12.5 = RPM (historical; see notes)</td>
+</tr>
+<tr>
+<td>Duplicate</td>
+<td>0x44D0 (identical contents, used by ignition)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p><strong>Contents:</strong></p>
+<pre><code>10 18 20 28 30 38 40 48 50 58 60 68 70 78 80 88
+(16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136)
+</code></pre>
+<p><strong>Evenly spaced</strong> with step 8 (100 RPM at x12.5 scaling).</p>
+<p><strong>Used by:</strong></p>
+<ul>
+<li><strong>sub_7EC8</strong> (fuel_map_lookup) at 0x7EE8 — stored to 0x3074 as RPM axis for fuel table 0x4120</li>
+<li><strong>sub_CB52</strong> (3-map selection) at 0xCB6F — stored to 0x3074 as RPM axis for maps 0x5200/0x5300/0x5400</li>
+</ul>
+<p><strong>Duplicate 0x44D0 used by:</strong></p>
+<ul>
+<li><strong>sub_82D6</strong> (ignition timing) at 0x82DC and 0x830D — stored to 0x3074 as RPM axis for base timing map 0x5100 and advance timing map 0x5000</li>
+</ul>
+<p><strong>RPM source:</strong> All three functions load the current RPM from 0x3062 → 0x307A. The value at 0x3062 is the raw timer period right-shifted twice (<code>LSR; LSR</code> at 0xBDA0–0xBDA1 in sub_BD51), making it inversely proportional to RPM. The axis breakpoints are matched against this value by the map lookup interpolation routine at 0x6080.</p>
+<h3 id="0x4110-engine-load-axis-primary">0x4110 — Engine Load Axis (Primary)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4110</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x1 unsigned 8-bit breakpoint table</td>
+</tr>
+<tr>
+<td>Scaling</td>
+<td>units unknown</td>
+</tr>
+<tr>
+<td>Duplicate</td>
+<td>0x44E0 (identical contents, used by ignition)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p><strong>Contents:</strong></p>
+<pre><code>03 06 09 0C 0F 12 15 18 1B 1E 21 24 27 2A 2D 30
+(3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48)
+</code></pre>
+<p><strong>Evenly spaced</strong> with step 3.</p>
+<p><strong>Used by:</strong></p>
+<ul>
+<li><strong>sub_7EC8</strong> (fuel_map_lookup) at 0x7EEE — stored to 0x3076 as load axis for fuel table 0x4120</li>
+<li><strong>sub_CB52</strong> (3-map selection) at 0xCB75 — stored to 0x3076 as load axis for maps 0x5200/0x5300/0x5400</li>
+</ul>
+<p><strong>Duplicate 0x44E0 used by:</strong></p>
+<ul>
+<li><strong>sub_82D6</strong> (ignition timing) at 0x82E2 and 0x8313 — stored to 0x3076 as load axis for timing maps</li>
+</ul>
+<p><strong>Load source:</strong> All three functions load engine load from 0x313C (16-bit), shift left 3 bits (<code>ASL; ASL; ASL</code>), and store to 0x3078 for the map lookup routine. The left-shift scales the raw load value to match the axis breakpoint format.</p>
+<h3 id="notes">Notes</h3>
+<ul>
+<li><strong>Two identical copies:</strong> 0x4100/0x4110 and 0x44D0/0x44E0 contain identical data. The fuel and 3-map subsystems use the primary copies; the ignition subsystem uses the duplicates. Having separate copies allows independent modification of axes per subsystem if needed — though in the stock and tuned ROMs they remain identical.</li>
+<li><strong>Shared interface:</strong> All three functions (fuel, ignition, 3-map) use the same map lookup workspace: 0x3072 (map pointer), 0x3074 (RPM axis pointer), 0x3076 (load axis pointer), 0x307A (current RPM), 0x3078 (current load shifted). They all call the same map_lookup_16x16 routine at 0x6080.</li>
+<li><strong>RPM scaling caveat:</strong> The historical analysis states &quot;Real RPM = value x 12.5&quot; giving a range of 200–1700 RPM across the 16 breakpoints. This seems low for a turbo engine that revs to 7000+ RPM. The x12.5 factor may apply to a different representation, or the axis may use a non-linear/inverse relationship since 0x3062 derives from a timer period (inversely proportional to RPM). Further investigation of the timer capture and scaling is needed.</li>
+<li><strong>Even spacing:</strong> Both axes are perfectly linear (step 8 for RPM, step 3 for load), which is common in ECU calibrations — it simplifies the interpolation arithmetic and provides uniform resolution across the operating range.</li>
+</ul>
+<h3 id="maps">Maps</h3>
+<h3 id="0x4120-fuel-map">0x4120 — Fuel Map</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4120</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>256 bytes (16x16)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x16 unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Fuel map; indexed by RPM axis 0x4100 and load axis 0x4110. FHI values larger than tuned (stock runs richer). Confirmed as fuel by analysis.txt — was mislabeled as &quot;Boost map&quot; in historical notes. Result stored at 0x374A, shifted to 0x3122. Boost control uses separate tables (0x4A60–0x4BC0) in function 0x8701.</p>
+<h3 id="0x5000-advance-ignition-timing-map">0x5000 — Advance Ignition Timing Map</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5000</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>256 bytes (16x16)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x16 unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Advance timing map; indexed by RPM axis 0x44D0 and load axis 0x44E0.</p>
+<h3 id="0x5100-base-ignition-timing-map">0x5100 — Base Ignition Timing Map</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5100</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>256 bytes (16x16)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x16 unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Base ignition timing map; tuned values larger (more aggressive advance). Indexed by RPM axis 0x44D0 and load axis 0x44E0.</p>
+<h3 id="0x5200-3-map-selection-map-1">0x5200 — 3-Map Selection Map 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5200</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>256 bytes (16x16)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x16 unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>First of three selectable maps used by sub_CB52 (3-map selection). Indexed by RPM axis 0x4100 and load axis 0x4110.</p>
+<h3 id="0x5300-3-map-selection-map-2">0x5300 — 3-Map Selection Map 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5300</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>256 bytes (16x16)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x16 unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Second of three selectable maps used by sub_CB52.</p>
+<h3 id="0x5400-3-map-selection-map-3">0x5400 — 3-Map Selection Map 3</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5400</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>256 bytes (16x16)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16x16 unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Third of three selectable maps used by sub_CB52.</p>
+<h3 id="lookup-tables">Lookup Tables</h3>
+<h3 id="0x4080-afm-linearization-table">0x4080 — afm_linearization_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4080</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>up to 128 bytes (64 x 16-bit entries)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>array of 16-bit unsigned values</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>AFM (airflow meter) sensor linearization table. Accessed by sub_63E0 (16-bit table interpolation) via table_base_ptr (0x300A) from measure_airflow (0xACE1) at 0xACEE. Input is the raw ADC reading from dp+$22 (the AFM sensor voltage). Output is a linearized 16-bit airflow value stored to 0x3018.</p>
+<h3 id="0x5500-16-bit-interpolation-table-b">0x5500 — 16-Bit Interpolation Table B</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5500</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>up to 128 bytes (64 x 16-bit entries)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>array of 16-bit unsigned values</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>16-bit lookup table accessed by sub_63E0 via table_base_ptr (0x300A). Referenced from IRQ handler at 0xB6FC. Input is from 0x3370 (speed/duty related). Result stored to 0x3376 and used in a multiply chain. Purpose not yet confirmed; likely a duty-cycle or speed-scaling table.</p>
+<h3 id="0x44f0-coolant-temp-to-dwell">0x44F0 — Coolant Temp to Dwell</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x44F0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant-temperature-to-dwell table (values 20 to 13; more dwell when cold for battery voltage compensation).</p>
+<h3 id="0x4c50-coolant-temp-to-knock-sensitivity">0x4C50 — Coolant Temp to Knock Sensitivity</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C50</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant-temperature-to-knock-sensitivity table.</p>
+<h3 id="0x4dc0-rpm-to-timing">0x4DC0 — RPM to Timing</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DC0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>RPM-to-timing lookup table.</p>
+<h3 id="0x4df0-rpm-zone-breakpoints">0x4DF0 — RPM Zone Breakpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DF0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries, descending</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>RPM zone breakpoints; compared against 0x31BF.</p>
+<h3 id="0x44a0-rpm-to-dwell-speed-limited">0x44A0 — RPM to Dwell (Speed-Limited)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x44A0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM-to-dwell table used in speed-limited mode.</p>
+<h3 id="0x4b90-coolant-temp-to-dwell-speed-limited">0x4B90 — Coolant Temp to Dwell (Speed-Limited)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B90</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant-temp-to-dwell table used in speed-limited mode.</p>
+<h3 id="0x4490-load-to-correction-speed-limited">0x4490 — Load to Correction (Speed-Limited)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4490</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Load-to-correction table used in speed-limited mode.</p>
+<h3 id="0x4e50-speed-control-path-1">0x4E50 — Speed Control Path 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4E50</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>2D lookup table for speed control path 1 (bit 0 clear, bit 1 clear).</p>
+<h3 id="0x4e70-speed-control-path-2">0x4E70 — Speed Control Path 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4E70</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>2D lookup table for speed control path 2 (bit 2 set).</p>
+<h3 id="0x4e90-speed-control-path-3">0x4E90 — Speed Control Path 3</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4E90</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>2D lookup table for speed control path 3 (default).</p>
+<h3 id="0x46e2-speed-control-correction-1">0x46E2 — Speed Control Correction 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46E2</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>varies</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Correction table added to speed control path 2 lookup result (conditional on 0x305A bit 1).</p>
+<h3 id="0x46e6-speed-control-correction-2">0x46E6 — Speed Control Correction 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46E6</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>varies</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Correction table added to speed control path 3 lookup result.</p>
+<h3 id="0x46ea-speed-control-correction-3">0x46EA — Speed Control Correction 3</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46EA</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>varies</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Correction table added to speed control path 1 lookup result.</p>
+<h3 id="0x4700-knock-rpm-breakpoints">0x4700 — Knock RPM Breakpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4700</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock correction RPM breakpoints: 24, 44, 60, 76, 88, 100, 112, 124. Non-linear spacing.</p>
+<h3 id="0x4708-knock-load-breakpoints">0x4708 — Knock Load Breakpoints</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4708</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 entries</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock correction load breakpoints: 0, 17, 20, 23, 26, 30, 34, 42. Non-linear spacing.</p>
+<h3 id="constants-thresholds">Constants / Thresholds</h3>
+<h3 id="0x4039-fuel-mode-select">0x4039 — Fuel Mode Select</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4039</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Config byte; 0 = turbo (16x16 map lookup), non-zero = NA (derivative-based calculation).</p>
+<h3 id="0x4004-speed-upper-threshold">0x4004 — Speed Upper Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4004</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper speed threshold (hysteresis upper bound).</p>
+<h3 id="0x4005-speed-lower-threshold">0x4005 — Speed Lower Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4005</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower speed threshold (hysteresis lower bound).</p>
+<h3 id="0x4027-minimum-valid-speed">0x4027 — Minimum Valid Speed</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4027</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum valid speed threshold.</p>
+<h3 id="0x4482-timing-offset-constant">0x4482 — Timing Offset Constant</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4482</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Timing offset constant; subtracted in final ignition calculation.</p>
+<h3 id="0x4485-fixed-dwell-speed-cut">0x4485 — Fixed Dwell (Speed-Cut)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4485</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Fixed dwell value for speed-limited + speed-cut-active mode.</p>
+<h3 id="0x448a-max-dwell-speed-limited">0x448A — Max Dwell (Speed-Limited)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x448A</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Max dwell value clamp in speed-limited mode.</p>
+<h3 id="0x448b-max-dwell-normal">0x448B — Max Dwell (Normal)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x448B</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Max dwell value clamp in normal mode.</p>
+<h3 id="0x448c-vehicle-speed-threshold-dwell">0x448C — Vehicle Speed Threshold (Dwell)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x448C</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Vehicle speed threshold for speed-limited dwell.</p>
+<h3 id="0x448d-coolant-temp-threshold-dwell">0x448D — Coolant Temp Threshold (Dwell)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x448D</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant temp threshold for speed-limited dwell.</p>
+<h3 id="0x448f-timing-bypass-flag">0x448F — Timing Bypass Flag</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x448F</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Bypass flag; 0xFF = use raw 0x31B6 value, skip normal ignition calculation.</p>
+<h3 id="0x46c7-speed-limiter-level-2-threshold">0x46C7 — Speed Limiter Level 2 Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46C7</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Speed limiter level 2 threshold; 1 unit per 2 km/h.</p>
+<h3 id="0x46c8-speed-limiter-crossover-threshold">0x46C8 — Speed Limiter Crossover Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46C8</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Speed limiter level 1 upper / level 2 lower threshold (hysteresis crossover).</p>
+<h3 id="0x46c9-speed-limiter-level-1-lower-threshold">0x46C9 — Speed Limiter Level 1 Lower Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46C9</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Speed limiter level 1 lower threshold.</p>
+<h3 id="0x46cf-high-speed-afm-threshold">0x46CF — High-Speed AFM Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46CF</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>High-speed AFM check threshold.</p>
+<h3 id="0x46f7-speed-limit-enforcement-threshold">0x46F7 — Speed Limit Enforcement Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46F7</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Speed limit enforcement threshold.</p>
+<h3 id="0x46f8-speed-limit-counter-threshold">0x46F8 — Speed Limit Counter Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46F8</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Speed limit counter threshold.</p>
+<h3 id="0x4c40-knock-processing-enable-threshold">0x4C40 — Knock Processing Enable Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C40</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock processing enable threshold (0x30DC comparison).</p>
+<h3 id="0x4c41-knock-sensor-hysteresis-upper">0x4C41 — Knock Sensor Hysteresis Upper</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C41</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock sensor hysteresis upper threshold (0x306E comparison).</p>
+<h3 id="0x4c42-knock-sensor-hysteresis-lower">0x4C42 — Knock Sensor Hysteresis Lower</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C42</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock sensor hysteresis lower threshold (0x306E comparison).</p>
+<h3 id="0x4c43-knock-event-detection-threshold">0x4C43 — Knock Event Detection Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C43</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock event detection threshold (0x306E comparison).</p>
+<h3 id="0x4c44-knock-event-confirmation-threshold">0x4C44 — Knock Event Confirmation Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C44</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock event confirmation threshold (0x3044 - 0x3046 comparison).</p>
+<h3 id="0x4c45-initial-knock-retard-step">0x4C45 — Initial Knock Retard Step</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C45</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Initial knock retard step; loaded to 0x330B on first detection.</p>
+<h3 id="0x4c46-max-knock-retard-amount">0x4C46 — Max Knock Retard Amount</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C46</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum knock retard amount; clamp for 0x330B.</p>
+<h3 id="0x4c47-knock-event-counter-reload">0x4C47 — Knock Event Counter Reload</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C47</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock event counter reload value.</p>
+<h3 id="0x4c48-knock-retard-increment">0x4C48 — Knock Retard Increment</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C48</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock retard increment; added to 0x330B each cycle.</p>
+<h3 id="0x4c49-max-knock-reduction-output">0x4C49 — Max Knock Reduction Output</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C49</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum knock reduction output; clamp for 0x330F.</p>
+<h3 id="0x4c4a-engine-state-scaling-factor">0x4C4A — Engine State Scaling Factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C4A</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Engine state scaling factor for knock.</p>
+<h3 id="0x4c4b-engine-state-delta-clamp">0x4C4B — Engine State Delta Clamp</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C4B</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Engine state delta clamp for knock.</p>
+<h3 id="0x4d76-0x4d86-zone-detection-thresholds">0x4D76–0x4D86 — Zone Detection Thresholds</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D76–0x4D86</td>
+</tr>
+</tbody></table>
+<p>Zone detection thresholds; 8 pairs with hysteresis offsets for RPM/load zone detection.</p>
+<h3 id="0x4d89-knock-rpm-step-size">0x4D89 — Knock RPM Step Size</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D89</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock correction RPM step size constant (value: 2).</p>
+<h3 id="0x4d8a-knock-load-step-size">0x4D8A — Knock Load Step Size</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D8A</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock correction load step size constant (value: 2).</p>
+<h3 id="0x4d8f-engine-state-threshold-ign">0x4D8F — Engine State Threshold (IGN)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D8F</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Engine state threshold for 0x3034 bit 1.</p>
+<h3 id="0x4d7e-advance-timing-threshold">0x4D7E — Advance Timing Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D7E</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Advance timing threshold for zone control.</p>
+<h3 id="0x483e-afm-load-threshold-1">0x483E — AFM/Load Threshold 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x483E</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>AFM/load threshold; selected when 0x302A bit 5 clear.</p>
+<h3 id="0x4840-afm-load-threshold-2">0x4840 — AFM/Load Threshold 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4840</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>AFM/load threshold; selected when 0x302A bit 5 set.</p>
+<h3 id="0x4880-0x4885-limiter-thresholds">0x4880–0x4885 — Limiter Thresholds</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4880–0x4885</td>
+</tr>
+</tbody></table>
+<p>RPM/speed thresholds for final limiter stage.</p>
+<h3 id="0x4da6-0x4da8-limiter-hysteresis-thresholds">0x4DA6, 0x4DA8 — Limiter Hysteresis Thresholds</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA6, 0x4DA8</td>
+</tr>
+</tbody></table>
+<p>Limiter hysteresis thresholds for 0x314E.</p>
+<h3 id="0x4c04-o2-load-threshold-low">0x4C04 — O2 Load Threshold Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C04</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower threshold for closed-loop O2 operating window; load must be &gt;= this (0x0133) for O2 monitoring.</p>
+<h3 id="0x4c06-o2-load-threshold-high">0x4C06 — O2 Load Threshold High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C06</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper threshold for closed-loop O2 operating window; load must be &lt;= this (0x0331) for O2 monitoring.</p>
+<h3 id="0x4a60-0x4a70-boost-base-duty-tables">0x4A60, 0x4A70 — Boost Base Duty Tables</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A60, 0x4A70</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes each</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup tables</td>
+</tr>
+</tbody></table>
+<p>Maps speed/load (0x3093) to boost base duty. 0x4A60 for normal mode, 0x4A70 for high-speed mode (0x305E bit 4).</p>
+<h3 id="0x4a80-0x4aa0-boost-gain-tables">0x4A80, 0x4AA0 — Boost Gain Tables</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A80, 0x4AA0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes each</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup tables</td>
+</tr>
+</tbody></table>
+<p>Maps speed/load to boost correction gain. 0x4A80 for normal, 0x4AA0 for high-speed.</p>
+<h3 id="0x4ba0-0x4bc0-max-boost-duty-limit-tables">0x4BA0, 0x4BC0 — Max Boost Duty Limit Tables</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BA0, 0x4BC0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes each</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup tables</td>
+</tr>
+</tbody></table>
+<p>Maps speed/load to maximum duty limit. 0x4BA0 for low-speed, 0x4BC0 for high-speed path.</p>
+<h3 id="0x4b10-boost-feedback-table">0x4B10 — Boost Feedback Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B10</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps manifold pressure (0x316B) to boost feedback gain.</p>
+<h3 id="0x46d0-0x46e0-sequential-turbo-solenoid-hysteresis-and-duty-thresholds">0x46D0–0x46E0 — Sequential Turbo Solenoid Hysteresis and Duty Thresholds</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46D0–0x46E0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>17 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constants</td>
+</tr>
+</tbody></table>
+<p>Speed/load/temperature hysteresis thresholds and duty cycle selection thresholds for sequential turbo solenoid controller (0x90C7). cross-reference heritage: labeled &quot;EGR&quot; but BD5A has no EGR — these control twin turbo exhaust routing valve duty.</p>
+<h3 id="0x4690-ac-speed-lookup-table">0x4690 — AC Speed Lookup Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4690</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps doubled vehicle_speed to AC cutoff threshold via graph_lookup_2d; used by AC relay controller (0x922F).</p>
+<h3 id="0x46b2-0x46cc-ac-relay-controller-thresholds">0x46B2–0x46CC — AC Relay Controller Thresholds</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46B2–0x46CC</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~27 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constants</td>
+</tr>
+</tbody></table>
+<p>Hysteresis thresholds, delay timer values, and airflow/temperature/speed constants for AC relay controller (0x922F).</p>
+<h3 id="0x4b20-idle-duty-coolant-correction-table">0x4B20 — Idle Duty Coolant Correction Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B20</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp to ISC valve correction factor via graph_lookup_2d; scales idle duty around 0x4000 midpoint.</p>
+<h3 id="0x4b70-0x4b7e-idle-duty-controller-constants">0x4B70–0x4B7E — Idle Duty Controller Constants</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B70–0x4B7E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~15 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constants</td>
+</tr>
+</tbody></table>
+<p>Initial duty value (0x4B70), min/max clamps (0x4B72/0x4B74), offset (0x4B76), timer threshold (0x4B78), step max (0x4B7A), temp threshold (0x4B7C), load threshold (0x4B7D), enable flag (0x4B7E) for idle duty controller.</p>
+<h3 id="0x4648-learn-threshold-low">0x4648 — Learn Threshold Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4648</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower comparison threshold loaded into learn_threshold when learning direction reverses.</p>
+<h3 id="0x464a-learn-threshold-high">0x464A — Learn Threshold High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x464A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Higher comparison threshold loaded into learn_threshold when learning direction matches.</p>
+<h3 id="0x464c-learn-temp-threshold">0x464C — Learn Temp Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x464C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum coolant_temp_raw for adaptive learning; engine must be warm enough.</p>
+<h3 id="0x4659-learn-airflow-threshold">0x4659 — Learn Airflow Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4659</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum airflow_load for speed-limited learning path; above this uses normal map lookup.</p>
+<h3 id="0x4680-learn-map-rpm-axis">0x4680 — Learn Map RPM Axis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4680</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM axis for EEPROM learned values map lookup.</p>
+<h3 id="0x4688-learn-map-load-axis">0x4688 — Learn Map Load Axis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4688</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Load axis for EEPROM learned values map lookup.</p>
+<h3 id="0x4500-sensor-correction-rpm-axis">0x4500 — Sensor Correction RPM Axis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4500</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM axis for 8×8 sensor correction maps (0x4510, 0x4550).</p>
+<h3 id="0x4508-sensor-correction-load-axis">0x4508 — Sensor Correction Load Axis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4508</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Load axis for 8×8 sensor correction maps; indexed by AD channel 1 (0x303C) ÷ 4.</p>
+<h3 id="0x4510-sensor-correction-factor-map-8-8">0x4510 — Sensor Correction Factor Map (8×8)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4510</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>First 8×8 map: produces a multiplicative factor for sensor correction output.</p>
+<h3 id="0x4550-sensor-correction-offset-map-8-8">0x4550 — Sensor Correction Offset Map (8×8)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4550</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Second 8×8 map: produces a signed offset (centered at 0x80) for sensor correction output.</p>
+<h3 id="0x4590-afm-scaling-constant">0x4590 — AFM Scaling Constant</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4590</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Multiplied with sensor_scaling_input to produce AFM-based correction factor.</p>
+<h3 id="0x482a-dwell-adjust-threshold-up">0x482A — Dwell Adjust Threshold Up</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x482A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for 0x3322 when counting up (bit 5 set); triggers counter increment.</p>
+<h3 id="0x482b-dwell-adjust-threshold-down">0x482B — Dwell Adjust Threshold Down</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x482B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for 0x3322 when counting down (bit 5 clear); triggers counter decrement.</p>
+<h3 id="0x482c-dwell-adjust-counter-max">0x482C — Dwell Adjust Counter Max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x482C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum count for 0x3326; when reached, clears bit 5 of map_control_register.</p>
+<h3 id="0x46c3-limiter-hysteresis-threshold-low">0x46C3 — Limiter Hysteresis Threshold Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46C3</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Alternate (lower) threshold for limiter hysteresis comparators; used when the corresponding bit is already set.</p>
+<h3 id="0x46c5-limiter-hysteresis-threshold-high">0x46C5 — Limiter Hysteresis Threshold High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46C5</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default (higher) threshold for limiter hysteresis comparators; used when the corresponding bit is clear.</p>
+<h3 id="0x4c0f-ramp-airflow-low-threshold">0x4C0F — Ramp Airflow Low Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C0F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower airflow threshold for ramp rate selection; below this uses slow rate (0x4C12).</p>
+<h3 id="0x4c10-ramp-airflow-high-threshold">0x4C10 — Ramp Airflow High Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C10</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper airflow threshold for ramp rate selection; above this uses fast rate (0x4C16).</p>
+<h3 id="0x4c12-ramp-rate-slow">0x4C12 — Ramp Rate Slow</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C12</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Slow ramp rate used when airflow below low threshold.</p>
+<h3 id="0x4c14-ramp-rate-medium">0x4C14 — Ramp Rate Medium</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C14</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Medium ramp rate used when airflow between low and high thresholds.</p>
+<h3 id="0x4c16-ramp-rate-fast">0x4C16 — Ramp Rate Fast</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C16</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Fast ramp rate used when airflow above high threshold.</p>
+<h3 id="0x4018-fuel-pulse-max">0x4018 — Fuel Pulse Max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4018</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum fuel pulse width clamp. Used by fuel_enrichment_calculator (0xBAA3) to limit the computed pulse width.</p>
+<h3 id="0x401f-closed-loop-fuel-scale">0x401F — Closed-Loop Fuel Scale</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x401F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-bit constant (high byte used)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Scaling factor applied to fuel pulse width when closed-loop is enabled ($305A bit 2). Used by fuel_enrichment_calculator (0xBAA3) as a final multiplicative adjustment.</p>
+<h3 id="0x4410-cranking-pulse-base">0x4410 — Cranking Pulse Base</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4410</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<p>Base cranking injection pulse width. Used by injection_pulse_width (0xBB8D) as the minimum pulse width during cranking conditions. Compared against computed enrichment values for hysteresis selection.</p>
+<h3 id="0x4760-coolant-fuel-correction-table">0x4760 — Coolant Fuel Correction Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4760</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>table</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>1D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant-temperature-based fuel correction table. Used by fuel_enrichment_calculator (0xBAA3) via sub_6000 with coolant temp ($3093) as input. Applied when $305C bit 2 is set.</p>
+<h3 id="0x4c1d-afm-floor-minimum">0x4C1D — AFM Floor Minimum</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C1D</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum AFM floor clamp value. Used by o2_feedback_correction_calculator (0xB811) to prevent the AFM reference from going below this threshold.</p>
+<h3 id="0x4c1f-airflow-correction-coefficient">0x4C1F — Airflow Correction Coefficient</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C1F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Multiplier for airflow-based correction scaling. Used by o2_feedback_correction_calculator (0xB811) to scale the (airflow_load - 0x20) value into the correction domain.</p>
+<h3 id="0x4c21-correction-span-minimum">0x4C21 — Correction Span Minimum</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C21</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum correction span. Used by o2_feedback_correction_calculator (0xB811) as the floor for the coolant-lookup-minus-offset result.</p>
+<h3 id="0x4c22-correction-slope-high">0x4C22 — Correction Slope High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C22</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Slope multiplier for the enrichment &gt; base correction path. Used by o2_feedback_correction_calculator (0xB811) when $32F4 &gt;= $32F0.</p>
+<h3 id="0x4c24-correction-offset-high">0x4C24 — Correction Offset High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C24</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset added after slope multiplication in the enrichment &gt; base path. Used by o2_feedback_correction_calculator (0xB811).</p>
+<h3 id="0x4c26-correction-max-high">0x4C26 — Correction Max High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C26</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum correction value for the enrichment &gt; base path. Used by o2_feedback_correction_calculator (0xB811) to clamp the result.</p>
+<h3 id="0x4c28-correction-slope-low">0x4C28 — Correction Slope Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C28</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Slope multiplier for the enrichment &lt; base correction path. Used by o2_feedback_correction_calculator (0xB811) when $32F4 &lt; $32F0.</p>
+<h3 id="0x4c2a-correction-offset-low">0x4C2A — Correction Offset Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C2A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset added after slope multiplication in the enrichment &lt; base path. Used by o2_feedback_correction_calculator (0xB811).</p>
+<h3 id="0x4c2c-correction-max-low">0x4C2C — Correction Max Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C2C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum correction value for the enrichment &lt; base path. Used by o2_feedback_correction_calculator (0xB811) to clamp the result.</p>
+<h3 id="0x4c2e-o2-delta-threshold-high">0x4C2E — O2 Delta Threshold High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C2E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper dead-band threshold for O2 correction delta. Used by o2_feedback_correction_calculator (0xB811). When the absolute delta exceeds this, correction is applied.</p>
+<h3 id="0x4c2f-o2-delta-threshold-low">0x4C2F — O2 Delta Threshold Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C2F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower dead-band threshold for O2 correction delta. Used by o2_feedback_correction_calculator (0xB811). When the absolute delta is below this, correction is suppressed.</p>
+<h3 id="0x4c30-coolant-correction-table-o2">0x4C30 — Coolant Correction Table (O2)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C30</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>table</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>1D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant-temperature-based correction table for O2 feedback. Used by o2_feedback_correction_calculator (0xB811) via sub_6000 with coolant temp ($3093) as input. Result stored to $32E2.</p>
+<h3 id="0x4d3e-adj-map-temp-upper-threshold">0x4D3E — Adj Map Temp Upper Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D3E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper coolant temp threshold for adj_map bit 0 hysteresis; sets bit when temp exceeds this.</p>
+<h3 id="0x4d3f-adj-map-temp-lower-threshold">0x4D3F — Adj Map Temp Lower Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D3F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower coolant temp threshold for adj_map bit 0 hysteresis; clears bit when temp falls below.</p>
+<h3 id="0x4d40-adj-map-temp-high-upper">0x4D40 — Adj Map Temp High Upper</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D40</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper threshold for second coolant temp hysteresis in adj_map (bit 2); triggers warm-enough state.</p>
+<h3 id="0x4d41-adj-map-temp-high-lower">0x4D41 — Adj Map Temp High Lower</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D41</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower threshold for second coolant temp hysteresis in adj_map (bit 2).</p>
+<h3 id="0x4d42-adj-map-secondary-threshold">0x4D42 — Adj Map Secondary Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D42</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Secondary condition threshold for adj_map; 0x30B6 must exceed this for further evaluation.</p>
+<h3 id="0x4d44-adj-map-airflow-correction">0x4D44 — Adj Map Airflow Correction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D44</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Subtracted from airflow lookup result when 0x3029 bit 1 is set; provides hysteresis for adj_map airflow comparison.</p>
+<h3 id="0x4db0-airflow-to-adj-map-factor">0x4DB0 — Airflow to Adj Map Factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DB0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps airflow_load (minus 16) to a factor via graph_lookup_2d; compared against adj_map_input for operating mode selection.</p>
+<h3 id="0x4d36-overrun-coolant-temp-threshold">0x4D36 — Overrun Coolant Temp Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D36</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum coolant_temp_raw for overrun detection; engine must be warm enough for fuel cut.</p>
+<h3 id="0x4d37-overrun-rpm-threshold">0x4D37 — Overrun RPM Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D37</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum RPM for overrun detection; RPM must exceed this for deceleration fuel cut.</p>
+<h3 id="0x4d4f-overrun-load-limit-table">0x4D4F — Overrun Load Limit Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D4F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry indexed lookup</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM-indexed table of maximum engine_load values for overrun detection; indexed by (RPM - 0xF0) / 16. If engine_load is below the table value, overrun condition is met.</p>
+<h3 id="0x4013-temp-threshold-cold">0x4013 — Temp Threshold Cold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4013</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower temperature threshold for selecting enrichment lookup tables; below this selects cold table (0x42F0).</p>
+<h3 id="0x4014-temp-threshold-hot">0x4014 — Temp Threshold Hot</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4014</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper temperature threshold for selecting enrichment lookup tables; above this selects hot table (0x4430).</p>
+<h3 id="0x4021-warmup-ramp-base">0x4021 — Warmup Ramp Base</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4021</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base value for warmup ramp computation; subtracted from ramp counter to compute enrichment magnitude.</p>
+<h3 id="0x4023-warmup-ramp-scale">0x4023 — Warmup Ramp Scale</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4023</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Scale factor multiplied with (ramp_counter - ramp_base) to produce the warmup enrichment ramp value.</p>
+<h3 id="0x404d-enrichment-bypass-threshold">0x404D — Enrichment Bypass Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x404D</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>When adj_map_input (0x3044) &gt;= this, warmup enrichment is bypassed (bit 5 of 0x3051 set).</p>
+<h3 id="0x404e-rpm-enrichment-threshold">0x404E — RPM Enrichment Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x404E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM threshold for warmup enrichment conditioning; below this, warmup_condition_value is cleared.</p>
+<h3 id="0x42f0-coolant-temp-to-enrichment-cold">0x42F0 — Coolant Temp to Enrichment (Cold)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42F0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp_raw to enrichment factor when temperature below cold threshold (0x4013).</p>
+<h3 id="0x4320-coolant-temp-to-enrichment-factor-a">0x4320 — Coolant Temp to Enrichment Factor A</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4320</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp to first enrichment factor; selected when 0x305C bit 2 clear.</p>
+<h3 id="0x4330-coolant-temp-to-enrichment-mid">0x4330 — Coolant Temp to Enrichment (Mid)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4330</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp_raw to enrichment factor when temperature between cold and hot thresholds.</p>
+<h3 id="0x4420-coolant-temp-to-enrichment-factor-b">0x4420 — Coolant Temp to Enrichment Factor B</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4420</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp to first enrichment factor; selected when 0x305C bit 2 set.</p>
+<h3 id="0x4430-coolant-temp-to-enrichment-hot">0x4430 — Coolant Temp to Enrichment (Hot)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4430</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp_raw to enrichment factor when temperature above hot threshold (0x4014).</p>
+<h3 id="0x4045-three-map-selection-threshold">0x4045 — Three-Map Selection Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4045</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for 3-map selection: knock_multiplier (0x3503) compared against this to choose between Map 1/2 (above) or Map 3 (below).</p>
+<h3 id="0x43c0-coolant-temp-to-boost-normal">0x43C0 — Coolant Temp to Boost (Normal)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x43C0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp to boost output base when vehicle speed is below threshold; used in speed-limiting mode.</p>
+<h3 id="0x4770-coolant-temp-to-boost-high-speed">0x4770 — Coolant Temp to Boost (High Speed)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4770</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp to boost output base when vehicle speed exceeds threshold 0x4051; used in speed-limiting mode.</p>
+<h3 id="0x4051-vehicle-speed-boost-threshold">0x4051 — Vehicle Speed Boost Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4051</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Vehicle speed threshold for selecting between normal (0x43C0) and high-speed (0x4770) boost tables in speed-limiting mode.</p>
+<h3 id="0x4060-coolant-temp-to-rpm-correction">0x4060 — Coolant Temp to RPM Correction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4060</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp to a base correction factor; result attenuated by RPM in function 0x7E3B.</p>
+<h3 id="0x401e-rpm-correction-threshold">0x401E — RPM Correction Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x401E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM threshold above which the coolant temp correction is attenuated; correction fades out over 24 RPM units above this threshold.</p>
+<h3 id="0x4dd0-ad-reading-to-temp-lookup">0x4DD0 — AD Reading to Temp Lookup</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DD0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps AD converter reading (divided by 4) to a temperature output value via graph_lookup_2d_f8; result stored to 0x3196 and I/O port 0x0200.</p>
+<h3 id="0x4d32-rpm-hysteresis-upper-threshold">0x4D32 — RPM Hysteresis Upper Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D32</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper RPM threshold for hysteresis comparator in 0x80E3; sets bit 0 of 0x302C when RPM exceeds this.</p>
+<h3 id="0x4d34-rpm-hysteresis-lower-threshold">0x4D34 — RPM Hysteresis Lower Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D34</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower RPM threshold for hysteresis comparator in 0x80E3; clears bit 0 of 0x302C when RPM falls below.</p>
+<h3 id="0x4827-io-output-reload-value">0x4827 — IO Output Reload Value</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4827</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Reload value for 0x3320 (io_output_value); high byte extracted and divided by 4 when 0x3291 bit 4 triggers.</p>
+<h3 id="0x4340-coolant-temp-to-correction-factor">0x4340 — Coolant Temp to Correction Factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4340</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps coolant_temp (0x3093) to a correction factor via graph_lookup_2d; result stored to 0x312F.</p>
+<h3 id="0x44c0-lookup-b-to-factor-table">0x44C0 — Lookup B to Factor Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x44C0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps 0x316B (lookup_input_b) to a factor via graph_lookup_2d; result multiplied with airflow factor in 0x86DA.</p>
+<h3 id="0x4620-airflow-to-factor-table">0x4620 — Airflow to Factor Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4620</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps airflow_load (0x306F) to a factor via graph_lookup_2d; result multiplied with lookup B factor in 0x86DA.</p>
+<h3 id="0x401a-duty-scale-factor">0x401A — Duty Scale Factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x401A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Multiplication factor applied to high byte of 0x316A in duty cycle complement computation.</p>
+<h3 id="0x401c-duty-max-value">0x401C — Duty Max Value</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x401C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-bit constant</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum value from which the scaled duty input is subtracted; defines the full-scale duty cycle range.</p>
+<h3 id="0x4cb0-adjustment-map-load-axis">0x4CB0 — Adjustment Map Load Axis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4CB0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Load axis for the 8×8 adjustment map at 0x4CC0; indexed by 0x3044 (adj_map_input).</p>
+<h3 id="0x4cb8-adjustment-map-rpm-axis">0x4CB8 — Adjustment Map RPM Axis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4CB8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM axis for the 8×8 adjustment map at 0x4CC0; indexed by 0x3062 (rpm).</p>
+<h3 id="0x4cc0-adjustment-map-8-8">0x4CC0 — Adjustment Map (8×8)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4CC0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>8×8 bilinear interpolation map looked up by RPM and adj_map_input (0x3044); result stored to 0x3024 and I/O port 0x0112.</p>
+<h3 id="twin-turbo-duty-maps">Twin Turbo Duty Maps</h3>
+<p>The following tables are used by twin_turbo_duty_controller (0xCC9F) via two calls to turbo_duty_map_lookup (0x6378). Each call has two table sets selected by $3291 bit 3 (turbo mode): one for single-turbo operation (bit 3 = 0), one for twin-turbo mode (bit 3 = 1). Maps are 8×8 nearest-neighbor (no interpolation).</p>
+<h3 id="0x4790-turbo-duty-map-a-twin-mode">0x4790 — Turbo Duty Map A (Twin Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4790</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Axes</td>
+<td>0x4930 (throttle/load) × 0x4938 (RPM)</td>
+</tr>
+<tr>
+<td>Used by</td>
+<td>Call 1 in 0xCC9F when $3291 bit 3 SET</td>
+</tr>
+<tr>
+<td>Tuned</td>
+<td>LARGER (range 0x84–0xB6 vs stock)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<pre><code>      RPM→  low ............................ high
+Load↓
+  low   91 91 91 93 9A A0 A7 A9
+        91 91 91 9A A8 B5 B6 B6
+        91 91 91 9A A8 B5 B6 B6
+        91 91 91 9B A9 B6 B6 B6
+        91 91 97 9B A9 B6 B6 B6
+        91 91 97 9C AA B6 B6 B6
+        91 91 97 9C AA B6 B6 B6
+  high  84 85 86 88 8F A0 B0 B0
+</code></pre>
+<p>Target duty for Call 1 proportional controller in twin-turbo mode. Values represent the desired duty cycle (0x80 = ~50%, 0xB6 = ~71%). Scaled by $31E5 × $31E6 → $3296, then compared against feedback ($32AE) to step-adjust PWM outputs on I/O ports 0x01D0/0x01D2/0x01DA/0x01DC.</p>
+<h3 id="0x4940-turbo-duty-map-a-single-mode">0x4940 — Turbo Duty Map A (Single Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4940</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Axes</td>
+<td>0x4920 (throttle/load) × 0x4928 (RPM)</td>
+</tr>
+<tr>
+<td>Used by</td>
+<td>Call 1 in 0xCC9F when $3291 bit 3 CLEAR</td>
+</tr>
+<tr>
+<td>Tuned</td>
+<td>LARGER (range 0x84–0xAF vs stock)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<pre><code>      RPM→  low ............................ high
+Load↓
+  low   84 84 84 84 84 86 94 A5
+        84 84 84 84 84 94 AC AE
+        84 84 84 84 94 A3 AD AE
+        84 84 84 89 96 A4 AD AE
+        84 84 89 8B 98 A5 AE AF
+        84 84 89 8E 9C A6 AE AF
+        84 84 89 8E 9C A8 AE AF
+  high  84 84 89 8E 9C A5 AC AE
+</code></pre>
+<p>Target duty for Call 1 proportional controller in single-turbo mode. Lower values than twin mode map (0x4790), reflecting less aggressive duty targets when only the primary turbo is active.</p>
+<h3 id="0x4920-turbo-duty-axis-a-single-mode-throttle-load">0x4920 — Turbo Duty Axis A (Single Mode, Throttle/Load)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4920</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<pre><code>00 26 2A 2E 32 3C 44 4C
+</code></pre>
+<p>Throttle/load axis for single-turbo duty maps. Indexed by $308E/$308F (derived from RPM $3062, right-shifted 4 bits with saturation). Breakpoints are coarser than twin mode axis (0x4930).</p>
+<h3 id="0x4928-turbo-duty-axis-b-single-mode-rpm">0x4928 — Turbo Duty Axis B (Single Mode, RPM)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4928</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 30 50 60 68 70 80 88
+</code></pre>
+<p>RPM axis for single-turbo duty maps. Indexed by $3091 (from $3044 throttle position). Note: despite the axis name, the sub_6378 algorithm searches $3091 against $308C and $308E against $308A — so the &quot;RPM&quot; and &quot;load&quot; roles depend on what the caller stores.</p>
+<h3 id="0x4930-turbo-duty-axis-a-twin-mode-throttle-load">0x4930 — Turbo Duty Axis A (Twin Mode, Throttle/Load)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4930</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 4E 54 5C 64 6C 74 84
+</code></pre>
+<p>Throttle/load axis for twin-turbo duty maps. Higher breakpoints than single mode (0x4920), indicating finer resolution at higher loads where twin turbo is active.</p>
+<h3 id="0x4938-turbo-duty-axis-b-twin-mode-rpm">0x4938 — Turbo Duty Axis B (Twin Mode, RPM)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4938</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 40 60 78 90 A8 B8 D0
+</code></pre>
+<p>RPM axis for twin-turbo duty maps. Wider range and higher breakpoints than single mode (0x4928).</p>
+<h3 id="0x4f00-turbo-duty-map-b-single-mode">0x4F00 — Turbo Duty Map B (Single Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4F00</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Axes</td>
+<td>0x48D0 (throttle/load) × 0x4AB0 (RPM)</td>
+</tr>
+<tr>
+<td>Used by</td>
+<td>Call 2 in 0xCC9F when $3291 bit 3 CLEAR</td>
+</tr>
+<tr>
+<td>Tuned</td>
+<td>LARGER</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<pre><code>      RPM→  low ............................ high
+Load↓
+  low   00 00 00 00 00 00 F0 FF
+        00 30 30 60 E0 F0 F0 FF
+        30 30 30 60 E0 F0 F0 FF
+        30 30 30 48 E0 F0 F0 FF
+        30 30 30 48 E0 F0 F0 FF
+        30 30 30 48 E0 F0 F0 FF
+        30 30 48 50 E0 F0 F0 FF
+  high  30 30 30 30 E0 E0 F0 FF
+</code></pre>
+<p>Upper clamp for secondary turbo duty in single-turbo mode. Result stored to $316E and used at 0xD2F8 as: <code>if (combined_duty &gt; $316E) combined_duty = $316E</code>. Steep transition from 0x00/0x30 at low RPM to 0xF0/0xFF at high RPM — secondary turbo duty is progressively allowed as RPM increases.</p>
+<h3 id="0x4f40-turbo-duty-map-b-twin-mode">0x4F40 — Turbo Duty Map B (Twin Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4F40</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8×8 map, unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Axes</td>
+<td>0x48D8 (throttle/load) × 0x4AB8 (RPM)</td>
+</tr>
+<tr>
+<td>Used by</td>
+<td>Call 2 in 0xCC9F when $3291 bit 3 SET</td>
+</tr>
+<tr>
+<td>Tuned</td>
+<td>LARGER</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>historical</td>
+</tr>
+</tbody></table>
+<pre><code>      RPM→  low ............................ high
+Load↓
+  low   40 40 60 80 A0 C0 F0 FF
+        40 40 84 A0 C0 F0 F0 FF
+        40 40 80 A0 E0 F0 F0 FF
+        40 40 80 A0 E0 F0 F0 FF
+        40 60 80 A0 E0 F0 F0 FF
+        40 60 80 A0 E0 F0 F0 FF
+        40 60 70 A0 E0 F0 F0 FF
+  high  40 40 40 40 E0 F0 F0 FF
+</code></pre>
+<p>Upper clamp for secondary turbo duty in twin-turbo mode. Higher baseline (0x40 = 25%) than single mode map (0x4F00 starts at 0x00), allowing more secondary duty at low RPM when both turbos are active.</p>
+<h3 id="0x48d0-call-2-axis-a-single-mode">0x48D0 — Call 2 Axis A (Single Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48D0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 26 2A 2E 32 3C 44 4C
+</code></pre>
+<p>Throttle/load axis for Call 2 maps in single-turbo mode. Same values as 0x4920.</p>
+<h3 id="0x48d8-call-2-axis-a-twin-mode">0x48D8 — Call 2 Axis A (Twin Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48D8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 4C 54 5C 64 6C 74 84
+</code></pre>
+<p>Throttle/load axis for Call 2 maps in twin-turbo mode.</p>
+<h3 id="0x4ab0-call-2-axis-b-single-mode-rpm">0x4AB0 — Call 2 Axis B (Single Mode, RPM)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4AB0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 38 58 64 70 78 88 90
+</code></pre>
+<p>RPM axis for Call 2 maps in single-turbo mode.</p>
+<h3 id="0x4ab8-call-2-axis-b-twin-mode-rpm">0x4AB8 — Call 2 Axis B (Twin Mode, RPM)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4AB8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8-entry axis</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>00 48 68 78 80 88 98 A0
+</code></pre>
+<p>RPM axis for Call 2 maps in twin-turbo mode.</p>
+<h3 id="0x48e0-turbo-duty-increase-step-table">0x48E0 — Turbo Duty Increase Step Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48E0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>4 channels × 4 magnitude levels × 2 banks</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>Bank 0: 15 0A 02 01  1F 15 05 02  06 05 02 01  FF FF FF FF
+Bank 1: 08 06 03 01  08 06 03 01  04 03 02 01  FF FF FF FF
+</code></pre>
+<p>Step sizes for increasing PWM duty when target ($3296) exceeds feedback ($32AE). Selected at 0xCE4A. Four channels correspond to I/O ports 0x01D0, 0x01D2 (at offsets 0, +16) and 0x01DA, 0x01DC (at offsets +8, +24). Each channel has 4 magnitude levels: large/medium/small/minimum. Second bank selected when $3291 bit 3 is set (+4 offset at 0xCE86).</p>
+<h3 id="0x4730-turbo-duty-decrease-step-table">0x4730 — Turbo Duty Decrease Step Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4730</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>4 channels × 4 magnitude levels × 2 banks</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>Bank 0: 0A 06 02 01  11 0B 04 01  06 05 02 01  FF FF FF FF
+Bank 1: 15 0F 06 01  17 12 06 01  05 04 03 01  FF FF FF FF
+</code></pre>
+<p>Step sizes for decreasing PWM duty when feedback ($32AE) exceeds target ($3296). Selected at 0xCE5D. Same structure as increase table.</p>
+<h3 id="0x4980-turbo-duty-scale-factor-table">0x4980 — Turbo Duty Scale Factor Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4980</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>8 entries × 2 banks</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<pre><code>A0 C0 A0 88 80 80 80 80  A0 C0 A0 88 80 80 80 80
+</code></pre>
+<p>Scale factor applied to step values before updating PWM duty. Indexed by $3299 at 0xCEBB. Values &gt; 0x80 amplify the step (faster response), 0x80 = unity. Both banks appear identical. Applied via sub_D84C: <code>duty = (duty × scale) × 2</code>, saturating at 0xFF.</p>
+<h3 id="0x48b0-airflow-to-output-lookup">0x48B0 — Airflow to Output Lookup</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48B0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>16-entry 2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maps airflow_load (0x306F) to an output value via graph_lookup_2d; result written to I/O port 0x0188 and scaled to 0x30B0.</p>
+<h3 id="eeprom">EEPROM</h3>
+<h3 id="0x441e-eeprom-sentinel-1">0x441E — EEPROM Sentinel 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x441E</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>EEPROM sentinel location; expected magic value 0xAA55.</p>
+<h3 id="0x48c0-eeprom-sentinel-2">0x48C0 — EEPROM Sentinel 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48C0</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>EEPROM sentinel location; expected magic value 0xAA55.</p>
+<h3 id="0x48c6-isc-activity-threshold">0x48C6 — ISC Activity Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48C6</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0A (10)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum ISC activity level required for the ISC valve range check (sub_6D8E) to proceed. The ISC activity counter (0x32B7) is decremented by 1 and compared against this value; if below, the check is skipped.</p>
+<h3 id="0x4c60-turbo-feedback-sensor-low-threshold">0x4C60 — Turbo Feedback Sensor Low Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C60</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes (16-bit)</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0028 (40)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Low boundary for turbo feedback sensor range validation (sub_6E38). Readings below this value trigger the out-of-range fault counter. cross-reference heritage: labeled &quot;rear O2 sensor&quot; but on BD5A this validates the turbo system feedback sensor (AN5 → 0x32AE).</p>
+<h3 id="0x4c62-turbo-feedback-sensor-high-threshold">0x4C62 — Turbo Feedback Sensor High Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C62</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes (16-bit)</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0258 (600)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>High boundary for turbo feedback sensor range validation (sub_6E38). Readings above this value trigger the out-of-range fault counter. cross-reference heritage: labeled &quot;rear O2 sensor&quot; but on BD5A this validates the turbo system feedback sensor.</p>
+<h3 id="0x4c65-isc-range-fault-trip-count">0x4C65 — ISC Range Fault Trip Count</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C65</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x27 (39)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Trip threshold for the ISC valve range fault counter (0x31FA) in sub_6D8E Part 1. When the debounce counter reaches this value, 0x31F8 bit 2 (ISC valve fault) is set.</p>
+<h3 id="0x4c66-idle-deviation-fault-trip-count">0x4C66 — Idle Deviation Fault Trip Count</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4C66</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x27 (39)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Trip threshold for the idle deviation fault counter (0x32C7) in sub_6D8E Part 2. When the debounce counter reaches this value, 0x31CF bit 0 (idle deviation pending) is set.</p>
+<h3 id="0x4eb4-eeprom-sentinel-3">0x4EB4 — EEPROM Sentinel 3</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4EB4</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>EEPROM sentinel location; expected magic value 0xAA55.</p>
+<h3 id="0x4eb5-eeprom-lower-bounds-table">0x4EB5 — EEPROM Lower Bounds Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4EB5+</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower bounds table for EEPROM validation.</p>
+<h3 id="0x4ef7-eeprom-upper-bound">0x4EF7 — EEPROM Upper Bound</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4EF7</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper bound value for EEPROM validation.</p>
+<h3 id="0x4da0-learned-values-upper-bound">0x4DA0 — Learned Values Upper Bound</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA0</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper bound for learned values (positive range).</p>
+<h3 id="0x4da1-learned-values-lower-bound">0x4DA1 — Learned Values Lower Bound</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA1</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower bound for learned values (signed/negative range).</p>
+<h3 id="0x3630-knock-learned-values-table">0x3630 — Knock Learned Values Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x3630–0x366F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes (8x8)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>EEPROM-backed RAM table of learned knock corrections per RPM/load cell. Centered at 0x80 (no correction). Values below 0x80 retard timing; above 0x80 advance it. Indexed as <code>(rpm_pos &lt;&lt; 3) + load_pos</code>.</p>
+<h3 id="0x4006-rom-checksum-adc-expected">0x4006 — ROM Checksum ADC Expected</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4006</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Expected ADC checksum byte; skipped during accumulation.</p>
+<h3 id="0x4007-rom-checksum-xor-expected">0x4007 — ROM Checksum XOR Expected</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4007</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Expected XOR checksum byte; skipped during accumulation.</p>
+<hr>
+<h3 id="timer-a-isr-constants-tables">Timer A ISR Constants & Tables</h3>
+<h3 id="0x4415-gear-hysteresis-rpm-threshold">0x4415 — Gear Hysteresis RPM Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4415</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2 bytes (16-bit)</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0020 (32 decimal)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM period threshold for gear tooth hysteresis in Timer A ISR (0x98A1). When <code>$3062</code> (RPM period) is below this value (high RPM), the gear decoder is more tolerant of mismatches — it accepts the current tooth value even if the confidence counter <code>$3204</code> is below the normal threshold.</p>
+<h3 id="0x4417-gear-confidence-threshold">0x4417 — Gear Confidence Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4417</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x04 (4 decimal)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Confidence threshold for gear tooth acceptance in Timer A ISR (0x98A1). The gear match counter <code>$3204</code> must reach or exceed this value before the decoder accepts the current gear position during low-RPM operation.</p>
+<h3 id="0x4464-injection-max-scale-factor">0x4464 — Injection Max Scale Factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4464</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x64 (100 decimal)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum scale factor for injection period calculation. Multiplied by timing_result_C (<code>$31B0</code>) in sub_9B99/sub_9C00. The result is used to compute maximum injection pulse width, clamped to 0xFFFF on overflow.</p>
+<h3 id="0x4480-injection-base-offset">0x4480 — Injection Base Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4480</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x05</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base offset added to correction value <code>$309A</code> in sub_9B99 injection calculation. Part of the injection period computation chain; contributes to the minimum injection pulse width.</p>
+<h3 id="0x448e-alternate-injection-table-selector">0x448E — Alternate Injection Table Selector</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x448E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0xFF</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Selector byte for alternate injection/dwell tables. When all bits set (0xFF), the ISR uses the alternate ROM tables (0x9B91 for injection, 0x9D35 for dwell) instead of the standard tables (0x9B95, 0x9D31). Tested via <code>BBC $448E,#$FF</code>.</p>
+<h3 id="0x9ad9-gear-tooth-expected-value-table">0x9AD9 — Gear Tooth Expected Value Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9AD9</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>5 bytes</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>40 03 04 02 01</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Expected gear tooth values for the 4-cylinder EJ20H engine, indexed by cylinder_counter (<code>$319C</code>). Entry 0 (0x40 = RTI opcode, doubles as code) is never accessed as data. Entries 1-4 represent expected tooth patterns for cylinders 1-4. Used by the gear decoder in Timer A ISR (0x98A1) to verify crank position via indexed read (<code>LDA $00,X</code> at 0x9981/0x99A4).</p>
+<h3 id="0x9b91-injection-output-table-alternate">0x9B91 — Injection Output Table (Alternate)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9B91</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>0B 0C 0A 09</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Alternate injection output values written to IO port 0x2800 (injector driver), indexed by (cylinder_counter - 1). Used when ROM selector <code>$448E</code> = 0xFF. Each byte selects which injector driver channels are active for the corresponding cylinder firing event.</p>
+<h3 id="0x9b95-injection-output-table-standard">0x9B95 — Injection Output Table (Standard)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9B95</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>03 03 01 01</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Standard injection output values written to IO port 0x2800, indexed by (cylinder_counter - 1). Used when ROM selector <code>$448E</code> != 0xFF. The paired values (03,03,01,01) suggest batch injection in two groups of two cylinders.</p>
+<h3 id="0x9d31-dwell-timing-table-standard">0x9D31 — Dwell Timing Table (Standard)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9D31</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>01 01 03 03</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Standard dwell timing values loaded by sub_9B99, indexed by cylinder_counter. Used when ROM selector <code>$448E</code> != 0xFF. Written to IO port 0x2800 to set dwell charge period for each cylinder&#39;s ignition coil. Pattern mirrors the standard injection table.</p>
+<h3 id="0x9d35-dwell-timing-table-alternate">0x9D35 — Dwell Timing Table (Alternate)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9D35</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>09 0A 0B 0C</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Alternate dwell timing values loaded by sub_9B99, indexed by cylinder_counter. Used when ROM selector <code>$448E</code> = 0xFF. Sequential values suggest individual cylinder control (sequential injection mode) rather than batch operation.</p>
+<h3 id="0xa2b9-injection-timing-compare-table-channel-1">0xA2B9 — Injection Timing Compare Table (Channel 1)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA2B9</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes (2 sets of 4)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Per-cylinder injection timing compare values indexed by $319C in injection_timing_calculator (0x9E1E). Two sets of 4 values selected by $31A1 bit 2: LDA $00,X (set 0, offset 0) or LDA $04,X (set 1, offset 4). Used to determine injection step transitions by comparing against $31FE. Sibling tables: 0xA2C1 (ch2), 0xA2B1 (ch3).</p>
+<h3 id="0xa2a9-injection-timing-compare-table-channel-4">0xA2A9 — Injection Timing Compare Table (Channel 4)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA2A9</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes (2 sets of 4)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Per-cylinder injection timing compare values indexed by $319C in injection_timing_calculator (0xA187). Two sets of 4 values selected by $31A1 bit 2: LDA $00,X (set 0, offset 0) or LDA $04,X (set 1, offset 4). Used to determine injection step transitions by comparing against $3201. Sibling tables: 0xA2B9 (ch1), 0xA2C1 (ch2), 0xA2B1 (ch3).</p>
+<h3 id="0xa368-injection-period-scaling-constants">0xA368 — Injection Period Scaling Constants</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA368</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~20 bytes (up to 10 entries x 2 bytes)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>ROM constant table indexed by schedule value in injection_period_scaling (0xA2CE). The schedule value is doubled and added to the base address to form a 16-bit table index. Each entry is a 16-bit scaling constant multiplied by the engine timing result ($31AE or $31B2) to compute the injection endpoint position. Used by all four injection timing calculators via the common 0xA2CE helper.</p>
+<h3 id="0x4830-0x483d-fault-threshold-constants">0x4830–0x483D — Fault Threshold Constants</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4830–0x483D</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>14 bytes</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td>See table below</td>
+</tr>
+</tbody></table>
+<p>Threshold constants for the fault threshold evaluator (0x7588). Six paired threshold sets (enable threshold + trip count), one per evaluation channel:</p>
+<pre><code>BB 62 5E 5B 62 5E 99 62 FF FF FF 5E 62 88
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+<th>Channel</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4830</td>
+<td>0xBB</td>
+<td>Ch1</td>
+<td>Coolant temp gate (~80°C)</td>
+</tr>
+<tr>
+<td>0x4831</td>
+<td>0x62</td>
+<td>Ch1</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x4832</td>
+<td>0x5E</td>
+<td>Ch2</td>
+<td>Coolant temp gate (~50°C)</td>
+</tr>
+<tr>
+<td>0x4833</td>
+<td>0x5B</td>
+<td>Ch2</td>
+<td>Load threshold</td>
+</tr>
+<tr>
+<td>0x4834</td>
+<td>0x62</td>
+<td>Ch2</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x4835</td>
+<td>0x5E</td>
+<td>Ch3</td>
+<td>Coolant temp gate (~50°C)</td>
+</tr>
+<tr>
+<td>0x4836</td>
+<td>0x99</td>
+<td>Ch3</td>
+<td>Load threshold</td>
+</tr>
+<tr>
+<td>0x4837</td>
+<td>0x62</td>
+<td>Ch3</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x4838</td>
+<td>0xFF</td>
+<td>Ch4</td>
+<td>Coolant temp gate (disabled)</td>
+</tr>
+<tr>
+<td>0x4839</td>
+<td>0xFF</td>
+<td>Ch4</td>
+<td>Turbo duty threshold (disabled)</td>
+</tr>
+<tr>
+<td>0x483A</td>
+<td>0xFF</td>
+<td>Ch4</td>
+<td>Trip threshold (disabled)</td>
+</tr>
+<tr>
+<td>0x483B</td>
+<td>0x5E</td>
+<td>Ch5</td>
+<td>Coolant temp gate (~50°C)</td>
+</tr>
+<tr>
+<td>0x483C</td>
+<td>0x62</td>
+<td>Ch5</td>
+<td>Trip threshold (98 cycles)</td>
+</tr>
+<tr>
+<td>0x483D</td>
+<td>0x88</td>
+<td>Ch6</td>
+<td>Trip threshold (136 cycles)</td>
+</tr>
+</tbody></table>
+<p>Channels 1–3, 5–6 are active. Only channel 4 (turbo-active overboost) is disabled.</p>
+<ul>
+<li>0x4830/0x4831: Channel 1 coolant threshold / trip count</li>
+<li>0x4832/0x4833: Channel 2 coolant threshold / load threshold (0x4834 = trip count)</li>
+<li>0x4835/0x4836: Channel 3 coolant threshold / load threshold (0x4837 = trip count)</li>
+<li>0x4838/0x4839: Channel 4 coolant threshold / duty threshold (0x483A = trip count)</li>
+<li>0x483B: Channel 5 coolant threshold (0x483C = trip count)</li>
+<li>0x483D: Channel 6 trip count</li>
+</ul>
+<p>Only channel 4 (turbo-active path) is disabled at 0xFF. See decoded table above.</p>
+<h3 id="0x49c0-load-lookup-table-fault-channel-1">0x49C0 — Load Lookup Table (Fault Channel 1)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x49C0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes (1D table)</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>00 00 00 00 00 00 00 00 00 00 6C 6C 73 79 7D 82</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>1D lookup table used by fault threshold evaluator (0x7588) channel 1. Indexed by airflow (0x306F) via sub_6000 (1d_table_interpolation). Output compared against turbo duty feedback (0x32AE). First 10 entries are zero (low airflow = no expected duty), rising to 0x82 at high airflow — defines the minimum turbo duty expected at each airflow level.</p>
+<h3 id="0x49d0-load-lookup-table-fault-channel-5">0x49D0 — Load Lookup Table (Fault Channel 5)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x49D0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes (1D table)</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>FD FD FD FD FD 78 67 51 4C 49 45 42 42 42 42 42</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>1D lookup table used by fault threshold evaluator (0x7588) channel 5. Indexed by airflow (0x306F) via sub_6000 (1d_table_interpolation). Output compared against engine load (0x3304). High values (0xFD) at low airflow = permissive, drops to 0x42 at high airflow = tighter load monitoring under boost.</p>
+<h3 id="0x5580-speed-duty-lookup-table-fault-channel-6">0x5580 — Speed/Duty Lookup Table (Fault Channel 6)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x5580</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes (16-entry 1D table)</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>B4 B4 B4 B4 B4 B4 B4 B4 45 10 10 20 55 86 FF FF</code></td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>16-entry 1D lookup table used by fault threshold evaluator (0x7588) channel 6. Indexed by vehicle speed (0x3279) via sub_601A (1d_table_interpolation_16). Output compared against turbo duty feedback (0x32AE). Low speed entries are 0xB4 (permissive), drops sharply to 0x10 at mid speed then rises again — defines expected turbo duty vs vehicle speed correlation.</p>
+<h3 id="0x79a7-0x79c6-dtc-code-lookup-table">0x79A7–0x79C6 — DTC Code Lookup Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x79A7</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>32 bytes</td>
+</tr>
+<tr>
+<td>Location</td>
+<td>Inline code-embedded (after sub_7928, NOT in 0x4000–0x5FFF calibration region)</td>
+</tr>
+</tbody></table>
+<p><strong>Contents:</strong></p>
+<pre><code>00 00 00 44 45 00 51 00 21 22 23 24 31 32 33 38 11 12 13 14 15 16 17 00 61 62 63 64 65 66 67 68
+</code></pre>
+<p>Diagnostic trouble code identifier lookup table, embedded inline after sub_7928. Maps a rotating 32-position index to DTC codes for MIL lamp blink output. Accessed by sub_7928 via indexed addressing (<code>ADC #$79A7; TAX; LDA $00,X</code>). Bit positions 0–7 map to fault register byte 0, 8–15 to byte 1, etc. Each byte is a Subaru two-digit DTC code (tens in high nibble, ones in low nibble): e.g., 0x44 = DTC 44, 0x21 = DTC 21, 0x00 = no DTC defined for that position.</p>
+<p><strong>Used by:</strong></p>
+<ul>
+<li><strong>sub_7928</strong> (fault code bit scanner) — indexed access via <code>ADC #$79A7; TAX; LDA $00,X</code></li>
+</ul>
+<h3 id="0x4a4e-speed-threshold-base-boost-mode-selection">0x4A4E — Speed Threshold Base (Boost Mode Selection)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A4E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base vehicle speed threshold for boost high-speed mode selection. Used by vehicle_speed_hysteresis_check (0x8EB1). When transitioning from high-speed back to normal, speed must drop below this value.</p>
+<h3 id="0x4a52-speed-hysteresis-offset-boost-mode-selection">0x4A52 — Speed Hysteresis Offset (Boost Mode Selection)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A52</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Hysteresis offset added to the base speed threshold (0x4A4E) when entering high-speed mode. Used by vehicle_speed_hysteresis_check (0x8EB1). Makes the entry threshold higher than the exit threshold to prevent oscillation.</p>
+<h3 id="0x4afc-secondary-condition-threshold-duty-floor">0x4AFC — Secondary Condition Threshold (Duty Floor)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4AFC</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Load/pressure threshold for boost duty floor enforcement. Used by boost_duty_floor_enforcer (0x8ED2); secondary_condition_value (0x30B6) must be &gt;= this value for the floor to be applied.</p>
+<h3 id="0x4b00-0x4b0b-duty-floor-parameter-block">0x4B00–0x4B0B — Duty Floor Parameter Block</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B00–0x4B0B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>12 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>mixed constants</td>
+</tr>
+</tbody></table>
+<p>Parameter block for boost_duty_floor_enforcer (0x8ED2):</p>
+<ul>
+<li>+0x00: boost output threshold (8-bit) — floor only applied when 0x30EF &lt; this</li>
+<li>+0x01..0x02: RPM lower bound (16-bit)</li>
+<li>+0x03..0x04: RPM upper bound (16-bit)</li>
+<li>+0x05..0x06: duty floor decay step (16-bit, also used by 0x8F0C)</li>
+<li>+0x07..0x08: low duty floor value (16-bit, selected when 0x305F bit 3 set)</li>
+<li>+0x0A..0x0B: high duty floor value (16-bit, selected when 0x305F bit 1 set)</li>
+</ul>
+<h3 id="0x4b0e-rpm-rate-high-threshold">0x4B0E — RPM Rate High Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B0E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>High deceleration rate threshold for rpm_rate_of_change_classifier (0x8F1E). If the low byte of the RPM period delta is &gt;= this value, bit 1 of 0x305F is set (high rate).</p>
+<h3 id="0x4b0f-rpm-rate-moderate-threshold">0x4B0F — RPM Rate Moderate Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4B0F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Moderate deceleration rate threshold for rpm_rate_of_change_classifier (0x8F1E). If the low byte of the RPM period delta is &gt;= this value (but below the high threshold at 0x4B0E), bit 3 of 0x305F is set (moderate rate).</p>
+<h3 id="0x4bbb-rpm-threshold-high-speed-path-selection">0x4BBB — RPM Threshold (High-Speed Path Selection)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BBB</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM threshold for max_duty_limit_calculator (0x8F4C) high-speed path selection. If RPM &gt;= this value, the high-speed table (0x4BC0) is used instead of the low-speed result.</p>
+<h3 id="0x4bbd-vehicle-speed-threshold-high-speed-path-selection">0x4BBD — Vehicle Speed Threshold (High-Speed Path Selection)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BBD</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1 byte</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Vehicle speed threshold for max_duty_limit_calculator (0x8F4C) high-speed path selection. If vehicle_speed &gt;= this value, the high-speed table (0x4BC0) is used.</p>
+<h3 id="0x4bea-at-mode-duty-offset">0x4BEA — AT Mode Duty Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BEA</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Duty offset added to max duty limit when in AT mode (0x3210 bit 5 set). Used by max_duty_limit_calculator (0x8F4C) low-speed path only.</p>
+<h3 id="0x4bec-decel-idle-duty-offset">0x4BEC — Decel/Idle Duty Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BEC</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Duty offset added to max duty limit during decel/idle conditions (0x305D bit 5 set AND 0x305B bit 0 clear). Used by max_duty_limit_calculator (0x8F4C) low-speed path only.</p>
+<h3 id="0x4bee-port-control-duty-offset">0x4BEE — Port Control Duty Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BEE</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Duty offset added to max duty limit when port control bits are active (0x3275 bits 0 or 3 set). Used by max_duty_limit_calculator (0x8F4C) low-speed path only.</p>
+<h3 id="0x4bf6-boost-qualify-coolant-threshold">0x4BF6 — boost_qualify_coolant_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4BF6</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum coolant_temp_raw (0x3092) value required for boost closed-loop qualification. Used by boost_qualification_gate (0x8E38). Coolant must be &gt;= this threshold for boost closed-loop to engage.</p>
+<h3 id="0x4602-boost-qualify-timer-threshold">0x4602 — boost_qualify_timer_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4602</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum value that RAM 0x3178 (boost_qualify_timer) must reach for boost closed-loop qualification. Used by boost_qualification_gate (0x8E38). Likely an engine run-time or post-start timer threshold.</p>
+<h3 id="0x4604-boost-qualify-secondary-threshold">0x4604 — boost_qualify_secondary_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4604</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum secondary_condition_value (0x30B6) required for boost closed-loop qualification. Used by boost_qualification_gate (0x8E38). All three thresholds (0x4602, 0x4BF6, 0x4604) plus the mode flag must pass for qualification.</p>
+<h3 id="0x4a17-boost-ramp-initial-value">0x4A17 — boost_ramp_initial_value</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A17</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Initial/timing value loaded into RAM 0x30FD by boost_ramp_integrator (0x8E5F) on the increment path. Read by boost_control_main (0x8701) as a condition or timing parameter.</p>
+<h3 id="0x4a90-boost-ramp-inc-debounce-threshold">0x4A90 — boost_ramp_inc_debounce_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A90</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Debounce threshold for the increment path in boost_ramp_integrator (0x8E5F). The increment counter (0x3227) must reach this value before the accumulator 0x3228 is incremented.</p>
+<h3 id="0x4a91-boost-ramp-dec-debounce-threshold">0x4A91 — boost_ramp_dec_debounce_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A91</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 8-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Debounce threshold for the decrement path in boost_ramp_integrator (0x8E5F). The decrement counter (0x3226) must reach this value before the accumulator 0x3228 is decremented.</p>
+<h3 id="0x4a92-boost-ramp-inc-step">0x4A92 — boost_ramp_inc_step</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A92</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Increment step size added to boost_ramp_accumulator (0x3228) by boost_ramp_integrator (0x8E5F) when debounce threshold is met and direction is increment (0x305B bit 0 clear).</p>
+<h3 id="0x4a94-boost-ramp-dec-step">0x4A94 — boost_ramp_dec_step</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A94</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Decrement step size subtracted from boost_ramp_accumulator (0x3228) by boost_ramp_integrator (0x8E5F) when debounce threshold is met and direction is decrement (0x305B bit 0 set).</p>
+<h3 id="0x4a96-boost-ramp-max">0x4A96 — boost_ramp_max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4A96</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum value for boost_ramp_accumulator (0x3228). Used by boost_ramp_integrator (0x8E5F) to clamp the accumulator on both increment and decrement paths (decrement path checks against this after subtraction to handle wrap-around).</p>
+<hr>
+<h3 id="isr-callee-rom-tables-timer-a-isr-chain">ISR Callee ROM Tables (Timer A ISR chain)</h3>
+<h3 id="0x4454-rpm-hysteresis-exit-threshold">0x4454 — rpm_hysteresis_exit_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4454</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit (RPM period)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM period exit threshold for Phase 2 hysteresis gate (0xA3CE). Engine must drop below this period (higher RPM) to exit the high-speed zone. Paired with entry threshold at $4456.</p>
+<h3 id="0x4456-rpm-hysteresis-entry-threshold">0x4456 — rpm_hysteresis_entry_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4456</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit (RPM period)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM period entry threshold for Phase 2 hysteresis gate (0xA3CE). Engine must rise above this period (lower RPM) to enter the high-speed zone. Higher value than $4454 provides hysteresis.</p>
+<h3 id="0x4000-rpm-zone-primary-entry">0x4000 — rpm_zone_primary_entry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4000</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit (RPM period)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Primary RPM zone entry threshold for Phase 1 zone classifier (0xA3F4). Period must be below this value for the primary injection zone to activate.</p>
+<h3 id="0x4002-rpm-zone-primary-exit">0x4002 — rpm_zone_primary_exit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4002</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit (RPM period)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Primary RPM zone exit threshold for Phase 1 zone classifier (0xA3F4). Period must rise above this to exit the primary zone. Provides hysteresis with $4000.</p>
+<h3 id="0x46ec-rpm-zone-secondary-entry">0x46EC — rpm_zone_secondary_entry</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46EC</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit (RPM period)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Secondary RPM zone entry threshold for Phase 1 zone classifier (0xA3F4).</p>
+<h3 id="0x46ee-rpm-zone-secondary-exit">0x46EE — rpm_zone_secondary_exit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46EE</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit (RPM period)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Secondary RPM zone exit threshold for Phase 1 zone classifier (0xA3F4).</p>
+<h3 id="0xa448-ext-sensor-descriptor-table">0xA448 — ext_sensor_descriptor_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA448</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~24 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>array of 4-byte descriptors</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Sensor descriptor table for external sensor acquisition state machine (0xA463). Up to 5 entries, each containing a 2-byte target RAM address pointer, 1 byte command/flags, and context. Indexed by channel number (address = $A448 + channel * 4).</p>
+<h3 id="0x44b0-knock-correction-table">0x44B0 — knock_correction_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x44B0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>varies (1D table)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>1D interpolation table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>1D interpolation table mapping airflow_load ($306F) to knock correction base value. Used by knock_learning_update (0xA826) via JSR $6000.</p>
+<h3 id="0x4d90-timing-correction-decay-step">0x4D90 — timing_correction_decay_step</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D90</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Timing correction decay step. Added to timing_correction ($31B8) by timing_correction_decay (0xA745) to gradually recover from knock retard.</p>
+<h3 id="0x4d92-timing-correction-max">0x4D92 — timing_correction_max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D92</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum timing correction value. Used by timing_correction_decay (0xA745) to clamp the correction.</p>
+<h3 id="0x4d94-timing-correction-periodic-decay-step">0x4D94 — timing_correction_periodic_decay_step</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D94</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Periodic timing correction decay step (16-bit). Subtracted from $31B8 by knock_timing_interval_counter (0xA9A4) when in the high-RPM zone.</p>
+<h3 id="0x4d96-knock-decay-counter-threshold">0x4D96 — knock_decay_counter_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D96</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for knock_decay_counter ($31C5). Determines how many scheduler calls between each timing correction decay step.</p>
+<h3 id="0x4d97-knock-initial-multiplier">0x4D97 — knock_initial_multiplier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D97</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Initial value for knock_multiplier ($3503) when knock_retard_ramp_controller (0xA76F) is first initialized.</p>
+<h3 id="0x4d98-knock-initial-step">0x4D98 — knock_initial_step</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D98</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Initial value for knock_step ($3502) when knock_retard_ramp_controller (0xA76F) is first initialized.</p>
+<h3 id="0x4d99-knock-step-minimum">0x4D99 — knock_step_minimum</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D99</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum step size for knock_retard_ramp_controller (0xA76F). When the step falls below this, the ramp has converged and $3033 bit 6 is set.</p>
+<h3 id="0x4d9a-knock-ramp-cycle-limit">0x4D9A — knock_ramp_cycle_limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D9A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Cycle count limit for knock_retard_ramp_controller (0xA76F). When the cycle counter ($31C9) reaches this, the boundary is declared found.</p>
+<h3 id="0x4d9b-knock-default-correction">0x4D9B — knock_default_correction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D9B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default timing correction value. Loaded directly into $31B8 by timing_correction_decay (0xA745) when knock correction is fully enabled ($31C2 = 0xFF).</p>
+<h3 id="0x4d9c-knock-enabled-timing-offset">0x4D9C — knock_enabled_timing_offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D9C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Timing offset subtracted from dwell_start_angle by ignition_timing_output_calculator (0xA9ED) when knock correction is fully enabled.</p>
+<h3 id="0x4d9e-knock-default-correction-base">0x4D9E — knock_default_correction_base</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D9E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default knock correction base value. Used by knock_learning_update (0xA826) when sensor is not active but the timing interval flag is set.</p>
+<h3 id="0x4d9f-knock-timing-interval-threshold">0x4D9F — knock_timing_interval_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D9F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for knock_timing_interval counter ($31BA). Determines how many scheduler calls between timing interval signals.</p>
+<h3 id="0x4da2-knock-cancel-advance-threshold">0x4DA2 — knock_cancel_advance_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA2</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Advance timing threshold for secondary evaluation in knock_correction_clamp (0xA8B8). If advance_timing ($31C7) is below this, the secondary cancellation check is skipped.</p>
+<h3 id="0x4da3-knock-cancel-multiplier-threshold">0x4DA3 — knock_cancel_multiplier_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA3</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock multiplier threshold for negative correction cancellation in knock_correction_clamp (0xA8B8). Negative corrections are only allowed to cancel the knock cycle when the multiplier exceeds this.</p>
+<h3 id="0x4da4-knock-cancel-scale-factor">0x4DA4 — knock_cancel_scale_factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA4</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Scale factor for secondary threshold computation in knock_correction_clamp (0xA8B8). Multiplied by advance_timing and shifted to compute the cancellation threshold.</p>
+<h3 id="0x4da5-knock-cancel-absolute-threshold">0x4DA5 — knock_cancel_absolute_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4DA5</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Secondary absolute threshold in knock_correction_clamp (0xA8B8). If the correction magnitude exceeds both the scaled threshold and this absolute threshold, the knock control cycle is canceled.</p>
+<h3 id="0x445a-knock-feedback-airflow-threshold">0x445A — knock_feedback_airflow_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x445A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Airflow load threshold for knock feedback enable. Used by knock_sensor_mode_classifier (0xA947). Airflow ($306F) must be &gt;= this for knock feedback activation.</p>
+<h3 id="0x4458-knock-feedback-rpm-threshold">0x4458 — knock_feedback_rpm_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4458</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned 16-bit</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>RPM-derived threshold for knock feedback enable. Used by knock_sensor_mode_classifier (0xA947). The signed RPM value ($326A) must be positive and &gt;= this.</p>
+<h3 id="0x445b-knock-feedback-constant">0x445B — knock_feedback_constant</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x445B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock feedback constant loaded into $32C9 by knock_sensor_mode_classifier (0xA947) when RPM and airflow thresholds are met.</p>
+<h3 id="0x445c-knock-feedback-timing-offset">0x445C — knock_feedback_timing_offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x445C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Timing reduction applied by ignition_timing_output_calculator (0xA9ED) when knock feedback is enabled ($31FC bit 6 set). Subtracted from the computed timing value.</p>
+<h3 id="0x4479-slow-ramp-counter-threshold">0x4479 — slow_ramp_counter_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4479</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for slow ramp counter ($3132) in ignition_timing_output_calculator (0xA9ED). Controls how many calls are required before allowing a +1 timing increment in slow ramp mode.</p>
+<h3 id="0x4440-retard-gear-offset-base">0x4440 — retard_gear_offset_base</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4440</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base offset subtracted from the gear position extract in ignition_timing_retard_controller (0xD90A). Gear value is ($3044 &gt;&gt; 4) &amp; 0x0F. Result stored to $327B as the acceleration threshold for retard application.</p>
+<h3 id="0x4441-retard-decay-multiplier">0x4441 — retard_decay_multiplier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4441</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Decay multiplier for peak acceleration in ignition_timing_retard_controller (0xD90A). Peak $327A is multiplied by this value (MPY), then shifted left by 8 (JSR $6311) to produce a decay cap for the retard magnitude in phase 2.</p>
+<h3 id="0x4442-retard-time-gate-threshold">0x4442 — retard_time_gate_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4442</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Time gate threshold for ignition_timing_retard_controller (0xD90A). Compared against counters $322D and $31FD to determine whether enough time has elapsed since retard activation before allowing retard computation.</p>
+<h3 id="0x4443-retard-pressure-delta-threshold">0x4443 — retard_pressure_delta_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4443</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>signed byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Pressure delta threshold used by knock_feedback_delta_monitor (0xDAEE). When the pressure difference at $327C exceeds this threshold (and retard is not active), sets $3276 bit 5 to trigger timing retard.</p>
+<h3 id="0x4444-retard-accel-delta-threshold">0x4444 — retard_accel_delta_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4444</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>signed byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Acceleration delta threshold used by knock_feedback_delta_monitor (0xDAEE). When the RPM acceleration difference at $326E exceeds this threshold (and retard is not active), sets $3276 bit 5 to trigger timing retard.</p>
+<h3 id="0x4445-retard-cold-coolant-threshold">0x4445 — retard_cold_coolant_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4445</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Cold coolant temperature threshold for ignition_timing_retard_controller (0xD90A). When $3092 is below this value, retard magnitude ($3273) is divided by 4 (two right shifts). Reduces retard in cold conditions.</p>
+<h3 id="0x4446-retard-warm-coolant-threshold">0x4446 — retard_warm_coolant_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4446</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Warm coolant temperature threshold for ignition_timing_retard_controller (0xD90A). When $3092 is above this value, full retard magnitude is applied. Between this and $4445, retard is halved.</p>
+<h3 id="0x444b-retard-high-airflow-threshold">0x444B — retard_high_airflow_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x444B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>High airflow threshold for ignition_timing_retard_controller (0xD90A). When $306F &gt;= this value, retard magnitude ($3273) is halved. Prevents excessive retard at high load.</p>
+<h3 id="0x444c-retard-base-subtraction">0x444C — retard_base_subtraction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x444C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base subtraction applied to both $3278 and $3273 in ignition_timing_retard_controller (0xD90A) when airflow is below the high threshold ($444B). Provides a baseline reduction.</p>
+<h3 id="0x444d-retard-extra-subtraction">0x444D — retard_extra_subtraction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x444D</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Additional subtraction applied only to $3273 (retard magnitude) in ignition_timing_retard_controller (0xD90A) after $444C base subtraction.</p>
+<h3 id="0x444e-retard-speed-window-low">0x444E — retard_speed_window_low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x444E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower bound for speed window check in ignition_timing_retard_controller (0xD90A). $309B (speed_value) must be &gt;= this value for the window gate to pass.</p>
+<h3 id="0x444f-retard-speed-window-high">0x444F — retard_speed_window_high</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x444F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper bound for speed window check in ignition_timing_retard_controller (0xD90A). $309B (speed_value) must be &lt; this value for the window gate to pass.</p>
+<h3 id="0x4450-retard-airflow-window-low">0x4450 — retard_airflow_window_low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4450</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower bound for airflow window check in ignition_timing_retard_controller (0xD90A). $306F (airflow_load) must be &gt;= this value.</p>
+<h3 id="0x4451-retard-airflow-window-high">0x4451 — retard_airflow_window_high</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4451</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper bound for airflow window check in ignition_timing_retard_controller (0xD90A). $306F (airflow_load) must be &lt; this value.</p>
+<h3 id="0x4452-retard-learned-correction-max">0x4452 — retard_learned_correction_max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4452</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum learned correction value for window gate in ignition_timing_retard_controller (0xD90A). $3300 (learned_correction_1) must be &lt;= this value for the window check to pass.</p>
+<h3 id="0x4d87-af-ratio-threshold">0x4D87 — af_ratio_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D87</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Load threshold for target A/F ratio selection in target_af_ratio (0xACBB). Engine load (0x313C) is shifted right 5 bits and compared against this value. Below threshold selects the default ratio from 0x4D88; at or above selects the fixed rich value 0x20.</p>
+<h3 id="0x4d88-af-ratio-default">0x4D88 — af_ratio_default</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D88</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default air-fuel ratio value for low-load conditions. Used by target_af_ratio (0xACBB) when the scaled engine load is below the threshold at 0x4D87. The value (with possible bit 7 modification from 0x31CC) is written to 0x32C8.</p>
+<h3 id="0x46fc-airflow-rate-limit-normal">0x46FC — airflow_rate_limit_normal</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46FC</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Airflow rate limit for normal operation. Loaded by airflow_rate_calc (0xAD1E) as the default rate bounding value. Selected when $305A bit 4 is set.</p>
+<h3 id="0x46fe-airflow-rate-limit-alt">0x46FE — airflow_rate_limit_alt</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46FE</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Alternate airflow rate limit. Loaded by airflow_rate_calc (0xAD1E) when $305A bit 4 is clear. Typically a different bounding value for startup or alternate operating conditions.</p>
+<h3 id="0x46f9-airflow-scale-factor">0x46F9 — airflow_scale_factor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46F9</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Scaling factor for airflow rate RPM multiplication. Used by airflow_rate_calc (0xAD1E): zero-extended to 16-bit, multiplied by 4 (ASL x2), then used as MPY operand against the RPM-derived value ($320A).</p>
+<h3 id="0x46fa-airflow-rate-default">0x46FA — airflow_rate_default</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x46FA</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default airflow rate value for initialization. Loaded by airflow_rate_calc (0xAD1E) on first call (when $3025 bit 2 is not yet set) to initialize $321C, $321E, and $3220.</p>
+<h3 id="0x4402-knock-threshold-low">0x4402 — knock_threshold_low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4402</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock sensor lower threshold for cranking detection. Used by stall_cranking_detector (0xAE20): if the knock sensor reading ($306E) is below this value, the engine may be in a cranking state (low RPM = low knock sensor noise floor).</p>
+<h3 id="0x4404-knock-threshold-high">0x4404 — knock_threshold_high</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4404</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Knock sensor upper threshold for boost startup table selection. Used by stall_cranking_detector (0xAE20) to index into the $43F8 table: readings above this threshold select the +1 table entry (higher startup enrichment).</p>
+<h3 id="0x4405-stall-count-threshold">0x4405 — stall_count_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4405</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum stall counter value required before cranking is detected. Used by stall_cranking_detector (0xAE20): the stall counter ($312C) must reach this threshold while the knock sensor is below $4402 before the cranking-active flag is set.</p>
+<h3 id="0x43f6-cranking-dwell-init">0x43F6 — cranking_dwell_init</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x43F6</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Initial dwell value loaded during cranking initialization. Written to $31E1 by cranking_init (0xAE9E) when the engine transitions from stall to cranking.</p>
+<h3 id="0x43f8-boost-startup-table">0x43F8 — boost_startup_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x43F8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes (4 x 8-bit entries)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte array</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Boost startup multiplier table indexed by knock level and operating condition. Used by stall_cranking_detector (0xAE20). Index is computed as: +1 if knock ($306E) &gt; $4404, +2 if $302A bit 3 set. The selected entry is multiplied by $312F (correction factor) and divided by 4, then added to $3056 to produce the boost startup value $3130.</p>
+<h3 id="0x42ed-throttle-rate-threshold">0x42ED — throttle_rate_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42ED</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum allowed throttle rate-of-change for spike rejection. Used by adc_dual_capture (0xAF02): if the absolute difference between the new throttle value and the oldest buffer entry ($3044) exceeds this threshold, the reading is flagged as a spike and rejected (only when engine is warm and vehicle is moving).</p>
+<h3 id="0x4025-throttle-rate-stall-threshold">0x4025 — throttle_rate_stall_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4025</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum throttle rate counter ($314F) value for the non-stall path in throttle_rate_processor (0xAFF5). If $314F &lt; this value, the function zeros the correction output and exits early.</p>
+<h3 id="0x4029-throttle-delta-safety-max">0x4029 — throttle_delta_safety_max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4029</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum allowed throttle position delta between successive samples. Used by throttle_rate_processor (0xAFF5): if |$3044 - $3046| exceeds this threshold, the correction output ($3094) is zeroed as a safety measure to prevent spurious enrichment from sensor noise.</p>
+<h3 id="0x4070-accel-history-offset">0x4070 — accel_history_offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4070</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset into the throttle position history buffer for acceleration rate detection. Used by throttle_rate_processor (0xAFF5) to select which historical sample to subtract from the current throttle position. Added to base address $3044 to form the absolute read address.</p>
+<h3 id="0x4071-decel-history-offset">0x4071 — decel_history_offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4071</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset into the throttle position history buffer for deceleration rate detection. Used by throttle_rate_processor (0xAFF5). Similar to $4070 but for the deceleration path.</p>
+<h3 id="0x4072-accel-band-threshold-1">0x4072 — accel_band_threshold_1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4072</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>First acceleration band boundary. Used by throttle_rate_processor (0xAFF5) in the cascade classifier. If throttle delta &gt;= this value, band is 0 (strongest enrichment).</p>
+<h3 id="0x4073-accel-band-threshold-2">0x4073 — accel_band_threshold_2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4073</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Second acceleration band boundary. If throttle delta &gt;= this but &lt; $4072, band is 1.</p>
+<h3 id="0x4074-accel-band-threshold-3">0x4074 — accel_band_threshold_3</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4074</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Third acceleration band boundary. If throttle delta &gt;= this but &lt; $4073, band is 2. Below this, band is 3 (weakest acceleration enrichment).</p>
+<h3 id="0x4075-accel-rate-minimum">0x4075 — accel_rate_minimum</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4075</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum acceleration rate threshold. Used by throttle_rate_processor (0xAFF5). Throttle delta must exceed this value to enter the acceleration enrichment path; below it, the function switches to the deceleration path.</p>
+<h3 id="0x4076-decel-band-threshold">0x4076 — decel_band_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4076</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Deceleration band boundary. Used by throttle_rate_processor (0xAFF5). If deceleration delta &gt;= this value, band is 4; otherwise band is 5.</p>
+<h3 id="0x4077-decel-rate-minimum">0x4077 — decel_rate_minimum</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4077</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum deceleration rate threshold. Deceleration delta must exceed this value to enter the deceleration enleanment path. Below this threshold, the function jumps to the alternative deceleration path using $313C.</p>
+<h3 id="0x4220-accel-decel-enrichment-map">0x4220 — Accel/Decel Enrichment Map</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4220</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>64 bytes (8×8)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>u8, 8 rows × 8 columns</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Acceleration/deceleration enrichment correction map. Used by Throttle Rate-of-Change Processor (0xAFF5). Rows are coolant temperature zones (0–7, selected via Temp Zone Index $30C7 which is a multiple of 8 from Coolant Temp Preprocessing at 0x7E10). Columns are throttle rate-of-change buckets: 0–3 for acceleration (computed from throttle delta against thresholds at $4072–$4074), 4–5 for deceleration, 6–7 are 0xFF sentinels. Result stored to $3009 and used in subsequent fuel enrichment calculation.</p>
+<p>Values decrease with higher temperature (less enrichment when warm) and higher throttle rate bucket. Typical range: 14–46 for accel columns, 0 for decel columns.</p>
+<h3 id="0x4260-enrichment-base-by-temp-mode-a">0x4260 — Enrichment Base by Temp (Mode A)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4260</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes (8 entries)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>u16 little-endian, 1×8</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base enrichment value per coolant temperature zone. Selected by Throttle Rate-of-Change Processor (0xAFF5) when Mode Select Flags ($305C) bit 2 is set. Indexed by Temp Zone Index ($30C7) &gt;&gt; 2, producing byte offsets 0, 2, 4, …, 14 for 8 u16 entries. Result stored to Enrichment Base Temp ($30CC).</p>
+<p>Values: 672, 640, 608, 576, 448, 352, 256, 256 — decreasing with warmer temperature zones.</p>
+<h3 id="0x4270-enrichment-base-by-temp-mode-b">0x4270 — Enrichment Base by Temp (Mode B)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4270</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16 bytes (8 entries)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>u16 little-endian, 1×8</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default base enrichment value per coolant temperature zone. Selected by Throttle Rate-of-Change Processor (0xAFF5) when Mode Select Flags ($305C) bit 2 is clear. Same indexing as Mode A table at 0x4260. Result stored to Enrichment Base Temp ($30CC).</p>
+<p>Values: 640, 640, 608, 564, 484, 372, 316, 310 — similar curve to Mode A but slightly lower at cold temps and higher at warm temps.</p>
+<h3 id="0x4350-decel-correction-table">0x4350 — decel_correction_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4350</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes (8-entry table)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte array</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Deceleration correction lookup table. Used by throttle_rate_processor (0xAFF5) via 1D interpolation (JSR $6000) with $313C as input. Result stored to $3182.</p>
+<h3 id="0x4380-coolant-correction-table">0x4380 — coolant_correction_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4380</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8 bytes (8-entry table)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte array</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant temperature correction table for throttle enrichment. Used by throttle_rate_processor (0xAFF5) via 1D interpolation (JSR $6000) with $306F as input. Result stored to $300B and multiplied into the fuel correction.</p>
+<h3 id="0x4d70-af-mode-band-threshold">0x4D70 — af_mode_band_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D70</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Rate band threshold for A/F ratio mode activation. Used by throttle_rate_processor (0xAFF5). If the computed rate band &lt;= this value, ROM $4D71 is loaded into $31CC to modify the target A/F ratio.</p>
+<h3 id="0x4d71-af-mode-value">0x4D71 — af_mode_value</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D71</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Value written to $31CC (af_mode_flag) when the throttle rate band is at or below the $4D70 threshold. Loaded by throttle_rate_processor (0xAFF5).</p>
+<h3 id="0xb1b0-adc-channel-schedule-table">0xB1B0 — adc_channel_schedule_table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB1B0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte array</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>ADC channel rotation schedule table. Read by adc_channel_scheduler (0xB15E). Contains {0x05, 0x02, 0x80, 0x43}. Indexed by lowest set bit of the rotation counter ($3145). Values 0x05 and 0x02 are recognized ADC channels; 0x80 and 0x43 are special mode values.</p>
+<h3 id="0x486b-load-scaling-offset">0x486B — load_scaling_offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x486B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset subtracted from the scaled ADC load reading in engine_load_calculator (0xB2F7). The raw ADC value is multiplied by 0x6AA8 and the upper word extracted; this offset is then subtracted with a zero floor clamp.</p>
+<h3 id="0x4826-load-smoothing-iterations">0x4826 — load_smoothing_iterations</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4826</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Number of exponential averaging passes for the engine load smoothing filter. Used by engine_load_calculator (0xB2F7). Each pass computes (new + old) / 2, so B passes give the new sample a weight of 1/2^B.</p>
+<h3 id="0x4874-airflow-hysteresis-clear-threshold">0x4874 — Airflow Hysteresis Clear Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4874</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Clear threshold for airflow_load hysteresis comparator in pre_speed_control_gate (0xC675). Clears 0x323F bit 1 when airflow_load falls below this value.</p>
+<h3 id="0x4875-airflow-hysteresis-set-threshold">0x4875 — Airflow Hysteresis Set Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4875</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Set threshold for airflow_load hysteresis comparator in pre_speed_control_gate (0xC675). Sets 0x323F bit 1 when airflow_load reaches this value.</p>
+<h3 id="0x4876-throttle-hysteresis-clear-threshold">0x4876 — Throttle Hysteresis Clear Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4876</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Clear threshold for throttle_position hysteresis comparator in pre_speed_control_gate (0xC675). Clears 0x323F bit 2 when throttle falls below.</p>
+<h3 id="0x4877-throttle-hysteresis-set-threshold">0x4877 — Throttle Hysteresis Set Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4877</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Set threshold for throttle_position hysteresis comparator in pre_speed_control_gate (0xC675). Sets 0x323F bit 2 when throttle reaches this value.</p>
+<h3 id="0x487c-limiter-hysteresis-clear-threshold">0x487C — Limiter Hysteresis Clear Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x487C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Clear threshold for limiter_input hysteresis comparators (channels 3 and 4) in pre_speed_control_gate (0xC675). Shared by both 0x32E0 and 0x3314 comparators.</p>
+<h3 id="0x487e-limiter-hysteresis-set-threshold">0x487E — Limiter Hysteresis Set Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x487E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Set threshold for limiter_input hysteresis comparators (channels 3 and 4) in pre_speed_control_gate (0xC675). Shared by both 0x32E0 and 0x3314 comparators.</p>
+<h3 id="0x4310-coolant-correction-table">0x4310 — Coolant Correction Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4310</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>variable</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>2D lookup table mapping coolant_temp (0x3093) to a correction base value. Used by coolant_fuel_correction (0xC9DD) via graph_lookup_2d (0x6000). Result high byte shifted right 1 produces coolant_correction_base (0x3124).</p>
+<h3 id="0x403b-coolant-factor-threshold-1">0x403B — Coolant Factor Threshold 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x403B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>First coolant_temp_raw comparison threshold in coolant_fuel_correction (0xC9DD). Below this: use correction factor from ROM[0x403C].</p>
+<h3 id="0x4037-coolant-factor-threshold-2">0x4037 — Coolant Factor Threshold 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4037</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Second coolant_temp_raw comparison threshold in coolant_fuel_correction (0xC9DD). Above this: use correction factor from ROM[0x4030].</p>
+<h3 id="0x403c-coolant-factor-low">0x403C — Coolant Factor Low</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x403C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Correction factor for cold engine state in coolant_fuel_correction (0xC9DD). Selected when coolant_temp_raw &lt; ROM[0x403B].</p>
+<h3 id="0x403e-coolant-factor-mid">0x403E — Coolant Factor Mid</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x403E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Correction factor for warm engine state in coolant_fuel_correction (0xC9DD). Selected when coolant_temp_raw is between thresholds 0x403B and 0x4037.</p>
+<h3 id="0x4030-coolant-factor-high">0x4030 — Coolant Factor High</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4030</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Correction factor for hot engine state in coolant_fuel_correction (0xC9DD). Selected when coolant_temp_raw &gt;= ROM[0x4037].</p>
+<h3 id="0x403f-correction-scale-multiplier">0x403F — Correction Scale Multiplier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x403F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Scale multiplier applied to coolant_correction_base in coolant_fuel_correction (0xC9DD) when system_control_flags bit 4 is set. High byte of multiplication result used.</p>
+<h3 id="0x43e0-airflow-to-throttle-table">0x43E0 — Airflow to Throttle Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x43E0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>variable</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>2D lookup table mapping airflow_load (0x306F) to an expected throttle threshold. Used by load_threshold_controller (0xCA37) stage 1 via graph_lookup_2d (0x6000). Result compared against throttle_position (0x3044) with hysteresis.</p>
+<h3 id="0x4053-throttle-hysteresis-offset">0x4053 — Throttle Hysteresis Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4053</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Hysteresis offset subtracted from the airflow-to-throttle lookup result in load_threshold_controller (0xCA37) stage 1 clear path. Prevents oscillation around the throttle threshold.</p>
+<h3 id="0x43a0-airflow-to-load-table">0x43A0 — Airflow to Load Table</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x43A0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>variable</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>2D lookup table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>2D lookup table mapping airflow_load (0x306F) to a load threshold value. Used by load_threshold_controller (0xCA37) stage 2 via graph_lookup_2d (0x6000). Result scaled and compared against engine_load (0x313C).</p>
+<h3 id="0x4042-load-offset-correction">0x4042 — Load Offset Correction</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4042</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset added to scaled airflow-to-load lookup result in load_threshold_controller (0xCA37) stage 2 when 0x3023 bit 2 is clear (entering condition). Saturates to 0xFFFF.</p>
+<h3 id="0x4058-speed-tier-threshold-1">0x4058 — Speed Tier Threshold 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4058</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>First engine_run_counter breakpoint for 4-tier speed classification in load_threshold_controller (0xCA37) stage 3.</p>
+<h3 id="0x405a-speed-tier-threshold-2">0x405A — Speed Tier Threshold 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x405A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Second engine_run_counter breakpoint for 4-tier speed classification in load_threshold_controller (0xCA37) stage 3.</p>
+<h3 id="0x405c-speed-tier-threshold-3">0x405C — Speed Tier Threshold 3</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x405C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Third engine_run_counter breakpoint for 4-tier speed classification in load_threshold_controller (0xCA37) stage 3.</p>
+<h3 id="0x48a8-speed-tier-ramp-limits">0x48A8 — Speed Tier Ramp Limits</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x48A8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>4 bytes</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>4-entry byte table</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Counter comparison thresholds indexed by speed tier (0–3) in load_threshold_controller (0xCA37). load_ramp_counter (0x30D1) is compared against the tier-selected entry to determine ramp enable.</p>
+<h3 id="0x4d26-speed-warmup-limit">0x4D26 — Speed Warmup Limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D26</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Warmup counter threshold for vehicle_speed_processor (0xCBA1). speed_warmup_counter (0x3112) must reach this value before convergence logic engages.</p>
+<h3 id="0x4d27-speed-prescaler-reload">0x4D27 — Speed Prescaler Reload</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D27</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Reload value for the convergence rate prescaler in vehicle_speed_processor (0xCBA1). Controls how often the speed bounds are narrowed.</p>
+<h3 id="0x4d28-speed-output-prescaler-reload">0x4D28 — Speed Output Prescaler Reload</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D28</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Reload value for the output computation prescaler in vehicle_speed_processor (0xCBA1). Controls how often the scaled speed outputs are recomputed.</p>
+<h3 id="0x4d2a-speed-output-max">0x4D2A — Speed Output Max</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D2A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper clamp for both scaled speed outputs in vehicle_speed_processor (0xCBA1).</p>
+<h3 id="0x4d2c-speed-output-min">0x4D2C — Speed Output Min</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D2C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower clamp for both scaled speed outputs in vehicle_speed_processor (0xCBA1).</p>
+<h3 id="0x4e3f-speed-scale-factor-1">0x4E3F — Speed Scale Factor 1</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4E3F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>First interpolation scale factor in vehicle_speed_processor (0xCBA1). High byte extracted and multiplied by speed_range to produce primary speed output.</p>
+<h3 id="0x4e40-speed-scale-factor-2">0x4E40 — Speed Scale Factor 2</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4E40</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Second interpolation scale factor in vehicle_speed_processor (0xCBA1). High byte extracted and multiplied by speed_range to produce secondary speed output.</p>
+<h3 id="0x4e45-speed-output-offset">0x4E45 — Speed Output Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4E45</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Additive offset applied to primary speed output (0x310E) in vehicle_speed_processor (0xCBA1) before comparison with secondary output.</p>
+<h3 id="0x4630-o2-heater-timer-upper">0x4630 — O2 Heater Timer Upper</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4630</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x14 (20)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper bound for O2 heater warm-up timing. Used by o2_heater_control (0xC54A). Elapsed time computed as ROM[$4630] - ROM[$4631] = 10.</p>
+<h3 id="0x4631-o2-heater-timer-lower">0x4631 — O2 Heater Timer Lower</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4631</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0A (10)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower bound / threshold for O2 heater warm-up timing. Used by o2_heater_control (0xC54A). Also compared against the second threshold descriptor (0x30D6).</p>
+<h3 id="0x4886-fan-base-rpm-threshold">0x4886 — Fan Base RPM Threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4886</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x64 (100)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base RPM threshold for coolant fan speed controller (0xC5A4). Loaded into adaptive_base_value (0x357A) when RPM is below the minimum active range. Combined with 0x4888 to form the hysteresis band.</p>
+<h3 id="0x4888-fan-rpm-threshold-offset">0x4888 — Fan RPM Threshold Offset</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4888</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x1E (30)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Offset added to base threshold (0x4886) to form the upper RPM threshold for coolant fan speed controller (0xC5A4). Creates a hysteresis band of 100–130.</p>
+<h3 id="0x488a-fan-output-increment-limit">0x488A — Fan Output Increment Limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x488A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0A (10)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum value for fan speed output counter before reset. Used by coolant_fan_speed_controller (0xC5A4) to limit the output accumulation rate.</p>
+<h3 id="0x488b-fan-coolant-temp-qualifier">0x488B — Fan Coolant Temp Qualifier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x488B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x82 (130)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Coolant temperature threshold for fan speed control secondary qualifier. coolant_temp_raw ($3092) must be &gt;= this value for the threshold adjustment path to activate.</p>
+<h3 id="0x488c-fan-knock-sensor-upper">0x488C — Fan Knock Sensor Upper</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x488C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x14 (20)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper bound for knock_sensor ($306E) in the fan speed controller secondary qualifier. knock_sensor must be &lt; this value for the threshold adjustment to proceed.</p>
+<h3 id="0x488d-fan-knock-sensor-minimum">0x488D — Fan Knock Sensor Minimum</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x488D</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x0A (10)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum knock_sensor ($306E) value for coolant fan speed controller (0xC5A4) to operate. Below this threshold, the fan output is cleared to 0.</p>
+<h3 id="0x4d00-stall-recovery-default-a">0x4D00 — Stall Recovery Default A</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D00</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x05</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default value loaded into stall_recovery_counter_a (0x30D9) by engine_stall_recovery (0xC637) when the engine is not running. Also used as abort_delay timer by turbo_transition_controller.</p>
+<h3 id="0x4d01-stall-recovery-default-b">0x4D01 — Stall Recovery Default B</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4D01</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Value</td>
+<td>0x28 (40)</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Default value loaded into stall_recovery_counter_b (0x30DA) by engine_stall_recovery (0xC637) when the engine is not running. Also used as abort_delay timer by turbo_transition_controller.</p>
+<h3 id="knock-feedback-thresholds">Knock Feedback Thresholds</h3>
+<h3 id="0x4443-knock-delta-threshold-a">0x4443 — knock_delta_threshold_a</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4443</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum allowed delta for knock feedback path A in knock_feedback_delta_monitor (0xDAEE). When the difference between current and previous knock history values exceeds this threshold, <code>$3276</code> bit 5 (rapid knock change) is set.</p>
+<h3 id="0x4444-knock-delta-threshold-b">0x4444 — knock_delta_threshold_b</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4444</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum allowed delta for knock feedback path B in knock_feedback_delta_monitor (0xDAEE). When the difference between previous and current knock history values exceeds this threshold, <code>$3276</code> bit 5 (rapid knock change) is set.</p>
+<h3 id="timing-recovery-window">Timing Recovery Window</h3>
+<h3 id="0x4470-recovery-min-coolant">0x4470 — recovery_min_coolant</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4470</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum coolant temperature (<code>$3092</code>) required for ignition timing slow recovery to activate. Used by ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4471-recovery-min-speed">0x4471 — recovery_min_speed</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4471</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum vehicle speed (<code>$3071</code>) for timing recovery window. Used by ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4472-recovery-max-speed">0x4472 — recovery_max_speed</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4472</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum vehicle speed (<code>$3071</code>) for timing recovery window. Used by ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4473-recovery-min-airflow">0x4473 — recovery_min_airflow</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4473</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Minimum airflow load (<code>$306F</code>) for timing recovery window. Used by ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4474-recovery-max-airflow">0x4474 — recovery_max_airflow</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4474</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum airflow load (<code>$306F</code>) for timing recovery window. Used by ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4475-recovery-max-throttle">0x4475 — recovery_max_throttle</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4475</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum throttle position (<code>$3044</code>) for timing recovery. Used by ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4476-recovery-timing-base">0x4476 — recovery_timing_base</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4476</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Base timing value loaded into <code>$309A</code> when timing recovery is initiated by ignition_timing_recovery_gate (0xDB51). Provides a known starting point for the slow ramp advance.</p>
+<h3 id="0x4477-recovery-learned-limit">0x4477 — recovery_learned_limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4477</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum value of learned_correction_2 (<code>$3301</code>) allowed for recovery entry in ignition_timing_recovery_gate (0xDB51).</p>
+<h3 id="0x4478-slow-ramp-enable-threshold">0x4478 — slow_ramp_enable_threshold</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4478</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Threshold for learned_correction_1 (<code>$3300</code>) in ignition_timing_recovery_gate (0xDB51). If <code>$3300</code> &lt; this value, <code>$3276</code> bit 7 is set to enable slow ramp timing recovery.</p>
+<h3 id="dashpot-parameters">Dashpot Parameters</h3>
+<h3 id="0x42d0-dashpot-timer-init">0x42D0 — dashpot_timer_init</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42D0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Initial countdown value loaded into dashpot_timer (<code>$32C3</code>) by idle_dashpot_controller (0xDBBB) when the idle switch falling edge is detected.</p>
+<h3 id="0x42d1-dashpot-duty-value">0x42D1 — dashpot_duty_value</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42D1</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Duty cycle override value returned by idle_dashpot_controller (0xDBBB) while the dashpot timer is active.</p>
+<h3 id="0x42d2-dashpot-max-speed">0x42D2 — dashpot_max_speed</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42D2</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>8-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned byte</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Maximum vehicle speed for idle dashpot activation. Vehicle speed (<code>$3071</code>) must be below this value.</p>
+<h3 id="0x42d3-dashpot-max-rpm">0x42D3 — dashpot_max_rpm</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42D3</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Upper RPM bound for idle dashpot activation. RPM (<code>$3062</code>) must be below this value.</p>
+<h3 id="0x42d5-dashpot-min-rpm">0x42D5 — dashpot_min_rpm</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x42D5</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>16-bit</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>unsigned word</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Lower RPM bound for idle dashpot activation. RPM (<code>$3062</code>) must be above this value (with equality excluded).</p>
+<h3 id="serial-protocol">Serial Protocol</h3>
+<h3 id="0x4eb0-serial-end-response">0x4EB0 — serial_end_response</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x4EB0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>3 bytes (0x4EB0–0x4EB2)</td>
+</tr>
+<tr>
+<td>Format</td>
+<td>3 raw bytes</td>
+</tr>
+<tr>
+<td>Source</td>
+<td>bd5a</td>
+</tr>
+</tbody></table>
+<p>Fixed 3-byte response sent by serial_diagnostic_handler_binary (0xDC06) when an end-session command (0x00) is received. Loaded into the transmit buffer at <code>$315C</code>–<code>$315E</code>.</p>
+
+<nav class="nav-footer"><a class="nav-prev" href="index.html">Reference Home</a><a class="nav-next" href="functions/index.html">Function Index</a></nav>
+</body>
+</html>

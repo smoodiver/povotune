@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6CE4 — Intake Air Temp Sensor Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6CE4 Intake Air Temp Sensor Check</span></nav>
+<h3 id="0x6ce4-intake-air-temp-sensor-check">0x6CE4 — Intake Air Temp Sensor Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6CE4</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>49 bytes (0x6CE4–0x6D14)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (health_check_dispatcher 0x6B14, slot 6)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Checks the intake air temperature sensor (ADC reading at 0x303C) for open/short circuit conditions. Compares the 16-bit ADC value against low threshold 0x0014 (shorted/grounded) and high threshold 0x03D4 (open circuit). If within the valid range, the fault counter at 0x317F is cleared and the fault flag is removed. If out of range, the counter is incremented via saturating increment (0x633D); when it reaches 4, the fault flag 0x332F bit 4 is set.</p>
+<p>An additional sub-check distinguishes low vs high out-of-range: values at or below 0x0014 set 0x31CD bit 5 (sensor shorted), while values in the normal-low range clear that bit.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>6CE4  AE 3C 30       LDX $303C           ; Load intake air temp ADC (16-bit)
+6CE7  E0 14 00       CPX #$0014          ; Compare against low threshold
+6CEA  F0 1A          BEQ $6D06           ; If equal -&gt; shorted path
+6CEC  90 18          BCC $6D06           ; If below -&gt; shorted path
+6CEE  1C CD 31 20    CLB $31CD,#$20      ; Clear sensor-shorted flag (bit 5)
+6CF2  E0 D4 03       CPX #$03D4          ; Compare against high threshold (open circuit)
+6CF5  90 15          BCC $6D0C           ; If below -&gt; value in range, clear fault
+6CF7  A2 7F 31       LDX #$317F          ; Load counter address
+6CFA  20 3D 63       JSR $633D           ; Saturating increment counter
+6CFD  C9 04          CMP #$04            ; Trip threshold = 4
+6CFF  90 04          BCC $6D05           ; Not yet tripped -&gt; return
+6D01  0C 2F 33 10    SEB $332F,#$10      ; Set fault: 0x332F bit 4 = intake air temp fault
+6D05  60             RTS
+6D06  0C CD 31 20    SEB $31CD,#$20      ; Set sensor-shorted flag (bit 5)
+6D0A  80 EB          BRA $6CF7           ; Jump to increment counter path
+6D0C  9C 7F 31 00    LDM $317F,#$00      ; Clear fault counter
+6D10  1C 2F 33 10    CLB $332F,#$10      ; Clear fault flag
+6D14  60             RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x303C (16-bit): intake air temperature ADC reading</li>
+<li>0x317F: fault debounce counter</li>
+<li>0x31CD: sensor status flags</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x332F bit 4: intake air temp sensor fault (set when confirmed)</li>
+<li>0x31CD bit 5: sensor shorted indicator</li>
+<li>0x317F: updated fault counter</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x303C</td>
+<td>ad_initial_ch1</td>
+<td>Intake air temp ADC value (16-bit)</td>
+</tr>
+<tr>
+<td>0x317F</td>
+<td>iat_fault_counter</td>
+<td>Debounce counter for fault detection</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x317F</td>
+<td>iat_fault_counter</td>
+<td>Incremented on fault, cleared on valid reading</td>
+</tr>
+<tr>
+<td>0x31CD</td>
+<td>sensor_status_flags</td>
+<td>Bit 5: sensor shorted indicator</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>temp_override_flags</td>
+<td>Bit 4: intake air temp sensor fault</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<p>None (thresholds are immediate operands: 0x0014 and 0x03D4).</p>
+<h4 id="callees">Callees</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x633D</td>
+<td>saturating_increment</td>
+<td>Debounce counter increment</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6C76.html">0x6C76 TPS/Throttle Sensor Check</a><a class="nav-next" href="0x6D15.html">0x6D15 Knock Sensor Debounce Check</a></nav>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8185 — Ignition Output Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8185 Ignition Output Controller</span></nav>
+<h3 id="0x8185-ignition-output-controller">0x8185 — Ignition Output Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8185</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>337 bytes (0x8185–0x82D5)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>53</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (main loop at 0x680C)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Top-level ignition controller that selects between three operating modes (cranking, speed-limited, normal), computes the coil dwell start angle, and manages knock learning resets. In normal mode, calls ignition_timing (0x82D6) for spark angle and knock_retard_calc (0x85DB) for the knock-proportional dwell reduction, then computes: <code>dwell_start = spark_angle + dwell_duration(coolant_temp) - knock_reduction - corrections</code>. The result at 0x304F tells the hardware timer when to begin charging the coilpack relative to TDC. Also responsible for clearing the knock learned values table (0x3630–0x366F) when zone conditions require a reset.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x31A1 bit 1: engine running flag — if clear, use cranking mode</li>
+<li>0x305A bit 4: speed limiting active — if set, use speed-limited mode</li>
+<li>0x302A bit 3: speed limit enforced (from speed_control)</li>
+<li>0x3093: coolant temperature (processed AD value)</li>
+<li>0x31BB: final ignition timing angle (from ignition_timing)</li>
+<li>0x330F: knock-proportional reduction (from knock_retard_calc)</li>
+<li>0x3518: correction term (capped at 5)</li>
+<li>0x3326: correction term</li>
+<li>0x31B6: raw timing value (used in bypass mode)</li>
+<li>0x3033 bit 3: knock learning reset trigger</li>
+<li>ROM[0x448F]: bypass flag — if 0xFF, skip normal calculation and use raw 0x31B6</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x304F: <strong>dwell start angle</strong> — when coilpack charging begins relative to TDC</li>
+<li>IO 0x019C: dwell start angle mirror (diagnostic output)</li>
+<li>0x309A: dwell value copy (set during cranking/speed-limit modes)</li>
+<li>0x3021 bit 7: cranking/abnormal mode flag</li>
+<li>0x3500: copy of 0x3033 (zone control flags, under interrupt protection)</li>
+<li>0x3501: copy of 0x3034 (ignition control flags, under interrupt protection)</li>
+<li>0x3630–0x366F: knock learned values table (zeroed when 0x3033 bit 3 set)</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x82D6 — ignition_timing: computes spark angle → 0x31BB (normal mode only)</li>
+<li>0x85DB — knock_retard_calc: computes knock-proportional reduction → 0x330F (normal mode only)</li>
+<li>0x6000 — graph_lookup_2d: called 1x in normal mode (coolant temp → dwell), 3x in speed-limited mode</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x44F0 (coolant_temp_to_dwell): 16-entry table, values 20 to 13, more dwell when cold</li>
+<li>0x4485 (fixed_dwell_speed_cut): fixed dwell for speed-limited + speed-cut-active mode</li>
+<li>0x448A (max_dwell_speed_limited): max dwell clamp in speed-limited mode</li>
+<li>0x448B (max_dwell_normal): max dwell clamp in normal mode</li>
+<li>0x448D (coolant_temp_threshold_dwell): coolant temp threshold for speed-limited dwell</li>
+<li>0x448C (vehicle_speed_threshold_dwell): vehicle speed threshold for speed-limited dwell</li>
+<li>0x448F (timing_bypass_flag): 0xFF = use raw 0x31B6 value</li>
+<li>0x44A0 (rpm_to_dwell_speed_limited): RPM-to-dwell table in speed-limited mode</li>
+<li>0x4490 (load_to_correction_speed_limited): load-to-correction table in speed-limited mode</li>
+<li>0x4B90 (coolant_temp_to_dwell_speed_limited): coolant-temp-to-dwell table in speed-limited mode</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8100.html">0x8100 Adj Map Condition Checker</a><a class="nav-next" href="0x82D6.html">0x82D6 Ignition Timing</a></nav>
+</body>
+</html>

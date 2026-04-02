@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB728 — Base Fuel Pulse Width Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB728 Base Fuel Pulse Width Calculator</span></nav>
+<h3 id="0xb728-base-fuel-pulse-width-calculator">0xB728 — Base Fuel Pulse Width Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB728</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>160 bytes (0xB728–0xB7C7)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>19</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 via 0xAB56)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>JSR 0x6307 (shift left B:A by 2), JSR 0x6304 (shift left B:A by 3)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes the base fuel injection pulse width by multiplying the airflow measurement by a volumetric efficiency scaling factor. The function has two paths depending on whether a 16-bit extended airflow value is available (0x320C != 0): a simple 8-bit path and a 16-bit extended-precision path. Both paths multiply the airflow value by ROM constant 0x400A (0x9353), apply a correction divisor selected from either 0x301A or 0x3023 (gated by 0x332F bit 2), and store the result to 0x31D6 (base injection pulse width). The result feeds directly into the fuel correction blender at 0xB7C8.</p>
+<h4 id="flow-8-bit-path-0x320c-0">Flow — 8-Bit Path (0x320C == 0)</h4>
+<ol>
+<li>Reads 0x320C with interrupts disabled (SEI). If zero, takes the simple path.</li>
+<li>Reads 0x320A (8-bit airflow measurement) with CLI to re-enable interrupts.</li>
+<li>Multiplies by ROM 0x400A (0x9353) via MPY, XAB to get result in B.</li>
+<li>Selects divisor: if 0x332F bit 2 set, uses <code>0x3023 &gt;&gt; 1</code> (high byte shifted right); otherwise uses 0x301A directly. Stores to 0x301C.</li>
+<li>Multiplies airflow*scaling by the divisor (MPY 0x301C).</li>
+<li>If high word (B) &gt;= 0x4000, saturates to 0xFFFF. Otherwise, shifts left 2 (JSR 0x6307 = multiply by 4).</li>
+<li>Stores B to 0x31D6 (base fuel pulse width). SEM, RTS.</li>
+</ol>
+<h4 id="flow-16-bit-path-0x320c-0">Flow — 16-Bit Path (0x320C != 0)</h4>
+<ol>
+<li>Reads 0x3209:0x320B as a 24-bit value (0x3209 in scratch, 0x320B as high word).</li>
+<li>Performs 5 iterations of ASL/ROL to shift the 24-bit value left by 5, effectively multiplying by 32. Saturates to 0xFFFF on overflow.</li>
+<li>Re-enables interrupts (CLI).</li>
+<li>Multiplies by ROM 0x400A (0x9353), XAB.</li>
+<li>Same divisor selection as 8-bit path (0x332F bit 2 gates 0x301A vs 0x3023).</li>
+<li>Multiplies by divisor. If high word (B) &gt;= 0x0800, saturates to 0xFFFF. Otherwise, shifts left 5 (JSR 0x6304 then JSR 0x6307 = multiply by 32).</li>
+<li>Stores B to 0x31D6. SEM, RTS.</li>
+</ol>
+<h4 id="ram-variables">RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x320C</td>
+<td>airflow_extended_flag</td>
+<td>R</td>
+<td>Nonzero selects 16-bit extended airflow path</td>
+</tr>
+<tr>
+<td>0x320A</td>
+<td>airflow_8bit</td>
+<td>R</td>
+<td>8-bit airflow measurement (simple path)</td>
+</tr>
+<tr>
+<td>0x3209</td>
+<td>airflow_16bit_lo</td>
+<td>R</td>
+<td>16-bit extended airflow (low byte, with 0x320B)</td>
+</tr>
+<tr>
+<td>0x320B</td>
+<td>airflow_16bit_hi</td>
+<td>R</td>
+<td>16-bit extended airflow (high byte)</td>
+</tr>
+<tr>
+<td>0x301A</td>
+<td>airflow_divisor_a</td>
+<td>R</td>
+<td>Primary airflow correction divisor</td>
+</tr>
+<tr>
+<td>0x3023</td>
+<td>airflow_divisor_b</td>
+<td>R</td>
+<td>Alternate divisor (high byte &gt;&gt; 1, used when 0x332F bit 2 set)</td>
+</tr>
+<tr>
+<td>0x301C</td>
+<td>airflow_divisor_active</td>
+<td>W</td>
+<td>Selected divisor stored here for multiplication</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>system_mode_flags</td>
+<td>R</td>
+<td>Bit 2: selects alternate divisor</td>
+</tr>
+<tr>
+<td>0x31D6</td>
+<td>base_fuel_pulse_width</td>
+<td>W</td>
+<td>Output: base injection pulse width (16-bit)</td>
+</tr>
+</tbody></table>
+<h4 id="rom-constants">ROM Constants</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x400A</td>
+<td>0x9353</td>
+<td>Volumetric efficiency scaling factor (37715/65536)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB68F.html">0xB68F Fuel Correction Blender</a><a class="nav-next" href="0xB7C8.html">0xB7C8 Final Fuel Pulse Width Blender</a></nav>
+</body>
+</html>

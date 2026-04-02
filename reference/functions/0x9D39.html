@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x9D39 — Cylinder Pair Injection Sequencer — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x9D39 Cylinder Pair Injection Sequencer</span></nav>
+<h3 id="0x9d39-cylinder-pair-injection-sequencer">0x9D39 — Cylinder Pair Injection Sequencer</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9D39</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>201 bytes (0x9D39–0x9E01)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>22</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR phase 1 at 0x9A24</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Injection sequencing controller called during Phase 1 of the Timer A ISR. Manages cylinder-pair injection ordering for the 4-cylinder sequential injection system. On first call for a new engine cycle, initializes per-cylinder injection schedule registers (<code>$3197</code>–<code>$319A</code>) based on the current cylinder and a previous-cylinder reference (<code>$319B</code>). On subsequent calls, dispatches the per-cylinder injection chain via 0x9E11.</p>
+<p>The function implements a two-phase state machine controlled by <code>$31B4</code> (injection sequencing state) and <code>$31C6</code> (alternation toggle):</p>
+<ol>
+<li><strong>Init phase</strong> (<code>$31B4</code> bit 1 clear): Toggles <code>$31C6</code>; on the &quot;active&quot; toggle, saves current cylinder to <code>$319B</code>, clears all scheduling registers, and calls 0x9E11 to begin injection. On the &quot;inactive&quot; toggle, just clears <code>$31B4</code>/<code>$31B5</code> and returns.</li>
+<li><strong>Sequencing phase</strong> (<code>$31B4</code> bit 2 set): Uses <code>$319C</code> (current cylinder) and <code>$319B</code> (previous saved cylinder) as a pair to look up the injection firing order, loads per-channel values into <code>$3197</code>–<code>$319A</code>, sets corresponding bits in <code>$31B5</code>, then calls 0x9E11 to dispatch.</li>
+</ol>
+<h4 id="firing-order-table">Firing Order Table</h4>
+<p>The function encodes the 4-cylinder firing order through four case blocks, each mapping a (current, previous) cylinder pair to a channel assignment:</p>
+<table>
+<thead>
+<tr>
+<th>$319C</th>
+<th>$319B</th>
+<th>$3197</th>
+<th>$3198</th>
+<th>$3199</th>
+<th>$319A</th>
+<th>$31B5 bits</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>4</td>
+<td>05</td>
+<td>09</td>
+<td>07</td>
+<td>03</td>
+<td>0x09 (bits 0,3)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>03</td>
+<td>07</td>
+<td>05</td>
+<td>09</td>
+<td>0x05 (bits 0,2)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2</td>
+<td>07</td>
+<td>03</td>
+<td>09</td>
+<td>05</td>
+<td>0x0A (bits 1,3)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3</td>
+<td>09</td>
+<td>05</td>
+<td>03</td>
+<td>07</td>
+<td>0x06 (bits 1,2)</td>
+</tr>
+</tbody></table>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$319C</code> — cylinder counter (current cylinder, 1–4)</li>
+<li><code>$319B</code> — previous cylinder reference</li>
+<li><code>$31B4</code> — injection sequencing state (bits 0–2)</li>
+<li><code>$31C6</code> — alternation toggle (flipped each call)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$3197</code>–<code>$319A</code> — per-cylinder injection schedule values</li>
+<li><code>$31B4</code> — state bits updated (bit 2 set after sequencing)</li>
+<li><code>$31B5</code> — output channel flags (cleared or set per firing order)</li>
+<li><code>$319B</code> — saved cylinder counter (init phase)</li>
+<li><code>$31C6</code> — toggled alternation flag</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x319C</td>
+<td>cylinder_counter</td>
+<td>Current cylinder (dispatch key)</td>
+</tr>
+<tr>
+<td>0x319B</td>
+<td>prev_cylinder</td>
+<td>Previous cylinder (pair matching)</td>
+</tr>
+<tr>
+<td>0x31B4</td>
+<td>inj_seq_state</td>
+<td>State machine phase bits</td>
+</tr>
+<tr>
+<td>0x31C6</td>
+<td>alternation_toggle</td>
+<td>Flip-flop for init/idle alternation</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3197</td>
+<td>inj_sched_ch1</td>
+<td>Injection schedule channel 1</td>
+</tr>
+<tr>
+<td>0x3198</td>
+<td>inj_sched_ch2</td>
+<td>Injection schedule channel 2</td>
+</tr>
+<tr>
+<td>0x3199</td>
+<td>inj_sched_ch3</td>
+<td>Injection schedule channel 3</td>
+</tr>
+<tr>
+<td>0x319A</td>
+<td>inj_sched_ch4</td>
+<td>Injection schedule channel 4</td>
+</tr>
+<tr>
+<td>0x319B</td>
+<td>prev_cylinder</td>
+<td>Saved current cylinder (on init)</td>
+</tr>
+<tr>
+<td>0x31B4</td>
+<td>inj_seq_state</td>
+<td>State updated</td>
+</tr>
+<tr>
+<td>0x31B5</td>
+<td>inj_output_flags</td>
+<td>Channel complete/active flags</td>
+</tr>
+<tr>
+<td>0x31C6</td>
+<td>alternation_toggle</td>
+<td>Toggled via EOR #$01</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x9E11</td>
+<td>Injection Dispatch Chain</td>
+<td>Called after init and after sequencing</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x9B99.html">0x9B99 Injection Output & Dwell Calculator</a><a class="nav-next" href="0x9E1E.html">0x9E1E Injection Timing Calculator (Channel 1)</a></nav>
+</body>
+</html>

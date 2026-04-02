@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB2F7 — Engine Load Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB2F7 Engine Load Calculator</span></nav>
+<h3 id="0xb2f7-engine-load-calculator">0xB2F7 — Engine Load Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB2F7</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>178 bytes (0xB2F7–0xB3A8)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>22</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P5 (0xAAD1 at 0xABA7)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>1 — iir_filter (0xB2E0)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes the engine load value from an ADC reading using a hardware multiply, IIR smoothing, and a 6-deep circular history buffer for rate-of-change detection. Called from scheduler priority 5 (1/20 ticks). Reads ADC result, applies a scaling factor via MPY to convert raw ADC counts to a calibrated load value, subtracts a ROM offset, then applies multi-stage exponential smoothing controlled by a ROM iteration count. Maintains a 6-byte circular history buffer for computing a signed rate-of-change metric, which is itself smoothed by the IIR filter. Writes the final 8-bit load value to $3304, IO port $0224, and diagnostic mirror $3792.</p>
+<h4 id="algorithm-detail">Algorithm Detail</h4>
+<ol>
+<li><strong>ADC read</strong>: <code>BBC $20,#$08,$B2F7</code> — spin until conversion complete. Read 16-bit result from dp+$22.</li>
+<li><strong>Raw storage</strong>: Store 16-bit to $3308 (aux sensor input). Shift right 2, store 8-bit to $3327.</li>
+<li><strong>Scaling</strong>: Multiply $3308 by constant 0x6AA8 using MPY. Extract upper word: ASL A, ROL B, XAB (take high 16 bits).</li>
+<li><strong>Offset subtract</strong>: Subtract ROM constant $486B. Clamp to 0 if underflow.</li>
+<li><strong>Exponential smoothing</strong>:<ul>
+<li>If $3166 bit 4 not set (first time): skip smoothing, use raw value</li>
+<li>If $3331 bit 4 set: force value to 0x0119 (override)</li>
+<li>Load iteration count B from ROM $4826 (masked to 8-bit)</li>
+<li>Loop B times: <code>A = (A + $3306) / 2</code> (CLC; ADC $3306; ROR A; DEB; BNE loop)</li>
+<li>This is a multi-pass averaging filter with exponentially increasing weight on old value</li>
+</ul>
+</li>
+<li><strong>Store smoothed value</strong>: Write 16-bit to $3306</li>
+<li><strong>8-bit conversion</strong>: Shift right 1 (LSR A). Clamp to 0xFF if &gt;= 0x0100.</li>
+<li><strong>Output</strong>: Store 8-bit to $3304 (engine_load_value), IO $0224, $3792 (diagnostic mirror)</li>
+<li><strong>History buffer initialization</strong> (first time, $3166 bit 4 not set):<ul>
+<li>Fill all 6 bytes $333C–$3341 with current value</li>
+<li>Set $3166 bit 4</li>
+</ul>
+</li>
+<li><strong>History buffer shift</strong> (subsequent calls):<ul>
+<li>Shift bytes down: [$3340→$3341, $333F→$3340, ..., $333D→$333E, $333C→$333D]</li>
+<li>Store current value to $333C (newest)</li>
+</ul>
+</li>
+<li><strong>Rate-of-change</strong>:<ul>
+<li>Compute delta = $333C - $3340 (newest minus 6-samples-ago)</li>
+<li>Add signed offset 0x80 to center around midpoint</li>
+<li>Clamp to 0x00–0xFF range</li>
+</ul>
+</li>
+<li><strong>Rate smoothing</strong>: X = $3342, call IIR filter (0xB2E0) to smooth the rate value</li>
+<li><strong>Rate output</strong>: Store to $3342 and IO $01D6</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><strong>dp+$20</strong> — ADC status register (bit 3: conversion complete)</li>
+<li><strong>dp+$22</strong> — ADC result (16-bit)</li>
+<li><strong>$3166</strong> — init flags (bit 4: first-time initialization)</li>
+<li><strong>$3331</strong> — control flags (bit 4: force override to 0x0119)</li>
+<li><strong>$3306</strong> — previous smoothed load value (16-bit)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><strong>$3308</strong> — raw 16-bit ADC result</li>
+<li><strong>$3327</strong> — raw 8-bit ADC result (&gt;&gt; 2)</li>
+<li><strong>$3306</strong> — smoothed 16-bit load value</li>
+<li><strong>$3304</strong> — final 8-bit engine load value</li>
+<li><strong>$3792</strong> — 8-bit diagnostic mirror of engine load</li>
+<li><strong>$333C–$3341</strong> — 6-byte circular history buffer</li>
+<li><strong>$3342</strong> — smoothed rate-of-change value (centered at 0x80)</li>
+<li><strong>$3166</strong> — bit 4 set after initialization</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3166</td>
+<td>init_flags</td>
+<td>Bit 4: history buffer initialized</td>
+</tr>
+<tr>
+<td>0x3331</td>
+<td>control_flags</td>
+<td>Bit 4: force load override</td>
+</tr>
+<tr>
+<td>0x3306</td>
+<td>load_smooth_16</td>
+<td>Previous smoothed 16-bit load value</td>
+</tr>
+<tr>
+<td>0x333C</td>
+<td>history_newest</td>
+<td>Most recent history entry</td>
+</tr>
+<tr>
+<td>0x3340</td>
+<td>history_oldest</td>
+<td>Oldest (6-samples-ago) history entry</td>
+</tr>
+<tr>
+<td>0x3342</td>
+<td>load_rate_smooth</td>
+<td>Previous smoothed rate-of-change</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3308</td>
+<td>aux_sensor_raw</td>
+<td>Raw 16-bit ADC reading</td>
+</tr>
+<tr>
+<td>0x3327</td>
+<td>aux_sensor_8bit</td>
+<td>Raw 8-bit ADC reading (&gt;&gt; 2)</td>
+</tr>
+<tr>
+<td>0x3306</td>
+<td>load_smooth_16</td>
+<td>Multi-pass smoothed 16-bit load</td>
+</tr>
+<tr>
+<td>0x3304</td>
+<td>engine_load_value</td>
+<td>Final 8-bit engine load</td>
+</tr>
+<tr>
+<td>0x3792</td>
+<td>diag_mirror_load</td>
+<td>8-bit diagnostic mirror of load</td>
+</tr>
+<tr>
+<td>0x333C</td>
+<td>history_newest</td>
+<td>New sample pushed to history</td>
+</tr>
+<tr>
+<td>0x333D–$3341</td>
+<td>history_buffer</td>
+<td>Shifted history entries</td>
+</tr>
+<tr>
+<td>0x3342</td>
+<td>load_rate_smooth</td>
+<td>Smoothed rate-of-change</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x486B</td>
+<td>load_offset</td>
+<td>Offset subtracted from scaled ADC result (zero floor)</td>
+</tr>
+<tr>
+<td>0x4826</td>
+<td>smoothing_iterations</td>
+<td>Number of averaging passes (controls filter time constant)</td>
+</tr>
+</tbody></table>
+<h4 id="io-references">IO References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0224</td>
+<td>load_output</td>
+<td>Engine load value output port</td>
+</tr>
+<tr>
+<td>0x01D6</td>
+<td>load_rate_output</td>
+<td>Load rate-of-change output port</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB2B1.html">0xB2B1 AN2 Boost Pressure Reader</a><a class="nav-next" href="0xB3A9.html">0xB3A9 ISC Valve Position Sampler</a></nav>
+</body>
+</html>

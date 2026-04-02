@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xD90A — Ignition Timing Retard Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xD90A Ignition Timing Retard Controller</span></nav>
+<h3 id="0xd90a-ignition-timing-retard-controller">0xD90A — Ignition Timing Retard Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xD90A</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>328 bytes (0xD90A–0xDA51)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>47</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — ignition_timing_output_calculator (0xA9ED at 0xAABB)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes a timing retard amount that is subtracted from the ignition timing base value ($3278). Called from the ignition timing output chain after sub_DB51 stores the initial converted timing to $3278. The result in A on return is used as the final timing input to sub_DBBB. Uses a multi-phase state machine controlled by $3276 bits to manage transition entry, ramp-up, decay, and exit for the retard correction.</p>
+<p>This function implements a <strong>load-transient timing retard</strong> — when a sudden change in airflow or RPM derivative is detected, it temporarily pulls back ignition timing to prevent knock, then gradually restores it. The retard magnitude is scaled by coolant temperature and airflow, and rate-limited by an RPM-acceleration-derived ramp controller.</p>
+<h4 id="entry-conditions-gate-0xd90a-0xd930">Entry Conditions Gate (0xD90A–0xD930)</h4>
+<p>When $305C bit 5 is set, performs a window check on four parameters against ROM thresholds:</p>
+<ul>
+<li>$3300 (learned_correction_1) must be &lt;= ROM[$4452]</li>
+<li>$309B (speed_value) must be within ROM[$444E]–ROM[$444F]</li>
+<li>$306F (airflow_load) must be within ROM[$4450]–ROM[$4451]</li>
+</ul>
+<p>If any check fails, falls through to the activation check. If $305C bit 5 is clear, skips directly to activation.</p>
+<h4 id="activation-check-0xd931-0xd97e">Activation Check (0xD931–0xD97E)</h4>
+<p>If $305A bit 0 is set, aborts (clears $3276 bit 1, returns $3278). Otherwise checks $3276 bit 5 (transition trigger):</p>
+<ul>
+<li><strong>On trigger</strong> (bit 5 set): Initializes the retard state machine:<ul>
+<li>Clears bit 5, sets bit 1 (active), clears bits 4 and 6</li>
+<li>Zeros working variables $322D, $31FD, $327A</li>
+<li>Sets airflow threshold: $3274 = $306F + 0x1E (clamped at 0xFF)</li>
+</ul>
+</li>
+<li><strong>While active</strong> (bit 1 set): Checks if airflow ($306F) has dropped below $3274 — if so, retard has served its purpose and aborts. Also checks ROM[$4442] against counters $322D and $31FD to gate whether enough time has elapsed.</li>
+</ul>
+<h4 id="retard-computation-0xd988-0xd9de">Retard Computation (0xD988–0xD9DE)</h4>
+<p>Computes two working values:</p>
+<ol>
+<li><strong>$327B</strong> (gear-derived offset): Extracts gear position from $3044 (throttle_position &gt;&gt; 4, masked to 4 bits), subtracts ROM[$4440] base offset</li>
+<li><strong>$3273</strong> (retard magnitude): Starts from $3278 (timing base), then scaled by coolant temperature:<ul>
+<li>If $3092 &lt; ROM[$4445]: shift right twice (divide by 4)</li>
+<li>If $3092 &lt; ROM[$4446]: shift right once (divide by 2)</li>
+<li>Full value if coolant is warm enough</li>
+</ul>
+</li>
+<li><strong>Airflow scaling</strong>: If $306F &gt;= ROM[$444B], shifts $3273 right once more (halves retard at high airflow). Otherwise subtracts ROM[$444C] from both $3278 and $3273 (with additional ROM[$444D] subtraction on $3273).</li>
+<li><strong>Low speed guard</strong>: If $309B &lt; 3, forces $3273 to 0 (no retard at very low speed).</li>
+</ol>
+<h4 id="ramp-controller-0xd9e9-0xda51">Ramp Controller (0xD9E9–0xDA51)</h4>
+<p>Uses $326E (signed RPM acceleration from 0xDA52) to control the retard application rate:</p>
+<ul>
+<li><strong>$326E &lt; 0</strong> (decelerating): Returns $3278 directly unless $3276 bit 6 is set, in which case manages a two-phase exit via bits 4 and 6 toggles</li>
+<li><strong>$326E &gt;= 0</strong> (accelerating): Sets bit 6, then:<ul>
+<li><strong>Phase 1</strong> (bit 4 clear): Tracks peak $326E in $327A. If $326E-1 &gt;= $327B, applies full $3273 retard; else applies 0</li>
+<li><strong>Phase 2</strong> (bit 4 set): Computes decay cap = $327A * ROM[$4441], shifted left by 8 (JSR $6311). Clamps $3273 to this decaying cap</li>
+</ul>
+</li>
+<li><strong>Final output</strong>: A = $3278 - $3273 (clamped at 0)</li>
+</ul>
+<h4 id="disassembly-key-sections">Disassembly (key sections)</h4>
+<pre><code>; Entry gate — window check
+D90A  BBC $305C,#$20,$D931   ; if mode bit 5 clear, skip window
+D90F  LDA $4452              ; load learned correction max
+D912  CMP $3300              ; compare against learned_correction_1
+D915  BCC $D97E              ; if exceeded, abort
+; ...speed and airflow range checks...
+
+; Activation trigger
+D936  BBC $3276,#$20,$D964   ; if trigger bit not set, check active
+D93B  CLB $3276,#$20         ; clear trigger
+D93F  SEB $3276,#$02         ; set active
+D943  CLB $3276,#$10         ; clear phase 2
+D947  CLB $3276,#$40         ; clear ramp flag
+D94B  LDM $322D,#$00         ; zero counter
+D94F  LDM $31FD,#$00         ; zero counter
+D953  LDM $327A,#$00         ; zero peak tracker
+D957  LDA $306F              ; airflow
+D95A  CLC
+D95B  ADC #$1E               ; add offset (30)
+D961  STA $3274              ; store threshold
+
+; Retard computation — coolant scaling
+D997  LDA $3278              ; load timing base
+D99A  STA $3273              ; copy to working retard
+D99D  LDA $3092              ; load coolant temp
+D9A0  CMP $4446              ; warm threshold
+D9A3  BCS $D9B0              ; if warm enough, no scaling
+D9A5  CMP $4445              ; mid threshold
+D9AA  LSR $3273              ; shift right (divide by 2)
+D9AD  LSR $3273              ; shift right again (÷4 total if cold)
+
+; Ramp controller — RPM acceleration
+D9E9  LDA $326E              ; load RPM acceleration
+D9EC  DEA                    ; decrement
+D9ED  BPL $DA0C              ; if &gt;= 0, -&gt; ramp logic
+
+; Final output
+DA46  LDA $3278              ; load timing base
+DA49  SEC
+DA4A  SBC $3273              ; subtract retard amount
+DA4D  BCS $DA51              ; if no underflow, return
+DA4F  LDA #$00               ; clamp at 0
+DA51  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$3278</td>
+<td>timing_converted_1</td>
+<td>Base timing value (input and reference)</td>
+</tr>
+<tr>
+<td>$305C</td>
+<td>mode_select_flags</td>
+<td>Bit 5: enables window check</td>
+</tr>
+<tr>
+<td>$305A</td>
+<td>system_control_flags</td>
+<td>Bit 0: abort flag</td>
+</tr>
+<tr>
+<td>$3300</td>
+<td>learned_correction_1</td>
+<td>Compared against ROM[$4452]</td>
+</tr>
+<tr>
+<td>$309B</td>
+<td>speed_value</td>
+<td>Window check and low-speed guard</td>
+</tr>
+<tr>
+<td>$306F</td>
+<td>airflow_load</td>
+<td>Window check and airflow scaling</td>
+</tr>
+<tr>
+<td>$3044</td>
+<td>throttle_position</td>
+<td>Gear/load extraction (bits 7:4)</td>
+</tr>
+<tr>
+<td>$3092</td>
+<td>coolant_temp_raw</td>
+<td>Temperature-based scaling</td>
+</tr>
+<tr>
+<td>$326E</td>
+<td>rpm_acceleration</td>
+<td>Ramp controller input (from 0xDA52)</td>
+</tr>
+<tr>
+<td>$3276</td>
+<td>timing_retard_state</td>
+<td>State machine bits 1,4,5,6</td>
+</tr>
+</tbody></table>
+<h4 id="outputs">Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A (return)</td>
+<td></td>
+<td>Retarded timing value ($3278 - $3273)</td>
+</tr>
+<tr>
+<td>$3273</td>
+<td>retard_magnitude</td>
+<td>Computed retard amount</td>
+</tr>
+<tr>
+<td>$3274</td>
+<td>airflow_abort_threshold</td>
+<td>$306F + 0x1E</td>
+</tr>
+<tr>
+<td>$327A</td>
+<td>peak_acceleration</td>
+<td>Peak $326E tracker</td>
+</tr>
+<tr>
+<td>$327B</td>
+<td>gear_derived_offset</td>
+<td>Acceleration threshold for retard</td>
+</tr>
+<tr>
+<td>$3276</td>
+<td>timing_retard_state</td>
+<td>State bits updated</td>
+</tr>
+<tr>
+<td>$3278</td>
+<td>timing_converted_1</td>
+<td>Reduced by ROM[$444C] in some paths</td>
+</tr>
+<tr>
+<td>$322D</td>
+<td>retard_entry_counter</td>
+<td>Incremented by 0xDAEE</td>
+</tr>
+<tr>
+<td>$31FD</td>
+<td>retard_ramp_counter</td>
+<td>Incremented by 0xDAEE</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Usage</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$4440</td>
+<td>Gear offset base</td>
+<td>Subtracted from throttle position extract</td>
+</tr>
+<tr>
+<td>$4441</td>
+<td>Decay multiplier</td>
+<td>Peak × this value = decay cap (via MPY + shift)</td>
+</tr>
+<tr>
+<td>$4442</td>
+<td>Time gate threshold</td>
+<td>Max counter for $322D and $31FD</td>
+</tr>
+<tr>
+<td>$4443</td>
+<td>Pressure delta threshold</td>
+<td>Used by 0xDAEE for trigger detection</td>
+</tr>
+<tr>
+<td>$4444</td>
+<td>Acceleration delta threshold</td>
+<td>Used by 0xDAEE for trigger detection</td>
+</tr>
+<tr>
+<td>$4445</td>
+<td>Cold coolant threshold</td>
+<td>Below this: retard ÷ 4</td>
+</tr>
+<tr>
+<td>$4446</td>
+<td>Warm coolant threshold</td>
+<td>Above this: full retard</td>
+</tr>
+<tr>
+<td>$444B</td>
+<td>High airflow threshold</td>
+<td>Above this: retard halved</td>
+</tr>
+<tr>
+<td>$444C</td>
+<td>Base retard subtraction</td>
+<td>Subtracted from $3278 and $3273</td>
+</tr>
+<tr>
+<td>$444D</td>
+<td>Additional retard subtraction</td>
+<td>Extra subtraction on $3273</td>
+</tr>
+<tr>
+<td>$444E</td>
+<td>Speed window low</td>
+<td>$309B minimum for window check</td>
+</tr>
+<tr>
+<td>$444F</td>
+<td>Speed window high</td>
+<td>$309B maximum for window check</td>
+</tr>
+<tr>
+<td>$4450</td>
+<td>Airflow window low</td>
+<td>$306F minimum for window check</td>
+</tr>
+<tr>
+<td>$4451</td>
+<td>Airflow window high</td>
+<td>$306F maximum for window check</td>
+</tr>
+<tr>
+<td>$4452</td>
+<td>Learned correction max</td>
+<td>$3300 must be &lt;= this</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6311 — shift_left_AB_by_3: used for decay cap computation at 0xDA38</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xD8C0.html">0xD8C0 Twin Turbo Switching Port Controller</a><a class="nav-next" href="0xDA52.html">0xDA52 RPM Acceleration Filter</a></nav>
+</body>
+</html>

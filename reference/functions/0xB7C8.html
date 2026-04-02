@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB7C8 — Final Fuel Pulse Width Blender — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB7C8 Final Fuel Pulse Width Blender</span></nav>
+<h3 id="0xb7c8-final-fuel-pulse-width-blender">0xB7C8 — Final Fuel Pulse Width Blender</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB7C8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>73 bytes (0xB7C8–0xB810)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 via 0xAB5C)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Blends the base fuel pulse width (from 0xB728) with the fuel correction factor (from 0xB68F) to produce the final engine load / injection pulse width value. The function computes a weighted interpolation: <code>result = blend_ratio * fuel_correction + (1 - blend_ratio) * base_fuel</code>, where <code>blend_ratio</code> is 0x3372 (from 0xB68F). The output is clamped to the airflow ceiling 0x30B0 and stored to 0x313C (engine load, 16-bit), with 8-bit mirrors to 0x3745, IO 0x010C, and 0x327C.</p>
+<h4 id="flow">Flow</h4>
+<ol>
+<li>Switches to 16-bit mode (CLM).</li>
+<li><strong>Corrected component:</strong> Multiplies 0x3372 (blend ratio) by 0x3378 (fuel correction multiplier). Stores low word to scratch 0x3008, high word to 0x300A. Pushes the middle byte (0x3009) for later.</li>
+<li><strong>Base component:</strong> Computes <code>0x0100 - 0x3372</code> (complement of blend ratio). Multiplies by 0x31D6 (base fuel pulse width). Stores to scratch.</li>
+<li><strong>Summation:</strong> Pops the corrected component&#39;s middle byte, adds to the base component&#39;s middle byte. Saturates to 0xFFFF on carry.</li>
+<li><strong>Ceiling clamp:</strong> Compares against 0x30B0 (airflow output scaled). If result exceeds ceiling, uses ceiling value.</li>
+<li><strong>Output:</strong> Stores final 16-bit value to 0x313C (engine load). Shifts right 4 to get 8-bit. Switches to 8-bit mode (SEM). Stores to:<ul>
+<li>0x3745 — diagnostic mirror</li>
+<li>0x010C — IO port mirror</li>
+<li>0x327C — RAM copy for other subsystems</li>
+</ul>
+</li>
+</ol>
+<h4 id="ram-variables">RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3372</td>
+<td>fuel_blend_ratio</td>
+<td>R</td>
+<td>Blend ratio from 0xB68F (0x0000=all base, 0x0100=all corrected)</td>
+</tr>
+<tr>
+<td>0x3378</td>
+<td>fuel_correction_multiplier</td>
+<td>R</td>
+<td>Corrected fuel value from 0xB68F</td>
+</tr>
+<tr>
+<td>0x31D6</td>
+<td>base_fuel_pulse_width</td>
+<td>R</td>
+<td>Base fuel value from 0xB728</td>
+</tr>
+<tr>
+<td>0x30B0</td>
+<td>airflow_output_scaled</td>
+<td>R</td>
+<td>Maximum allowed engine load (ceiling clamp)</td>
+</tr>
+<tr>
+<td>0x313C</td>
+<td>engine_load</td>
+<td>W</td>
+<td>Final blended engine load / fuel pulse width (16-bit)</td>
+</tr>
+<tr>
+<td>0x327C</td>
+<td>engine_load_8bit</td>
+<td>W</td>
+<td>8-bit copy (0x313C &gt;&gt; 4)</td>
+</tr>
+</tbody></table>
+<h4 id="io-ports">IO Ports</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x010C</td>
+<td>Engine load diagnostic mirror</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB728.html">0xB728 Base Fuel Pulse Width Calculator</a><a class="nav-next" href="0xB811.html">0xB811 O2 Feedback Correction Calculator</a></nav>
+</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xC675 — Coolant Fan Relay Qualifier — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xC675 Coolant Fan Relay Qualifier</span></nav>
+<h3 id="0xc675-coolant-fan-relay-qualifier">0xC675 — Coolant Fan Relay Qualifier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xC675</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>176 bytes (0xC675–0xC724)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>35</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P1 (0xAAD1 at 0xABF2)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Multi-input hysteresis comparator that qualifies whether the coolant fan relay should be engaged. Evaluates four sensor inputs against ROM-defined thresholds with individual hysteresis bits, then combines the results to drive port 0x2200 bit 1 and the fan relay command flag.</p>
+<p><strong>Entry gate</strong>: Returns immediately if diag_self_test_status ($35A4) bit 0 is set (self-test active), or if map_mode_control ($3051) bit 2 is set (engine running in certain mode), or if control_reg_3510 ($3510) is 0xFF. Also requires a warmup timer ($316C) &gt; 0x14 (20).</p>
+<p><strong>Comparator channels</strong> (each uses hysteresis via bits in $323F):</p>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Input</th>
+<th>Bit</th>
+<th>Set Threshold</th>
+<th>Clear Threshold</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Airflow</td>
+<td>0x306F (airflow_load)</td>
+<td>bit 1 ($323F)</td>
+<td>ROM[$4875] = 60</td>
+<td>ROM[$4874] = 56</td>
+</tr>
+<tr>
+<td>Throttle</td>
+<td>0x3044 (throttle_position)</td>
+<td>bit 2 ($323F)</td>
+<td>ROM[$4877] = 40</td>
+<td>ROM[$4876] = 32</td>
+</tr>
+<tr>
+<td>Limiter 0</td>
+<td>0x32E0 (limiter_input_0)</td>
+<td>bit 3 ($323F)</td>
+<td>ROM[$487E] = 132</td>
+<td>ROM[$487C] = 66</td>
+</tr>
+<tr>
+<td>Limiter 1</td>
+<td>0x3314 (limiter_input_1)</td>
+<td>bit 5 ($323F)</td>
+<td>ROM[$487E] = 132</td>
+<td>ROM[$487C] = 66</td>
+</tr>
+</tbody></table>
+<p><strong>Output logic</strong>: If any of bits 1, 2, 3, 5 (mask 0x2E) of $323F are set AND temp_override_flags ($332F) bit 7 is clear: sets port_control_mirror ($3275) bit 1. Then checks external port ($2000) bit 5 to determine whether to set $323F bit 0 as a feedback flag. If none of the comparator bits are set: clears $3275 bit 1 and $323F bit 0.</p>
+<p>Final output written to port 0x2200 via port_2200_shadow_write (0x9214).</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x35A4 (diag_self_test_status): bit 0 bypasses</li>
+<li>0x3051 (map_mode_control): bit 2 bypasses</li>
+<li>0x3510 (control_reg_3510): 0xFF bypasses</li>
+<li>0x316C: warmup timer (must exceed 20)</li>
+<li>0x306F (airflow_load): comparator channel 1</li>
+<li>0x3044 (throttle_position): comparator channel 2</li>
+<li>0x32E0 (limiter_input_0): comparator channel 3</li>
+<li>0x3314 (limiter_input_1): comparator channel 4</li>
+<li>0x323F: hysteresis state register</li>
+<li>0x332F (temp_override_flags): bit 7 inhibits output</li>
+<li>0x2000 (external I/O port): bit 5 read for feedback</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x323F: hysteresis bits 0–5 updated</li>
+<li>0x3275 (port_control_mirror): bit 1 set/cleared</li>
+<li>0x2200 (external I/O port): updated via 0x9214</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x9214 — port_2200_shadow_write</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4874: airflow clear threshold (value = 0x38 = 56)</li>
+<li>0x4875: airflow set threshold (value = 0x3C = 60)</li>
+<li>0x4876: throttle clear threshold (value = 0x20 = 32)</li>
+<li>0x4877: throttle set threshold (value = 0x28 = 40)</li>
+<li>0x487C: limiter clear threshold (value = 0x42 = 66, 16-bit compare)</li>
+<li>0x487E: limiter set threshold (value = 0x84 = 132, 16-bit compare)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x35A4, 0x3051, 0x3510, 0x316C, 0x306F, 0x3044, 0x32E0, 0x3314, 0x323F, 0x332F</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x323F: hysteresis state bits</li>
+<li>0x3275 (port_control_mirror): bit 1</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xC637.html">0xC637 Engine Stall Recovery</a><a class="nav-next" href="0xC725.html">0xC725 Speed Control</a></nav>
+</body>
+</html>

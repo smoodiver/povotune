@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA76F — Knock Retard Ramp Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA76F Knock Retard Ramp Controller</span></nav>
+<h3 id="0xa76f-knock-retard-ramp-controller">0xA76F — Knock Retard Ramp Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA76F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>183 bytes (0xA76F–0xA825)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>25</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — knock_control_dispatcher (0xA683 at 0xA6C5)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Manages the knock retard ramp — a progressive timing retard/advance controller that oscillates the knock multiplier (<code>$3503</code>) to probe for knock boundaries. The function implements a triangular wave pattern: it alternately adds and subtracts a step value (<code>$3502</code>) to/from the knock multiplier, with direction controlled by <code>$3033</code> bit 7 (ramp direction) and bit 5 (half-step flag).</p>
+<p>The ramp has three operating modes based on the knock correction flags:</p>
+<ol>
+<li><strong>Fully enabled</strong> (<code>$31C2</code> = 0xFF): Resets ramp state, clears counters.</li>
+<li><strong>Sensor active</strong> (<code>$31C1</code> nonzero): Active ramp — either subtracts step (decrementing phase) or adds step (incrementing phase), toggles direction at the limits. Monitors the multiplier value and a cycle counter (<code>$31C9</code>) to detect when the knock boundary has been found (sets <code>$3033</code> bit 6).</li>
+<li><strong>Neither</strong>: Counts intervals via <code>$31CA</code>, compares against <code>$31C0</code> (rpm_timing_factor), triggers ramp update when count reaches threshold.</li>
+</ol>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- first call initialization ---
+A76F  BBS $3034,#$04,$A794 ; if already initialized, skip
+A774  LDA $4D97           ; load initial multiplier from ROM
+A777  STA $3503           ; -&gt; knock_multiplier
+A77A  LDA $4D98           ; load initial step from ROM
+A77D  STA $3502           ; -&gt; knock_step
+A780  SEB $3034,#$04      ; set initialized flag
+A784  SEB $3033,#$08      ; set ign_zone bit 3
+A788  CLB $3033,#$80      ; clear ramp direction (start decrementing)
+A78C  LDM $31CA,#$00      ; clear interval counter
+A790  LDM $31C9,#$00      ; clear cycle counter
+; --- knock correction fully enabled ---
+A794  BBC $31C2,#$FF,$A7A6 ; if not fully enabled, -&gt; sensor check
+A799  CLB $3033,#$80      ; clear ramp direction
+A79D  LDM $31CA,#$00      ; clear counters
+A7A1  LDM $31C9,#$00
+A7A5  RTS
+; --- sensor active path ---
+A7A6  BBC $31C1,#$FF,$A7CD ; if sensor not active, -&gt; interval counting
+; --- decrementing phase ---
+A7AB  BBC $3033,#$80,$A7B8 ; if direction = decrement...
+A7B0  BBC $3033,#$20,$A7B8 ; if half-step flag clear, skip halving
+A7B5  LSR $3502           ; halve the step value
+A7B8  LDA $3503           ; load multiplier
+A7BB  SEC
+A7BC  SBC $3502           ; subtract step
+A7BF  BCS $A7C3           ; if no underflow, keep
+A7C1  LDA #$00            ; clamp to 0
+A7C3  CLB $3033,#$20      ; clear half-step flag
+A7C7  LDM $31CA,#$00      ; clear interval counter
+A7CB  BRA $A7F4           ; -&gt; store result
+; --- incrementing phase (interval-triggered) ---
+A7CD  INC $31CA           ; increment interval counter
+A7D0  LDA $31CA
+A7D3  CMP $31C0           ; compare against rpm_timing_factor
+A7D6  BCC $A825           ; if not reached, -&gt; return
+A7D8  LDM $31CA,#$00      ; reset counter
+A7DC  BBC $3033,#$80,$A7E9 ; if direction = increment...
+A7E1  BBS $3033,#$20,$A7E9 ; if half-step flag set, skip halving
+A7E6  LSR $3502           ; halve the step
+A7E9  LDA $3503           ; load multiplier
+A7EC  CLC
+A7ED  ADC $3502           ; add step
+A7F0  SEB $3033,#$20      ; set half-step flag
+; --- store and evaluate ---
+A7F4  STA $3503           ; store updated multiplier
+A7F7  SEB $3033,#$80      ; set ramp direction (toggle)
+A7FB  LDA $3503           ; re-read multiplier
+A7FE  BEQ $A808           ; if zero, -&gt; count cycles
+A800  CMP #$10            ; compare against 0x10
+A802  BCC $A815           ; if &lt; 0x10, -&gt; reset cycle counter
+A804  LDM $3503,#$10      ; clamp multiplier to 0x10
+A808  INC $31C9           ; increment cycle counter
+A80B  LDA $31C9
+A80E  CMP $4D9A           ; compare against cycle limit
+A811  BCS $A821           ; if reached, -&gt; set ready flag
+A813  BRA $A819
+A815  LDM $31C9,#$00      ; reset cycle counter
+A819  LDA $4D99           ; load step minimum
+A81C  CMP $3502           ; compare against current step
+A81F  BCC $A825           ; if step still above minimum, -&gt; return
+A821  SEB $3033,#$40      ; set bit 6 (knock boundary found)
+A825  RTS
+</code></pre>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 2: initialized flag</td>
+</tr>
+<tr>
+<td>0x31C2</td>
+<td>knock_corr_enable</td>
+<td>0xFF = fully enabled</td>
+</tr>
+<tr>
+<td>0x31C1</td>
+<td>sensor_activity_flags</td>
+<td>Nonzero = sensor active</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bits 5,7: ramp direction and half-step</td>
+</tr>
+<tr>
+<td>0x3503</td>
+<td>knock_multiplier</td>
+<td>Current ramp value</td>
+</tr>
+<tr>
+<td>0x3502</td>
+<td>knock_step</td>
+<td>Current step size</td>
+</tr>
+<tr>
+<td>0x31CA</td>
+<td>knock_interval_counter</td>
+<td>Interval between ramp updates</td>
+</tr>
+<tr>
+<td>0x31C0</td>
+<td>rpm_timing_factor</td>
+<td>Interval threshold for ramp trigger</td>
+</tr>
+<tr>
+<td>0x31C9</td>
+<td>knock_cycle_counter</td>
+<td>Cycle count for boundary detection</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3503</td>
+<td>knock_multiplier</td>
+<td>Updated ramp value</td>
+</tr>
+<tr>
+<td>0x3502</td>
+<td>knock_step</td>
+<td>Halved during ramp oscillation</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bits 5,7,8: ramp state; bit 6: boundary found</td>
+</tr>
+<tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 2: initialized flag</td>
+</tr>
+<tr>
+<td>0x31CA</td>
+<td>knock_interval_counter</td>
+<td>Cleared on ramp update</td>
+</tr>
+<tr>
+<td>0x31C9</td>
+<td>knock_cycle_counter</td>
+<td>Incremented/cleared during evaluation</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4D97</td>
+<td>1 byte</td>
+<td>Initial knock multiplier value</td>
+</tr>
+<tr>
+<td>0x4D98</td>
+<td>1 byte</td>
+<td>Initial knock step size</td>
+</tr>
+<tr>
+<td>0x4D99</td>
+<td>1 byte</td>
+<td>Minimum step size (below this, boundary found)</td>
+</tr>
+<tr>
+<td>0x4D9A</td>
+<td>1 byte</td>
+<td>Cycle count limit for boundary detection</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA745.html">0xA745 Timing Correction Decay</a><a class="nav-next" href="0xA826.html">0xA826 Knock Learning Update</a></nav>
+</body>
+</html>

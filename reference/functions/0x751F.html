@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x751F — Auxiliary Sensor / EGT Fault Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x751F Auxiliary Sensor / EGT Fault Check</span></nav>
+<h3 id="0x751f-auxiliary-sensor-egt-fault-check">0x751F — Auxiliary Sensor / EGT Fault Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x751F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>105 bytes (0x751F–0x7587)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (diagnostic callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (0x6B53 in periodic_diagnostics)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0x633D (saturating_increment) — walker reports 1 callee; 2 JSR 0x633D calls total</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Two-phase diagnostic check combining an RPM-range sensor test (Phase 1) and a coolant-temperature/load sensor test (Phase 2). Unlike the uniform solenoid checks at 0x73AF–0x74C3, this function tests two different conditions and merges them into a single summary fault bit. Uses a shared counter base at 0x3324 (two consecutive bytes for the two phases).</p>
+<p><strong>Phase 1 (0x751F–0x7545): RPM-range sensor check.</strong>
+Loads Y from 0x3308 (an RPM or speed-related value) and compares against a ROM-defined window: if Y &lt;= ROM[0x4C68] or Y &gt;= ROM[0x4C6A], the value is within the acceptable range and the counter is incremented. When the counter reaches ROM[0x4C6C], sets 0x333B bit 0. If Y falls within the exclusion window (between 0x4C68 and 0x4C6A), the counter is cleared and the fault bit is cleared.</p>
+<p><strong>Phase 2 (0x7546–0x7587): Coolant-gated RPM window check.</strong>
+Requires 0x316B &gt;= 0x64 (lower threshold than the solenoid checks), 0x305A bit 2 set, and 0x3330 bit 1 clear. Loads Y (retained from Phase 1) and checks if it falls within RPM window 0x0154–0x01CC. If within range, increments second counter; when count reaches 0x0A (10), sets 0x333B bit 1. Outside the window clears counter and fault bit.</p>
+<p>Final aggregation: if 0x333B bits 0+1 are both set, sets 0x3331 bit 4; otherwise clears it.</p>
+<h4 id="per-phase-logic">Per-Phase Logic</h4>
+<pre><code>; Phase 1: RPM-range sensor
+X = $3324
+Y = [$3308]
+
+if Y &lt;= ROM[$4C68] or Y &gt;= ROM[$4C6A]:
+    JSR $633D (increment counter at X)
+    if count &gt;= ROM[$4C6C]: SEB $333B bit 0
+else:
+    LDM $00,X,#$00 (clear counter)
+    CLB $333B bit 0
+
+; Phase 2: Coolant-gated RPM window
+if $316B &lt; $64: skip
+if $305A bit 2 clear: skip
+if $3330 bit 1 set: skip
+
+INX (X = $3325)
+if Y &lt; $0154 or Y == $0154: check range
+    if Y &lt; $01CC: goto out_of_range
+in_range:
+    JSR $633D (increment counter at X+1)
+    if count &gt;= $0A: SEB $333B bit 1
+    BRA exit
+out_of_range:
+    LDM $00,X,#$00 (clear counter)
+    CLB $333B bit 1
+
+exit:
+    if $333B bits 0+1 both set:
+        SEB $3331 bit 4
+    else:
+        CLB $3331 bit 4
+    RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3308: RPM or speed-related input value (16-bit, loaded into Y)</li>
+<li>0x316B (lookup_input_b): &gt;= 0x64 required for Phase 2 (lower threshold than solenoid checks)</li>
+<li>0x305A (system_control_flags): bit 2 must be set for Phase 2</li>
+<li>0x3330: bit 1 must be clear for Phase 2</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3324 (aux_sensor_counter_1): Phase 1 debounce counter</li>
+<li>0x3325 (aux_sensor_counter_2): Phase 2 debounce counter</li>
+<li>0x333B bit 0: Phase 1 fault (RPM-range sensor out of spec)</li>
+<li>0x333B bit 1: Phase 2 fault (coolant-gated RPM window fault)</li>
+<li>0x3331 bit 4: summary fault (both phases confirmed)</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x633D — saturating increment (2 calls)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4C68: RPM-range lower bound (Phase 1)</li>
+<li>0x4C6A: RPM-range upper bound (Phase 1)</li>
+<li>0x4C6C: Phase 1 debounce threshold</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x74C3.html">0x74C3 Turbo Solenoid D Fault Check</a><a class="nav-next" href="0x7588.html">0x7588 Fault Threshold Evaluator</a></nav>
+</body>
+</html>

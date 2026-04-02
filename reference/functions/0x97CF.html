@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x97CF — Diagnostic State Restore / Init — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x97CF Diagnostic State Restore / Init</span></nav>
+<h3 id="0x97cf-diagnostic-state-restore-init">0x97CF — Diagnostic State Restore / Init</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x97CF</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~131 bytes (0x97CF–0x9851)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>17</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (reset_handler 0x6431 at 0x66B1)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Restores or initializes diagnostic state during ECU reset, depending on whether the EEPROM learning system was previously initialized (0x3030 bit 6). This function has two paths:</p>
+<p><strong>Warm-start path (bit 6 set — EEPROM valid)</strong>: Restores previously saved diagnostic state from EEPROM-backed variables into the active diagnostic registers. Copies diagnostic counters (0x3506 to 0x332E, 0x3508 to 0x3330), diagnostic init state (0x3504 to 0x3032), and knock/sensor diagnostic bits (0x3512 to 0x31EB, 0x3513 to 0x31F8). Clears 0x3331 bit 5. Calls diagnostic_mode_initializer (0x6B89) to set up diagnostic subsystem.</p>
+<p><strong>Cold-start path (bit 6 clear — fresh EEPROM)</strong>: Determines diagnostic mode from 0x305C bit 1 (mode_select_flags): if set, stores 0xFF to 0x3510; if clear, stores 0x00. Clears diagnostic counters 0x3506, 0x3508, 0x350A, 0x350C to zero.</p>
+<p><strong>Common tail (0x981A)</strong>: Sets MIL blink timer (0x3190) to 0x23 and MIL scan bitmask (0x3195) to 0x01. Then checks AC/ignition input state: if 0x305C bit 5 is set, tests port 0x2000 bit 0 and sets 0x3031 bit 3 if clear; if bit 5 is clear, tests port 0x2000 bit 0 and sets 0x3031 bit 3 if set. Finally, if diagnostic mode is active (0x3510 == 0xFF), sets 0x31CF bits 4,2,7 (pending faults mask 0x94) and clears 0x332F bits 5,6 and 0x332E bit 6.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3030 (throttle_state_flags): bit 6 — EEPROM initialized flag</li>
+<li>0x305C (mode_select_flags): bit 1 — diagnostic mode select; bit 5 — AC/ignition polarity</li>
+<li>0x2000 (IO port): bit 0 — ignition/accessory input state</li>
+<li>0x3504 (diag_init_state_1): saved diagnostic state (warm-start)</li>
+<li>0x3506 (diag_counter_1): saved counter (warm-start)</li>
+<li>0x3508 (diag_counter_2): saved counter (warm-start)</li>
+<li>0x3512 (diag_init_state_2): saved knock sensor bits (warm-start)</li>
+<li>0x3513 (diag_init_state_3): saved sensor status bits (warm-start)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x332E (diag_fault_flags_A): restored from 0x3506 (warm) or unchanged; bit 6 cleared if diag mode</li>
+<li>0x3330: restored from 0x3508 (warm) or unchanged</li>
+<li>0x3032: restored from 0x3504 (warm) or unchanged</li>
+<li>0x31EB (diag_knock_sensor_bits): restored from 0x3512 (warm) or unchanged</li>
+<li>0x31F8 (o2_sensor_status): restored from 0x3513 (warm) or unchanged</li>
+<li>0x3331: bit 5 cleared (warm path)</li>
+<li>0x3510 (control_reg_3510): set to 0xFF (diag) or 0x00 (normal) on cold path</li>
+<li>0x3506, 0x3508, 0x350A, 0x350C: zeroed on cold path</li>
+<li>0x3190 (mil_blink_timer): set to 0x23</li>
+<li>0x3195 (mil_scan_bitmask): set to 0x01</li>
+<li>0x3031: bit 3 set conditionally (ignition detect)</li>
+<li>0x31CF (diag_pending_faults): bits 4,2,7 set if diagnostic mode</li>
+<li>0x332F (temp_override_flags): bits 5,6 cleared if diagnostic mode</li>
+<li>0x332E (diag_fault_flags_A): bit 6 cleared if diagnostic mode</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6B89 (diagnostic_mode_initializer): warm-start path only</li>
+</ul>
+<h4 id="assembly-listing">Assembly Listing</h4>
+<pre><code class="language-asm">; === Branch on EEPROM init state ===
+97CF  2C 30 30 40 27 BBS $3030,#$40,$97FB  ; bit 6 set? -&gt; cold-start path
+
+; === Warm-start path: restore from EEPROM-backed state ===
+97D4  20 89 6B       JSR $6B89           ; diagnostic_mode_initializer
+97D7  AE 06 35       LDX $3506           ; restore diag_counter_1
+97DA  8E 2E 33       STX $332E           ; -&gt; diag_fault_flags_A
+97DD  AE 08 35       LDX $3508           ; restore diag_counter_2
+97E0  8E 30 33       STX $3330           ; -&gt; fault flags B
+97E3  AD 04 35       LDA $3504           ; restore diag_init_state_1
+97E6  8D 32 30       STA $3032
+97E9  AD 12 35       LDA $3512           ; restore knock sensor bits
+97EC  8D EB 31       STA $31EB           ; -&gt; diag_knock_sensor_bits
+97EF  AD 13 35       LDA $3513           ; restore sensor status
+97F2  8D F8 31       STA $31F8           ; -&gt; o2_sensor_status
+97F5  1C 31 33 20    CLB $3331,#$20      ; clear bit 5
+97F9  80 1F          BRA $981A           ; -&gt; common tail
+
+; === Cold-start path: initialize from mode_select_flags ===
+97FB  2C 5C 30 02 04 BBS $305C,#$02,$9804  ; mode_select bit 1?
+9800  A9 00          LDA #$00            ; normal mode
+9802  80 02          BRA $9806
+9804  A9 FF          LDA #$FF            ; diagnostic mode
+9806  8D 10 35       STA $3510           ; store control_reg_3510
+9809  A9 00          LDA #$00
+980B  A0 00 00       LDY #$00
+980E  8C 06 35       STY $3506           ; clear diag_counter_1
+9811  8C 08 35       STY $3508           ; clear diag_counter_2
+9814  8C 0A 35       STY $350A           ; clear diag_latched_faults_A
+9817  8C 0C 35       STY $350C           ; clear diag_latched_faults_B
+
+; === Common tail: MIL init + ignition detect + diagnostic overrides ===
+981A  9C 90 31 23    LDM $3190,#$23      ; mil_blink_timer = 0x23
+981E  9C 95 31 01    LDM $3195,#$01      ; mil_scan_bitmask = 0x01
+
+; --- Ignition/accessory input detection ---
+9822  3C 5C 30 20 0B BBC $305C,#$20,$9832  ; bit 5 clear? -&gt; inverted logic
+9827  2C 00 20 01 0F BBS $2000,#$01,$983B  ; port bit 0 set? skip
+982C  0C 31 30 08    SEB $3031,#$08      ; set ignition detect flag
+9830  80 09          BRA $983B
+9832  3C 00 20 01 04 BBC $2000,#$01,$983B  ; port bit 0 clear? skip
+9837  0C 31 30 08    SEB $3031,#$08      ; set ignition detect flag
+
+; --- Diagnostic mode overrides ---
+983B  3C 10 35 FF 04 BBC $3510,#$FF,$9844  ; not in diag mode? skip
+9840  0C CF 31 94    SEB $31CF,#$94      ; set pending faults: bits 7,4,2
+9844  3C 10 35 FF 08 BBC $3510,#$FF,$9851  ; not in diag mode? skip
+9849  1C 2F 33 60    CLB $332F,#$60      ; clear temp_override bits 5,6
+984D  1C 2E 33 40    CLB $332E,#$40      ; clear diag_fault_flags_A bit 6
+9851  60             RTS
+</code></pre>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x96AF.html">0x96AF Adaptive Learning Integrator</a><a class="nav-next" href="0x9852.html">0x9852 Knock Learning State Restore / Init</a></nav>
+</body>
+</html>

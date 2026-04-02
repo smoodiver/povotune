@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8701 — Boost Control Main — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8701 Boost Control Main</span></nav>
+<h3 id="0x8701-boost-control-main">0x8701 — Boost Control Main</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8701</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>1816 bytes</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>264</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Master wastegate boost control routine — the largest function in the entire ROM. Implements a complete closed-loop boost controller with 10 phases:</p>
+<ol>
+<li><strong>Mode selection (0x8701):</strong> Selects between low-speed and high-speed max-duty-limit table sets based on vehicle speed (traction-aware torque management, not different boost targets)</li>
+<li><strong>Cranking override (0x876C):</strong> Startup enrichment with timer pairs</li>
+<li><strong>Rate-of-change smoothing (0x87CD):</strong> Asymmetric attack/decay to prevent boost spikes</li>
+<li><strong>Closed-loop feedback AT (0x889A):</strong> Proportional control with configurable gains for automatic transmission</li>
+<li><strong>Closed-loop feedback MT (0x896A):</strong> Manual transmission feedback path with snapshot correction</li>
+<li><strong>Auxiliary corrections (0x8A3E):</strong> AC compressor load, overboost protection</li>
+<li><strong>Engine protection (0x8AEE):</strong> Speed-based wastegate floor, decel fuel cut</li>
+<li><strong>Active boost computation (0x8BD9):</strong> Acceleration enrichment, gain chain, component summation</li>
+<li><strong>Passive boost computation (0x8D39):</strong> Simplified path without boost cut</li>
+<li><strong>Final output (0x8DDB):</strong> PWM clamping (0x0332–0x3CBC), 8-bit conversion, I/O write</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3062 (rpm), 0x3093 (coolant_temp), 0x306F (airflow_load)</li>
+<li>0x3071 (vehicle_speed), 0x316B (lookup_input_b)</li>
+<li>0x3092 (coolant_temp_raw), 0x30B6 (secondary_condition_value)</li>
+<li>0x3210 bit 5 (AT/MT mode flag)</li>
+<li>0x305A, 0x305B, 0x305E: control/state flags</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x30E1 (boost_target_duty) → I/O 0x016C</li>
+<li>0x30E2 (boost_final_duty) → I/O 0x016E</li>
+<li>0x30F8 (boost_target_pressure) → I/O 0x017E (MSB)</li>
+<li>10 I/O ports (0x016C–0x0184): diagnostic outputs for each computation stage</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6000 — graph_lookup_2d (11 calls): table interpolations</li>
+<li>0x6314 — sub_6314: utility subroutine</li>
+<li>0x6357 — shift_right_AB_by_2: arithmetic shift helper</li>
+<li>0x6365 — sub_6365: utility subroutine</li>
+<li>0x6371 — sub_6371: utility subroutine</li>
+<li>0x8E19, 0x8E28, 0x8E38, 0x8EB1, 0x8ED2, 0x8F4C, 0x90AF — helper subroutines</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4A60/0x4A70 (base duty tables): normal/high-speed</li>
+<li>0x4A80/0x4AA0 (gain tables): normal/high-speed</li>
+<li>0x4BA0/0x4BC0 (max duty limit tables): low-speed (aggressive clamping for traction) / high-speed (permissive)</li>
+<li>0x4B10 (feedback table): manifold pressure → gain</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x86DA.html">0x86DA Dual Lookup Multiply</a><a class="nav-next" href="0x8E19.html">0x8E19 Saturating Double and Lookup</a></nav>
+</body>
+</html>

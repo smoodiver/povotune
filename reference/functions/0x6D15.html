@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6D15 — Knock Sensor Debounce Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6D15 Knock Sensor Debounce Check</span></nav>
+<h3 id="0x6d15-knock-sensor-debounce-check">0x6D15 — Knock Sensor Debounce Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6D15</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>121 bytes (0x6D15–0x6D8D)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>23</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (health_check_dispatcher 0x6B14, slot 7)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Two-phase knock/detonation sensor health check. Phase 1 is a 16-bit saturating counter that tracks consecutive cycles where knock conditions are present. Phase 2 decides whether to set or clear the knock fault flag in 0x332F bit 5, factoring in diagnostic mode (0x3510) and a secondary counter at 0x318C.</p>
+<p><strong>Phase 1 — Knock condition counter (0x3186):</strong>
+Gated by multiple preconditions — exits early (resetting counter to 0) if any fail:</p>
+<ul>
+<li>0x3028 bit 3 must be clear (BBS -&gt; bail)</li>
+<li>0x332F bits 0+4 must both be clear (intake air + other fault absent)</li>
+<li>0x3330 bits 0+2 must both be clear (VSS + coolant faults absent)</li>
+<li>Coolant temp (0x3092) &gt;= 0x6E</li>
+<li>Knock counter (0x306E) &gt;= 0x28</li>
+<li>Vehicle speed (0x3071) &gt;= 0x0A</li>
+<li>Throttle position (0x3745) &gt;= 0x27</li>
+<li>0x3028 bit 0 must be clear</li>
+</ul>
+<p>If all pass, counter 0x3186 is incremented (16-bit saturating: INX/BNE/DEX pattern). When it reaches 0x0186 (390), pending fault 0x31CF bit 2 is set.</p>
+<p><strong>Phase 2 — Fault confirmation:</strong>
+If 0x31CF bit 2 is set and 0x3028 bit 0 is set, the pending fault is cleared and confirmed fault 0x3030 bit 3 is set. Otherwise, if diagnostic mode (0x3510 != 0) and counter 0x318C &gt;= 0x030D, fault flag 0x332F bit 5 is set. If 0x31CF bit 2 is not set, 0x332F bit 5 is cleared.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; Phase 1: Precondition gate + knock counter
+6D15  2C 28 30 08 44 BBS $3028,#$08,$6D5E   ; If bit 3 set -&gt; reset counter
+6D1A  3C 2F 33 15 02 BBC $332F,#$15,$6D21   ; If bits 0+4 clear -&gt; continue
+6D1F  80 3D          BRA $6D5E               ; Else reset counter
+6D21  3C 30 33 05 02 BBC $3330,#$05,$6D28   ; If bits 0+2 clear -&gt; continue
+6D26  80 36          BRA $6D5E               ; Else reset counter
+6D28  AD 92 30       LDA $3092               ; Coolant temp raw
+6D2B  C9 6E          CMP #$6E               ; &gt;= 0x6E?
+6D2D  90 2F          BCC $6D5E               ; No -&gt; reset
+6D2F  AD 6E 30       LDA $306E               ; Knock counter
+6D32  C9 28          CMP #$28               ; &gt;= 0x28?
+6D34  90 28          BCC $6D5E               ; No -&gt; reset
+6D36  AD 71 30       LDA $3071               ; Vehicle speed
+6D39  C9 0A          CMP #$0A               ; &gt;= 0x0A?
+6D3B  90 21          BCC $6D5E               ; No -&gt; reset
+6D3D  AD 45 37       LDA $3745               ; Throttle position
+6D40  C9 27          CMP #$27               ; &gt;= 0x27?
+6D42  90 1A          BCC $6D5E               ; No -&gt; reset
+6D44  2C 28 30 01 15 BBS $3028,#$01,$6D5E   ; If bit 0 set -&gt; reset
+6D49  AE 86 31       LDX $3186               ; 16-bit knock debounce counter
+6D4C  E8             INX                     ; Increment
+6D4D  D0 01          BNE $6D50               ; If no overflow, skip
+6D4F  CA             DEX                     ; Saturate at 0xFFFF
+6D50  8E 86 31       STX $3186               ; Store back
+6D53  E0 86 01       CPX #$0186             ; Trip threshold = 390
+6D56  90 0C          BCC $6D64               ; Not reached -&gt; skip to phase 2
+6D58  0C CF 31 04    SEB $31CF,#$04         ; Set pending fault: 0x31CF bit 2
+6D5C  80 06          BRA $6D64               ; -&gt; phase 2
+6D5E  A2 00 00       LDX #$0000             ; Reset counter
+6D61  8E 86 31       STX $3186
+; Phase 2: Fault confirmation/output
+6D64  3C CF 31 04 0D BBC $31CF,#$04,$6D76   ; Pending fault not set? -&gt; clear output
+6D69  3C 28 30 01 0E BBC $3028,#$01,$6D7C   ; 0x3028 bit 0 clear? -&gt; check diag mode
+6D6E  1C CF 31 04    CLB $31CF,#$04         ; Clear pending fault
+6D72  0C 30 30 08    SEB $3030,#$08         ; Set confirmed fault: 0x3030 bit 3
+6D76  1C 2F 33 20    CLB $332F,#$20         ; Clear knock fault flag
+6D7A  80 11          BRA $6D8D               ; Return
+6D7C  3C 10 35 FF 08 BBC $3510,#$FF,$6D89   ; Diag mode active?
+6D81  AE 8C 31       LDX $318C               ; Diag timer
+6D84  E0 0D 03       CPX #$030D             ; &gt;= 781?
+6D87  90 04          BCC $6D8D               ; No -&gt; return
+6D89  0C 2F 33 20    SEB $332F,#$20         ; Set knock fault flag
+6D8D  60             RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3028: engine mode flags (bits 0, 3)</li>
+<li>0x332F: temp_override_flags (bits 0, 4)</li>
+<li>0x3330: diag_fault_flags_B (bits 0, 2)</li>
+<li>0x3092: coolant_temp_raw</li>
+<li>0x306E: knock sensor counter</li>
+<li>0x3071: vehicle speed</li>
+<li>0x3745: throttle position</li>
+<li>0x3186: 16-bit knock debounce counter</li>
+<li>0x31CF: diag_pending_faults</li>
+<li>0x3510: diagnostic mode control</li>
+<li>0x318C: diagnostic timer (16-bit)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3186: knock debounce counter (incremented or reset to 0)</li>
+<li>0x31CF bit 2: knock pending fault</li>
+<li>0x3030 bit 3: knock confirmed fault</li>
+<li>0x332F bit 5: knock fault flag for diagnostic output</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3028</td>
+<td>engine_mode_flags</td>
+<td>Precondition gating (bits 0, 3)</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>temp_override_flags</td>
+<td>Existing fault check (bits 0, 4)</td>
+</tr>
+<tr>
+<td>0x3330</td>
+<td>diag_fault_flags_B</td>
+<td>Existing fault check (bits 0, 2)</td>
+</tr>
+<tr>
+<td>0x3092</td>
+<td>coolant_temp_raw</td>
+<td>Must be &gt;= 0x6E (warm engine)</td>
+</tr>
+<tr>
+<td>0x306E</td>
+<td>knock_counter</td>
+<td>Must be &gt;= 0x28</td>
+</tr>
+<tr>
+<td>0x3071</td>
+<td>vehicle_speed</td>
+<td>Must be &gt;= 0x0A</td>
+</tr>
+<tr>
+<td>0x3745</td>
+<td>throttle_position</td>
+<td>Must be &gt;= 0x27</td>
+</tr>
+<tr>
+<td>0x3186</td>
+<td>knock_debounce_counter</td>
+<td>16-bit running counter</td>
+</tr>
+<tr>
+<td>0x31CF</td>
+<td>diag_pending_faults</td>
+<td>Bit 2: knock pending</td>
+</tr>
+<tr>
+<td>0x3510</td>
+<td>diag_mode_control</td>
+<td>Gates secondary fault path</td>
+</tr>
+<tr>
+<td>0x318C</td>
+<td>diag_timer</td>
+<td>Timer for diagnostic mode confirmation</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3186</td>
+<td>knock_debounce_counter</td>
+<td>Incremented or reset</td>
+</tr>
+<tr>
+<td>0x31CF</td>
+<td>diag_pending_faults</td>
+<td>Bit 2: set when counter trips</td>
+</tr>
+<tr>
+<td>0x3030</td>
+<td>throttle_state_flags</td>
+<td>Bit 3: confirmed knock fault</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>temp_override_flags</td>
+<td>Bit 5: knock fault output flag</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<p>None (thresholds are immediate operands).</p>
+<h4 id="callees">Callees</h4>
+<p>None (uses inline 16-bit saturating increment instead of calling 0x633D).</p>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6CE4.html">0x6CE4 Intake Air Temp Sensor Check</a><a class="nav-next" href="0x6D8E.html">0x6D8E Idle Speed Control Valve Check</a></nav>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA3CE — RPM Hysteresis Gate (Phase 2) — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA3CE RPM Hysteresis Gate (Phase 2)</span></nav>
+<h3 id="0xa3ce-rpm-hysteresis-gate-phase-2">0xA3CE — RPM Hysteresis Gate (Phase 2)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA3CE</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>38 bytes (0xA3CE–0xA3F3)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR Phase 2 (0x98A1 at 0x9A98)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>RPM-based hysteresis gate called during ISR Phase 2. Tests the RPM period (<code>$3062</code>) against two ROM thresholds with hysteresis to set or clear bit 2 of <code>$31A1</code> (engine_running_flags). When the engine is above the high-speed threshold, bit 2 is set; when below the low-speed threshold, bit 2 is cleared. Also clears <code>$31CC</code> (af_ratio_mode) to zero when leaving the high-speed zone.</p>
+<p>An early-exit check on <code>$305A</code> bit 4 (system_control_flags) bypasses the comparison entirely, forcing the bit clear and zeroing <code>$31CC</code>.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>A3CE  LDX $3062           ; load rpm_period
+A3D1  BBS $305A,#$04,$A3EB ; if system_control_flags bit 4 set, -&gt; clear
+A3D6  BBS $31A1,#$02,$A3E6 ; if already in high-speed zone, check exit threshold
+A3DB  CPX $4456           ; compare period against high-speed entry threshold
+A3DE  BCC $A3EF           ; if period &lt; threshold (faster), -&gt; enter zone
+A3E0  SEB $31A1,#$02      ; set bit 2 (high-speed zone active)
+A3E4  BRA $A3F3           ; -&gt; return
+A3E6  CPX $4454           ; compare against low-speed exit threshold
+A3E9  BCS $A3F3           ; if period &gt;= threshold (still fast enough), stay
+A3EB  CLB $31A1,#$02      ; clear bit 2 (exit high-speed zone)
+A3EF  LDM $31CC,#$00      ; clear af_ratio_mode to 0
+A3F3  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$3062</code> (rpm_period) — current RPM period (lower = faster)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$31A1</code> bit 2 — set when RPM period below entry threshold, cleared when above exit threshold</li>
+<li><code>$31CC</code> — cleared to 0 when exiting high-speed zone</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3062</td>
+<td>rpm_period</td>
+<td>Engine RPM period value</td>
+</tr>
+<tr>
+<td>0x305A</td>
+<td>system_control_flags</td>
+<td>Bit 4: bypass hysteresis</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Bit 2: current high-speed zone state</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Bit 2: set/cleared based on RPM</td>
+</tr>
+<tr>
+<td>0x31CC</td>
+<td>af_ratio_mode</td>
+<td>Cleared to 0 when leaving high-speed zone</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4454</td>
+<td>2 bytes</td>
+<td>RPM period exit threshold (hysteresis low bound — period must drop below this to exit)</td>
+</tr>
+<tr>
+<td>0x4456</td>
+<td>2 bytes</td>
+<td>RPM period entry threshold (hysteresis high bound — period must be below this to enter)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA2CE.html">0xA2CE Injection Period Scaling</a><a class="nav-next" href="0xA3F4.html">0xA3F4 RPM Zone Classifier (Phase 1)</a></nav>
+</body>
+</html>

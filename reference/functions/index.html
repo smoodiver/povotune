@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Function Index — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>Index</span></nav>
+<h1 id="functions-bd5a">Functions — BD5A</h1>
+<p>Analyzed function entries for the BD5A Subaru Legacy RS ECU ROM. One file per function, named by entry address.</p>
+<p><strong>Source key:</strong> <code>bd5a</code> = name derived from BD5A code analysis. <code>datasheet</code> = name from M7700 documentation. <code>verified</code> = code is byte-identical to cross-reference equivalent, name validated.</p>
+<h2 id="function-index">Function Index</h2>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Size</th>
+<th>Blocks</th>
+<th>Type</th>
+<th>Callers</th>
+<th>Confidence</th>
+<th>Source</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6000</td>
+<td>1D Table Interpolation (8-entry)</td>
+<td>12 bytes</td>
+<td>4</td>
+<td>subroutine</td>
+<td>62</td>
+<td>confirmed</td>
+<td>verified</td>
+<td><a href="0x6000.html">0x6000</a></td>
+</tr>
+<tr>
+<td>0x600D</td>
+<td>1D Table Interpolation (Alternate Entry)</td>
+<td>12 bytes</td>
+<td>4</td>
+<td>subroutine</td>
+<td>1</td>
+<td>—</td>
+<td>verified</td>
+<td><a href="0x600D.html">0x600D</a></td>
+</tr>
+<tr>
+<td>0x601A</td>
+<td>1D Table Interpolation (Alternate Entry)</td>
+<td>101 bytes</td>
+<td>11</td>
+<td>subroutine</td>
+<td>7</td>
+<td>—</td>
+<td>verified</td>
+<td><a href="0x601A.html">0x601A</a></td>
+</tr>
+<tr>
+<td>0x6080</td>
+<td>Map Lookup (Bilinear Interpolation)</td>
+<td>12 bytes</td>
+<td>1</td>
+<td>subroutine</td>
+<td>4</td>
+<td>confirmed</td>
+<td>verified</td>
+<td><a href="0x6080.html">0x6080</a></td>
+</tr>
+<tr>
+<td>0x608D</td>
+<td>Map Lookup Bilinear Interpolation (Alternate Entry)</td>
+<td>5 bytes</td>
+<td>1</td>
+<td>subroutine</td>
+<td>1</td>
+<td>—</td>
+<td>verified</td>
+<td><a href="0x608D.html">0x608D</a></td>
+</tr>
+<tr>
+<td>0x6093</td>
+<td>Map Lookup Bilinear Interpolation (8x8 Mode Entry)</td>
+<td>624 bytes</td>
+<td>72</td>
+<td>subroutine</td>
+<td>3</td>
+<td>—</td>
+<td>verified</td>
+<td><a href="0x6093.html">0x6093</a></td>
+</tr>
+<tr>
+<td>0x6378</td>
+<td>Turbo Duty Map Lookup</td>
+<td>103 bytes</td>
+<td>9</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6378.html">0x6378</a></td>
+</tr>
+<tr>
+<td>0x63E0</td>
+<td>16-Bit Table Interpolation</td>
+<td>80 bytes</td>
+<td>8</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x63E0.html">0x63E0</a></td>
+</tr>
+<tr>
+<td>0x6851</td>
+<td>Periodic Diagnostics</td>
+<td>706 bytes</td>
+<td>116</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6851.html">0x6851</a></td>
+</tr>
+<tr>
+<td>0x6B14</td>
+<td>Health Check Dispatcher</td>
+<td>75 bytes</td>
+<td>26</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6B14.html">0x6B14</a></td>
+</tr>
+<tr>
+<td>0x6B60</td>
+<td>Health Check Precondition Gate</td>
+<td>40 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6B60.html">0x6B60</a></td>
+</tr>
+<tr>
+<td>0x6B89</td>
+<td>Diagnostic Mode Initializer</td>
+<td>55 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6B89.html">0x6B89</a></td>
+</tr>
+<tr>
+<td>0x6BC1</td>
+<td>Starter/Battery Voltage Check</td>
+<td>88 bytes</td>
+<td>15</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6BC1.html">0x6BC1</a></td>
+</tr>
+<tr>
+<td>0x6C1A</td>
+<td>Coolant Sensor Pre-Check</td>
+<td>16 bytes</td>
+<td>4</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6C1A.html">0x6C1A</a></td>
+</tr>
+<tr>
+<td>0x6C2B</td>
+<td>Idle/Load Range Check</td>
+<td>74 bytes</td>
+<td>17</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6C2B.html">0x6C2B</a></td>
+</tr>
+<tr>
+<td>0x6C76</td>
+<td>TPS/Throttle Sensor Check</td>
+<td>109 bytes</td>
+<td>21</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6C76.html">0x6C76</a></td>
+</tr>
+<tr>
+<td>0x6CE4</td>
+<td>Intake Air Temp Sensor Check</td>
+<td>48 bytes</td>
+<td>9</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6CE4.html">0x6CE4</a></td>
+</tr>
+<tr>
+<td>0x6D15</td>
+<td>Knock Sensor Debounce Check</td>
+<td>120 bytes</td>
+<td>23</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6D15.html">0x6D15</a></td>
+</tr>
+<tr>
+<td>0x6D8E</td>
+<td>Idle Speed Control Valve Check</td>
+<td>142 bytes</td>
+<td>29</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6D8E.html">0x6D8E</a></td>
+</tr>
+<tr>
+<td>0x6E1D</td>
+<td>Front O2 Sensor Range Check</td>
+<td>26 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6E1D.html">0x6E1D</a></td>
+</tr>
+<tr>
+<td>0x6E38</td>
+<td>Turbo Feedback Sensor Range Check</td>
+<td>38 bytes</td>
+<td>8</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6E38.html">0x6E38</a></td>
+</tr>
+<tr>
+<td>0x6E5F</td>
+<td>Ignition Signal Detect</td>
+<td>31 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6E5F.html">0x6E5F</a></td>
+</tr>
+<tr>
+<td>0x6E7F</td>
+<td>Closed-Throttle Position Switch Check</td>
+<td>127 bytes</td>
+<td>25</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6E7F.html">0x6E7F</a></td>
+</tr>
+<tr>
+<td>0x6EFF</td>
+<td>Cranking/Idle Speed Sensor Check</td>
+<td>199 bytes</td>
+<td>37</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6EFF.html">0x6EFF</a></td>
+</tr>
+<tr>
+<td>0x6FC7</td>
+<td>Knock Sensor 4-Channel Health Check</td>
+<td>374 bytes</td>
+<td>61</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x6FC7.html">0x6FC7</a></td>
+</tr>
+<tr>
+<td>0x713E</td>
+<td>O2 Sensor Lean Detect</td>
+<td>107 bytes</td>
+<td>21</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x713E.html">0x713E</a></td>
+</tr>
+<tr>
+<td>0x71AA</td>
+<td>Boost Solenoid Fault Check</td>
+<td>103 bytes</td>
+<td>22</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x71AA.html">0x71AA</a></td>
+</tr>
+<tr>
+<td>0x7212</td>
+<td>Coolant Fan Relay Fault Check</td>
+<td>78 bytes</td>
+<td>13</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7212.html">0x7212</a></td>
+</tr>
+<tr>
+<td>0x7261</td>
+<td>Crank Position Sensor Fault Check</td>
+<td>178 bytes</td>
+<td>30</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7261.html">0x7261</a></td>
+</tr>
+<tr>
+<td>0x7314</td>
+<td>Ignition Signal / Decel Detect</td>
+<td>62 bytes</td>
+<td>14</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7314.html">0x7314</a></td>
+</tr>
+<tr>
+<td>0x7353</td>
+<td>Fuel Injector Circuit Check (Pair 1)</td>
+<td>91 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7353.html">0x7353</a></td>
+</tr>
+<tr>
+<td>0x73AF</td>
+<td>Turbo Solenoid A Fault Check</td>
+<td>91 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>cross-reference</td>
+<td><a href="0x73AF.html">0x73AF</a></td>
+</tr>
+<tr>
+<td>0x740B</td>
+<td>Turbo Solenoid B Fault Check</td>
+<td>91 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>cross-reference</td>
+<td><a href="0x740B.html">0x740B</a></td>
+</tr>
+<tr>
+<td>0x7467</td>
+<td>Turbo Solenoid C Fault Check</td>
+<td>91 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>cross-reference</td>
+<td><a href="0x7467.html">0x7467</a></td>
+</tr>
+<tr>
+<td>0x74C3</td>
+<td>Turbo Solenoid D Fault Check</td>
+<td>91 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>cross-reference</td>
+<td><a href="0x74C3.html">0x74C3</a></td>
+</tr>
+<tr>
+<td>0x751F</td>
+<td>Auxiliary Sensor / EGT Fault Check</td>
+<td>104 bytes</td>
+<td>21</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>cross-reference</td>
+<td><a href="0x751F.html">0x751F</a></td>
+</tr>
+<tr>
+<td>0x7588</td>
+<td>Fault Threshold Evaluator</td>
+<td>395 bytes</td>
+<td>71</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7588.html">0x7588</a></td>
+</tr>
+<tr>
+<td>0x7714</td>
+<td>Fault Output Stage</td>
+<td>209 bytes</td>
+<td>24</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7714.html">0x7714</a></td>
+</tr>
+<tr>
+<td>0x77E6</td>
+<td>MIL Lamp Driver</td>
+<td>321 bytes</td>
+<td>70</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x77E6.html">0x77E6</a></td>
+</tr>
+<tr>
+<td>0x7928</td>
+<td>Fault Code Bit Scanner</td>
+<td>126 bytes</td>
+<td>25</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7928.html">0x7928</a></td>
+</tr>
+<tr>
+<td>0x79C7</td>
+<td>Blink Pattern Generator</td>
+<td>78 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x79C7.html">0x79C7</a></td>
+</tr>
+<tr>
+<td>0x7A16</td>
+<td>Idle Toggle Timer</td>
+<td>30 bytes</td>
+<td>3</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7A16.html">0x7A16</a></td>
+</tr>
+<tr>
+<td>0x7A35</td>
+<td>Closed-Loop Readiness Classifier</td>
+<td>91 bytes</td>
+<td>20</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7A35.html">0x7A35</a></td>
+</tr>
+<tr>
+<td>0x7A91</td>
+<td>Diagnostic Output Builder</td>
+<td>270 bytes</td>
+<td>52</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7A91.html">0x7A91</a></td>
+</tr>
+<tr>
+<td>0x7BA0</td>
+<td>Port 2000 Bit 6 Hold-Off Timer</td>
+<td>41 bytes</td>
+<td>11</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7BA0.html">0x7BA0</a></td>
+</tr>
+<tr>
+<td>0x7BCA</td>
+<td>Self-Test Entry</td>
+<td>116 bytes</td>
+<td>15</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7BCA.html">0x7BCA</a></td>
+</tr>
+<tr>
+<td>0x7C3F</td>
+<td>Self-Test Toggle Timer</td>
+<td>27 bytes</td>
+<td>5</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7C3F.html">0x7C3F</a></td>
+</tr>
+<tr>
+<td>0x7D8B</td>
+<td>Airflow Output Lookup</td>
+<td>24 bytes</td>
+<td>2</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x7D8B.html">0x7D8B</a></td>
+</tr>
+<tr>
+<td>0x7E8C</td>
+<td>Boost Output Controller</td>
+<td>59 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x7E8C.html">0x7E8C</a></td>
+</tr>
+<tr>
+<td>0x7EC8</td>
+<td>Fuel Map Lookup</td>
+<td>89 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x7EC8.html">0x7EC8</a></td>
+</tr>
+<tr>
+<td>0x7F22</td>
+<td>Adjustment Map Lookup</td>
+<td>43 bytes</td>
+<td>2</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x7F22.html">0x7F22</a></td>
+</tr>
+<tr>
+<td>0x7F4E</td>
+<td>Duty Cycle Complement</td>
+<td>40 bytes</td>
+<td>3</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x7F4E.html">0x7F4E</a></td>
+</tr>
+<tr>
+<td>0x7F77</td>
+<td>Warmup Enrichment</td>
+<td>272 bytes</td>
+<td>41</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x7F77.html">0x7F77</a></td>
+</tr>
+<tr>
+<td>0x8088</td>
+<td>Overrun Detector</td>
+<td>90 bytes</td>
+<td>13</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x8088.html">0x8088</a></td>
+</tr>
+<tr>
+<td>0x80E3</td>
+<td>RPM Hysteresis Comparator</td>
+<td>28 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x80E3.html">0x80E3</a></td>
+</tr>
+<tr>
+<td>0x8100</td>
+<td>Adj Map Condition Checker</td>
+<td>132 bytes</td>
+<td>24</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x8100.html">0x8100</a></td>
+</tr>
+<tr>
+<td>0x8185</td>
+<td>Ignition Output Controller</td>
+<td>336 bytes</td>
+<td>53</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8185.html">0x8185</a></td>
+</tr>
+<tr>
+<td>0x82D6</td>
+<td>Ignition Timing</td>
+<td>720 bytes</td>
+<td>87</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x82D6.html">0x82D6</a></td>
+</tr>
+<tr>
+<td>0x85A7</td>
+<td>Knock Position Tracker</td>
+<td>51 bytes</td>
+<td>12</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x85A7.html">0x85A7</a></td>
+</tr>
+<tr>
+<td>0x85DB</td>
+<td>Knock Retard Calculator</td>
+<td>254 bytes</td>
+<td>30</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x85DB.html">0x85DB</a></td>
+</tr>
+<tr>
+<td>0x86DA</td>
+<td>Dual Lookup Multiply</td>
+<td>38 bytes</td>
+<td>3</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x86DA.html">0x86DA</a></td>
+</tr>
+<tr>
+<td>0x8701</td>
+<td>Boost Control Main</td>
+<td>1815 bytes</td>
+<td>264</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8701.html">0x8701</a></td>
+</tr>
+<tr>
+<td>0x8E19</td>
+<td>Saturating Double and Lookup</td>
+<td>14 bytes</td>
+<td>5</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8E19.html">0x8E19</a></td>
+</tr>
+<tr>
+<td>0x8E28</td>
+<td>Weighted Accumulate (B_high &gt;&gt; 2)</td>
+<td>15 bytes</td>
+<td>1</td>
+<td>subroutine</td>
+<td>9</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8E28.html">0x8E28</a></td>
+</tr>
+<tr>
+<td>0x8E38</td>
+<td>Boost Qualification Gate</td>
+<td>38 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8E38.html">0x8E38</a></td>
+</tr>
+<tr>
+<td>0x8E5F</td>
+<td>Boost Ramp Integrator</td>
+<td>74 bytes</td>
+<td>12</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8E5F.html">0x8E5F</a></td>
+</tr>
+<tr>
+<td>0x8EAA</td>
+<td>Load Default Timer Constant</td>
+<td>6 bytes</td>
+<td>1</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8EAA.html">0x8EAA</a></td>
+</tr>
+<tr>
+<td>0x8EB1</td>
+<td>Vehicle Speed Hysteresis Check</td>
+<td>32 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8EB1.html">0x8EB1</a></td>
+</tr>
+<tr>
+<td>0x8ED2</td>
+<td>Boost Duty Floor Enforcer</td>
+<td>57 bytes</td>
+<td>11</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8ED2.html">0x8ED2</a></td>
+</tr>
+<tr>
+<td>0x8F0C</td>
+<td>Duty Floor Decay</td>
+<td>17 bytes</td>
+<td>3</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8F0C.html">0x8F0C</a></td>
+</tr>
+<tr>
+<td>0x8F1E</td>
+<td>RPM Rate-of-Change Classifier</td>
+<td>45 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8F1E.html">0x8F1E</a></td>
+</tr>
+<tr>
+<td>0x8F4C</td>
+<td>Max Duty Limit Calculator</td>
+<td>104 bytes</td>
+<td>17</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x8F4C.html">0x8F4C</a></td>
+</tr>
+<tr>
+<td>0x8FB5</td>
+<td>Idle Duty Controller</td>
+<td>185 bytes</td>
+<td>27</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x8FB5.html">0x8FB5</a></td>
+</tr>
+<tr>
+<td>0x906F</td>
+<td>Idle Duty Coolant Correction and Output</td>
+<td>63 bytes</td>
+<td>5</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x906F.html">0x906F</a></td>
+</tr>
+<tr>
+<td>0x90AF</td>
+<td>Table Lookup Result Add Offset</td>
+<td>23 bytes</td>
+<td>4</td>
+<td>subroutine</td>
+<td>4</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x90AF.html">0x90AF</a></td>
+</tr>
+<tr>
+<td>0x90C7</td>
+<td>Sequential Turbo Solenoid Test</td>
+<td>323 bytes</td>
+<td>57</td>
+<td>subroutine</td>
+<td>1</td>
+<td>cross-reference</td>
+<td>cross-reference</td>
+<td><a href="0x90C7.html">0x90C7</a></td>
+</tr>
+<tr>
+<td>0x922F</td>
+<td>AC Relay Controller</td>
+<td>467 bytes</td>
+<td>81</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x922F.html">0x922F</a></td>
+</tr>
+<tr>
+<td>0x9433</td>
+<td>Limiter Output Controller</td>
+<td>77 bytes</td>
+<td>16</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0x9433.html">0x9433</a></td>
+</tr>
+<tr>
+<td>0x9481</td>
+<td>Adaptive Learning</td>
+<td>485 bytes</td>
+<td>58</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x9481.html">0x9481</a></td>
+</tr>
+<tr>
+<td>0x96AF</td>
+<td>Adaptive Learning Integrator</td>
+<td>225 bytes</td>
+<td>35</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x96AF.html">0x96AF</a></td>
+</tr>
+<tr>
+<td>0x97CF</td>
+<td>Diagnostic State Restore / Init</td>
+<td>130 bytes</td>
+<td>17</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x97CF.html">0x97CF</a></td>
+</tr>
+<tr>
+<td>0x9852</td>
+<td>Knock Learning State Restore / Init</td>
+<td>78 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x9852.html">0x9852</a></td>
+</tr>
+<tr>
+<td>0x9B99</td>
+<td>Injection Output &amp; Dwell Calculator</td>
+<td>407 bytes</td>
+<td>58</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x9B99.html">0x9B99</a></td>
+</tr>
+<tr>
+<td>0x9D39</td>
+<td>Cylinder Pair Injection Sequencer</td>
+<td>200 bytes</td>
+<td>22</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x9D39.html">0x9D39</a></td>
+</tr>
+<tr>
+<td>0x9E1E</td>
+<td>Injection Timing Calculator (Channel 1)</td>
+<td>290 bytes</td>
+<td>49</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x9E1E.html">0x9E1E</a></td>
+</tr>
+<tr>
+<td>0x9F41</td>
+<td>Injection Timing Calculator (Channel 2)</td>
+<td>290 bytes</td>
+<td>49</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0x9F41.html">0x9F41</a></td>
+</tr>
+<tr>
+<td>0xA064</td>
+<td>Injection Timing Calculator (Channel 3)</td>
+<td>290 bytes</td>
+<td>49</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA064.html">0xA064</a></td>
+</tr>
+<tr>
+<td>0xA187</td>
+<td>Injection Timing Calculator (Channel 4)</td>
+<td>290 bytes</td>
+<td>49</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA187.html">0xA187</a></td>
+</tr>
+<tr>
+<td>0xA2CE</td>
+<td>Injection Period Scaling</td>
+<td>154 bytes</td>
+<td>15</td>
+<td>subroutine</td>
+<td>4</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA2CE.html">0xA2CE</a></td>
+</tr>
+<tr>
+<td>0xA3CE</td>
+<td>RPM Hysteresis Gate (Phase 2)</td>
+<td>37 bytes</td>
+<td>8</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA3CE.html">0xA3CE</a></td>
+</tr>
+<tr>
+<td>0xA3F4</td>
+<td>RPM Zone Classifier (Phase 1)</td>
+<td>83 bytes</td>
+<td>14</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA3F4.html">0xA3F4</a></td>
+</tr>
+<tr>
+<td>0xA683</td>
+<td>Knock Control Dispatcher (Phase 0)</td>
+<td>103 bytes</td>
+<td>20</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA683.html">0xA683</a></td>
+</tr>
+<tr>
+<td>0xA6EB</td>
+<td>RPM Range Classifier (Limiter Flags)</td>
+<td>89 bytes</td>
+<td>13</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA6EB.html">0xA6EB</a></td>
+</tr>
+<tr>
+<td>0xA745</td>
+<td>Timing Correction Decay</td>
+<td>41 bytes</td>
+<td>8</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA745.html">0xA745</a></td>
+</tr>
+<tr>
+<td>0xA76F</td>
+<td>Knock Retard Ramp Controller</td>
+<td>182 bytes</td>
+<td>25</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA76F.html">0xA76F</a></td>
+</tr>
+<tr>
+<td>0xA826</td>
+<td>Knock Learning Update</td>
+<td>145 bytes</td>
+<td>19</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA826.html">0xA826</a></td>
+</tr>
+<tr>
+<td>0xA8B8</td>
+<td>Knock Correction Clamp</td>
+<td>142 bytes</td>
+<td>19</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA8B8.html">0xA8B8</a></td>
+</tr>
+<tr>
+<td>0xA947</td>
+<td>Knock Sensor Mode Classifier</td>
+<td>92 bytes</td>
+<td>15</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA947.html">0xA947</a></td>
+</tr>
+<tr>
+<td>0xA9A4</td>
+<td>Knock Timing Interval Counter</td>
+<td>72 bytes</td>
+<td>12</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA9A4.html">0xA9A4</a></td>
+</tr>
+<tr>
+<td>0xA9ED</td>
+<td>Ignition Timing Output Calculator</td>
+<td>227 bytes</td>
+<td>40</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xA9ED.html">0xA9ED</a></td>
+</tr>
+<tr>
+<td>0xAC26</td>
+<td>Speed Counter</td>
+<td>67 bytes</td>
+<td>11</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xAC26.html">0xAC26</a></td>
+</tr>
+<tr>
+<td>0xACBB</td>
+<td>Target A/F Ratio</td>
+<td>37 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xACBB.html">0xACBB</a></td>
+</tr>
+<tr>
+<td>0xACE1</td>
+<td>Measure Airflow</td>
+<td>60 bytes</td>
+<td>4</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xACE1.html">0xACE1</a></td>
+</tr>
+<tr>
+<td>0xAD1E</td>
+<td>Airflow Rate Calculator</td>
+<td>257 bytes</td>
+<td>31</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xAD1E.html">0xAD1E</a></td>
+</tr>
+<tr>
+<td>0xAE20</td>
+<td>Stall/Cranking Detector</td>
+<td>125 bytes</td>
+<td>18</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xAE20.html">0xAE20</a></td>
+</tr>
+<tr>
+<td>0xAE9E</td>
+<td>Cranking Initialization</td>
+<td>99 bytes</td>
+<td>13</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xAE9E.html">0xAE9E</a></td>
+</tr>
+<tr>
+<td>0xAFF5</td>
+<td>Throttle Rate-of-Change Processor</td>
+<td>360 bytes</td>
+<td>41</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xAFF5.html">0xAFF5</a></td>
+</tr>
+<tr>
+<td>0xB2B1</td>
+<td>AN2 Boost Pressure Reader</td>
+<td>46 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB2B1.html">0xB2B1</a></td>
+</tr>
+<tr>
+<td>0xB2F7</td>
+<td>Engine Load Calculator</td>
+<td>177 bytes</td>
+<td>22</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB2F7.html">0xB2F7</a></td>
+</tr>
+<tr>
+<td>0xB3A9</td>
+<td>ISC Valve Position Sampler</td>
+<td>161 bytes</td>
+<td>16</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB3A9.html">0xB3A9</a></td>
+</tr>
+<tr>
+<td>0xB44B</td>
+<td>Turbo Feedback Sensor Processor</td>
+<td>383 bytes</td>
+<td>50</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB44B.html">0xB44B</a></td>
+</tr>
+<tr>
+<td>0xB5CB</td>
+<td>Acceleration Enrichment Calculator</td>
+<td>195 bytes</td>
+<td>21</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB5CB.html">0xB5CB</a></td>
+</tr>
+<tr>
+<td>0xB68F</td>
+<td>Fuel Correction Blender</td>
+<td>152 bytes</td>
+<td>16</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB68F.html">0xB68F</a></td>
+</tr>
+<tr>
+<td>0xB728</td>
+<td>Base Fuel Pulse Width Calculator</td>
+<td>159 bytes</td>
+<td>19</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB728.html">0xB728</a></td>
+</tr>
+<tr>
+<td>0xB7C8</td>
+<td>Final Fuel Pulse Width Blender</td>
+<td>72 bytes</td>
+<td>5</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB7C8.html">0xB7C8</a></td>
+</tr>
+<tr>
+<td>0xB811</td>
+<td>O2 Feedback Correction Calculator</td>
+<td>602 bytes</td>
+<td>65</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xB811.html">0xB811</a></td>
+</tr>
+<tr>
+<td>0xBA6C</td>
+<td>RPM/AFM Rate-of-Change History</td>
+<td>54 bytes</td>
+<td>1</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBA6C.html">0xBA6C</a></td>
+</tr>
+<tr>
+<td>0xBAA3</td>
+<td>Fuel Enrichment Calculator</td>
+<td>233 bytes</td>
+<td>33</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBAA3.html">0xBAA3</a></td>
+</tr>
+<tr>
+<td>0xBB8D</td>
+<td>Injection Pulse Width &amp; Cylinder Distribution</td>
+<td>394 bytes</td>
+<td>57</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBB8D.html">0xBB8D</a></td>
+</tr>
+<tr>
+<td>0xBD28</td>
+<td>Fuel Pulse Diagnostic Flag</td>
+<td>40 bytes</td>
+<td>9</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBD28.html">0xBD28</a></td>
+</tr>
+<tr>
+<td>0xBD51</td>
+<td>RPM Processor</td>
+<td>137 bytes</td>
+<td>11</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBD51.html">0xBD51</a></td>
+</tr>
+<tr>
+<td>0xBDDB</td>
+<td>Throttle Decay &amp; Counter Maintenance</td>
+<td>35 bytes</td>
+<td>6</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBDDB.html">0xBDDB</a></td>
+</tr>
+<tr>
+<td>0xBDFF</td>
+<td>Turbo Transition Controller</td>
+<td>953 bytes</td>
+<td>138</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xBDFF.html">0xBDFF</a></td>
+</tr>
+<tr>
+<td>0xC1B9</td>
+<td>Turbo Transition Gain Calculator</td>
+<td>449 bytes</td>
+<td>53</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC1B9.html">0xC1B9</a></td>
+</tr>
+<tr>
+<td>0xC37B</td>
+<td>System Status Update</td>
+<td>196 bytes</td>
+<td>27</td>
+<td>subroutine</td>
+<td>2</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC37B.html">0xC37B</a></td>
+</tr>
+<tr>
+<td>0xC458</td>
+<td>Multi-Rate Timer Dispatcher</td>
+<td>64 bytes</td>
+<td>14</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC458.html">0xC458</a></td>
+</tr>
+<tr>
+<td>0xC54A</td>
+<td>O2 Heater Control</td>
+<td>89 bytes</td>
+<td>14</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC54A.html">0xC54A</a></td>
+</tr>
+<tr>
+<td>0xC5A4</td>
+<td>Coolant Fan Speed Controller</td>
+<td>146 bytes</td>
+<td>27</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC5A4.html">0xC5A4</a></td>
+</tr>
+<tr>
+<td>0xC637</td>
+<td>Engine Stall Recovery</td>
+<td>61 bytes</td>
+<td>5</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC637.html">0xC637</a></td>
+</tr>
+<tr>
+<td>0xC675</td>
+<td>Coolant Fan Relay Qualifier</td>
+<td>175 bytes</td>
+<td>35</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC675.html">0xC675</a></td>
+</tr>
+<tr>
+<td>0xC725</td>
+<td>Speed Control</td>
+<td>695 bytes</td>
+<td>115</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC725.html">0xC725</a></td>
+</tr>
+<tr>
+<td>0xC9DD</td>
+<td>Coolant-Based Fuel Correction</td>
+<td>89 bytes</td>
+<td>10</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xC9DD.html">0xC9DD</a></td>
+</tr>
+<tr>
+<td>0xCA37</td>
+<td>Load Threshold Controller</td>
+<td>226 bytes</td>
+<td>34</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xCA37.html">0xCA37</a></td>
+</tr>
+<tr>
+<td>0xCB1A</td>
+<td>Three-Map Ramp Integrator</td>
+<td>55 bytes</td>
+<td>9</td>
+<td>subroutine</td>
+<td>1</td>
+<td>likely</td>
+<td>bd5a</td>
+<td><a href="0xCB1A.html">0xCB1A</a></td>
+</tr>
+<tr>
+<td>0xCB52</td>
+<td>Three-Map Selection</td>
+<td>78 bytes</td>
+<td>7</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xCB52.html">0xCB52</a></td>
+</tr>
+<tr>
+<td>0xCBA1</td>
+<td>Vehicle Speed Processor</td>
+<td>253 bytes</td>
+<td>38</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xCBA1.html">0xCBA1</a></td>
+</tr>
+<tr>
+<td>0xCC9F</td>
+<td>Twin Turbo Duty Controller</td>
+<td>2988 bytes</td>
+<td>445</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xCC9F.html">0xCC9F</a></td>
+</tr>
+<tr>
+<td>0xD86E</td>
+<td>Boost Target Pressure Adjustment</td>
+<td>65 bytes</td>
+<td>12</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xD86E.html">0xD86E</a></td>
+</tr>
+<tr>
+<td>0xD8C0</td>
+<td>Twin Turbo Switching Port Controller</td>
+<td>73 bytes</td>
+<td>17</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xD8C0.html">0xD8C0</a></td>
+</tr>
+<tr>
+<td>0xD90A</td>
+<td>Ignition Timing Retard Controller</td>
+<td>327 bytes</td>
+<td>47</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xD90A.html">0xD90A</a></td>
+</tr>
+<tr>
+<td>0xDA52</td>
+<td>RPM Acceleration Filter</td>
+<td>155 bytes</td>
+<td>26</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xDA52.html">0xDA52</a></td>
+</tr>
+<tr>
+<td>0xDAEE</td>
+<td>Knock Feedback Delta Monitor</td>
+<td>98 bytes</td>
+<td>13</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xDAEE.html">0xDAEE</a></td>
+</tr>
+<tr>
+<td>0xDB51</td>
+<td>Ignition Timing Recovery Gate</td>
+<td>105 bytes</td>
+<td>16</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xDB51.html">0xDB51</a></td>
+</tr>
+<tr>
+<td>0xDBBB</td>
+<td>Idle Dashpot Controller</td>
+<td>74 bytes</td>
+<td>14</td>
+<td>subroutine</td>
+<td>1</td>
+<td>confirmed</td>
+<td>bd5a</td>
+<td><a href="0xDBBB.html">0xDBBB</a></td>
+</tr>
+</tbody></table>
+
+<nav class="nav-footer"><a class="nav-prev" href="../rom.html">ROM Tables</a><a class="nav-next" href="0x6000.html">0x6000 1D Table Interpolation (8-entry)</a></nav>
+</body>
+</html>

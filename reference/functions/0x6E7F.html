@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6E7F — Closed-Throttle Position Switch Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6E7F Closed-Throttle Position Switch Check</span></nav>
+<h3 id="0x6e7f-closed-throttle-position-switch-check">0x6E7F — Closed-Throttle Position Switch Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6E7F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>128 bytes (0x6E7F–0x6EFE)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>25</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (health check callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (health_check_dispatcher 0x6B14, slot 10)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0x634E (saturating_increment_y_indexed), 0x633D (saturating_increment) — walker reports 0 callees; 0x634E called via JSR at 0x6EB9</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Tests the closed-throttle position switch (idle contact) for stuck-open faults. Verifies that the throttle position switch closes when driving conditions indicate it should be closed (vehicle moving, engine running, no speed signal anomalies). Uses a Y-indexed saturating increment counter at 0x3180 with a 16-bit threshold of 0x024A (586 counts) before setting a pending fault. Fault confirmation promotes through 0x332F bit 6 after additional checks, gated by diagnostic timer 0x318C &gt;= 0x030D.</p>
+<h4 id="logic-flow">Logic Flow</h4>
+<ol>
+<li><strong>Precondition gates</strong> (0x6E7F–0x6E93): Exit early if any prior fault is already set in 0x332F bit 2, 0x332E bit 6, or 0x3330 bit 0</li>
+<li><strong>Engine state check</strong> (0x6E94–0x6E99): Exit if speed snapshot 0x3167 != 0 (vehicle not stationary — inverted logic: test requires vehicle moving, so 0x3167 must be 0 meaning &quot;test passed&quot;)</li>
+<li><strong>Running gate</strong> (0x6E99): BBC 0x3051 bit 2 — engine must be running</li>
+<li><strong>Bypass check</strong> (0x6E9E): BBS 0x305A bit 4 — skip if system control flag set</li>
+<li><strong>Throttle position test</strong> (0x6EA3–0x6EAF): LDA 0x3745, CMP #0x2F — throttle input must be &gt;= 0x2F; LDA 0x306E, CMP #0x32 — knock sensor must be &gt;= 0x32</li>
+<li><strong>Idle switch check</strong> (0x6EB1): BBS 0x305A bit 0 — skip if idle switch already active</li>
+<li><strong>Fault counter</strong> (0x6EB6–0x6EBF): Increment Y-indexed counter at 0x3180 via JSR 0x634E; compare X against 0x024A (16-bit threshold)</li>
+<li><strong>Pending fault set</strong> (0x6EC1): SEB 0x31CF bit 4 — set pending closed-throttle fault</li>
+<li><strong>Clear path</strong> (0x6EC5): On any precondition failure, clear counter 0x3180 to 0x0000</li>
+</ol>
+<h4 id="fault-confirmation-0x6ecb-0x6efe">Fault Confirmation (0x6ECB–0x6EFE)</h4>
+<ul>
+<li>If 0x332F bit 6 already set OR 0x31CF bit 4 pending:<ul>
+<li>Check 0x3167 &gt;= 2 → clear both 0x332F bit 6 and 0x31CF bit 4, set 0x3030 bit 2 (throttle state recovery)</li>
+<li>If 0x31CF bit 4 still pending and diagnostic mode (0x3510 != 0): check timer 0x318C &gt;= 0x030D before promoting to 0x332F bit 6 (confirmed fault)</li>
+</ul>
+</li>
+</ul>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x332F bit 2: prior crank position fault (inhibits test)</li>
+<li>0x332E bit 6: prior ignition signal fault (inhibits test)</li>
+<li>0x3330 bit 0: prior VSS fault (inhibits test)</li>
+<li>0x3167: speed snapshot (must be 0 for test to run)</li>
+<li>0x3051 bit 2: engine running flag</li>
+<li>0x305A bit 4: system control bypass flag</li>
+<li>0x305A bit 0: idle switch state</li>
+<li>0x3745: throttle position input (&gt;= 0x2F required)</li>
+<li>0x306E: knock sensor value (&gt;= 0x32 required)</li>
+<li>0x3510: diagnostic mode control</li>
+<li>0x318C: diagnostic elapsed timer (16-bit)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x31CF bit 4: pending closed-throttle fault</li>
+<li>0x332F bit 6: confirmed closed-throttle / ignition coil fault</li>
+<li>0x3030 bit 2: throttle state recovery flag</li>
+<li>0x3180: fault debounce counter (16-bit, Y-indexed via 0x634E)</li>
+</ul>
+<h4 id="ram-references">RAM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3167</td>
+<td>speed_snapshot</td>
+<td>R</td>
+<td>Vehicle speed check (must be 0)</td>
+</tr>
+<tr>
+<td>0x3745</td>
+<td>throttle_position_input</td>
+<td>R</td>
+<td>Throttle position (&gt;= 0x2F)</td>
+</tr>
+<tr>
+<td>0x306E</td>
+<td>knock_sensor</td>
+<td>R</td>
+<td>Knock sensor readiness (&gt;= 0x32)</td>
+</tr>
+<tr>
+<td>0x3180</td>
+<td>throttle_switch_counter</td>
+<td>R/W</td>
+<td>Y-indexed debounce counter (16-bit)</td>
+</tr>
+<tr>
+<td>0x31CF</td>
+<td>diag_pending_faults</td>
+<td>R/W</td>
+<td>Bit 4: pending fault</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>temp_override_flags</td>
+<td>R/W</td>
+<td>Bit 6: confirmed fault</td>
+</tr>
+<tr>
+<td>0x3030</td>
+<td>throttle_state_flags</td>
+<td>W</td>
+<td>Bit 2: recovery flag</td>
+</tr>
+<tr>
+<td>0x318C</td>
+<td>diag_elapsed_timer</td>
+<td>R</td>
+<td>Timer gate (&gt;= 0x030D)</td>
+</tr>
+<tr>
+<td>0x3510</td>
+<td>control_reg_3510</td>
+<td>R</td>
+<td>Diagnostic mode flag</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6E5F.html">0x6E5F Ignition Signal Detect</a><a class="nav-next" href="0x6EFF.html">0x6EFF Cranking/Idle Speed Sensor Check</a></nav>
+</body>
+</html>

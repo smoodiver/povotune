@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x7A91 — Diagnostic Output Builder — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x7A91 Diagnostic Output Builder</span></nav>
+<h3 id="0x7a91-diagnostic-output-builder">0x7A91 — Diagnostic Output Builder</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x7A91</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>271 bytes (0x7A91–0x7B9F)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>52</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Builds a diagnostic output packet for the Subaru Select Monitor (SSM). Reads throttle position, vehicle speed, and numerous I/O port and status register bits, packs them into RAM registers (0x3780–0x3786) with I/O mirrors (0x020A–0x0214). Purely data marshalling — no table lookups or subroutine calls.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3360 (throttle_position_raw): TPS reading</li>
+<li>0x3114, 0x3116: vehicle speed counter values</li>
+<li>0x3028: switch state (bit 2 = idle contact)</li>
+<li>0x2000, 0x2200: I/O input ports</li>
+<li>0x3275 (port_control_mirror): output port bits</li>
+<li>0x35A5 (port_2000_shadow): shadow register bits</li>
+<li>0x31C1: sensor activity flags</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3780 (throttle_position_scaled) → I/O 0x020A</li>
+<li>0x377A, 0x377B (speed_hi/lo_scaled) → I/O 0x0206, 0x0208</li>
+<li>0x3783–0x3786 (diag_switches_1–4) → I/O 0x020E–0x0214</li>
+<li>0x378F bit 0 (idle_contact_flag)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x7A35.html">0x7A35 Closed-Loop Readiness Classifier</a><a class="nav-next" href="0x7BA0.html">0x7BA0 Port 2000 Bit 6 Hold-Off Timer</a></nav>
+</body>
+</html>

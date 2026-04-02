@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xC37B — System Status Update — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xC37B System Status Update</span></nav>
+<h3 id="0xc37b-system-status-update">0xC37B — System Status Update</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xC37B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>197 bytes (0xC37B–0xC43F)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>27</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>2 — reset_handler (0x6431 at 0x66AE), scheduler ISR (0xAAD1 at 0xAB9B)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Consolidates hardware port reads, speed processing, and system flag updates into a single status refresh routine. Called both during reset initialization and periodically from the scheduler ISR. The function has five phases:</p>
+<ol>
+<li><p><strong>Flag snapshot</strong> (0xC37B–0xC37E): Saves current <code>$305A</code> (system_control_flags) to <code>$3138</code> for edge detection later.</p>
+</li>
+<li><p><strong>Port read and mode flags</strong> (0xC381–0xC3AB): Reads hardware port <code>$2200</code>, masks and XORs to extract active-low signals, stores to <code>$305C</code> (mode_select_flags). Then reads port <code>$2000</code>, XORs bit 5, and conditionally modifies based on <code>$305C</code> bit 5 state:</p>
+<ul>
+<li>When <code>$305C</code> bit 5 is set: XORs bit 0, then checks <code>$2000</code> bit 2. If set, loads <code>$400D</code> (ROM) into <code>$328C</code> (debounce/filter). If clear, checks if <code>$328C</code> is non-zero and conditionally sets bit 0.</li>
+<li>This implements a mode-switch debounce using ROM-configured initial values.</li>
+</ul>
+</li>
+<li><p><strong>Idle contact speed check</strong> (0xC3AD–0xC3DC): When <code>$332F</code> bit 4 is not set, computes intake air temperature compensation: <code>$303C - $32AA</code> (clamped to 0), then compares against ROM thresholds <code>$42E2</code> or <code>$42E4</code> (selected by <code>$305A</code> bit 4). Sets or clears bit 4 of the accumulator (idle contact / closed throttle flag). Stores to <code>$3740</code> (diagnostic mirror).</p>
+</li>
+<li><p><strong>Engine running condition</strong> (0xC3DF–0xC401): Checks <code>$3330</code> bit 1 and <code>$3051</code> bit 2 for special conditions. If not in special mode, compares <code>$306F</code> (airflow_load) against <code>$4CAE</code> and <code>$316B</code> (lookup_input_b) against <code>$4CAF</code>. Clears bit 2 if either is below threshold (engine not sufficiently loaded).</p>
+</li>
+<li><p><strong>Speed and output update</strong> (0xC401–0xC43F): Writes the assembled flags to <code>$305A</code> and SSM port <code>$0100</code>. Copies <code>$309B</code> (speed_value) to <code>$3071</code> (vehicle_speed) and SSM port <code>$01FE</code>. Copies <code>$3167</code> (speed_snapshot) to diagnostic mirror <code>$3776</code>. Computes <code>$3042 &gt;&gt; 2</code> and stores to <code>$316B</code> (lookup_input_b), SSM port <code>$01FC</code>, and <code>$3775</code>. Finally, detects edges on bit 4 of <code>$305A</code> (stall/cranking flag): on a falling edge (was set, now clear), clears <code>$3300</code> and <code>$3301</code> to zero.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$2200</code> — hardware port (mode switches)</li>
+<li><code>$2000</code> — hardware port (sensor/switch inputs)</li>
+<li><code>$305A</code> — system_control_flags (previous state)</li>
+<li><code>$306F</code> — airflow_load</li>
+<li><code>$309B</code> — speed_value</li>
+<li><code>$303C</code> — intake air temperature ADC</li>
+<li><code>$3042</code> — throttle position ADC</li>
+<li><code>$3167</code> — speed_snapshot</li>
+<li><code>$332F</code> — temp_override_flags (bit 4 gates idle check)</li>
+<li><code>$3330</code> — control flags</li>
+<li><code>$3051</code> — map_mode_control</li>
+<li><code>$316B</code> — lookup_input_b</li>
+<li><code>$32AA</code> — intake air temp offset</li>
+<li><code>$328C</code> — mode switch debounce</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$305A</code> — system_control_flags (updated)</li>
+<li><code>$305C</code> — mode_select_flags (from port <code>$2200</code>)</li>
+<li><code>$3071</code> — vehicle_speed (from <code>$309B</code>)</li>
+<li><code>$316B</code> — lookup_input_b (<code>$3042 &gt;&gt; 2</code>)</li>
+<li><code>$3138</code> — previous system_control_flags snapshot</li>
+<li><code>$3300</code> — cleared on stall-to-run transition</li>
+<li><code>$3301</code> — cleared on stall-to-run transition</li>
+<li><code>$328C</code> — mode switch debounce value</li>
+<li><code>$3740</code> — diagnostic mirror of assembled flags</li>
+<li><code>$3775</code> — diagnostic mirror of lookup_input_b</li>
+<li><code>$3776</code> — diagnostic mirror of speed_snapshot</li>
+<li><code>$0100</code> — SSM port: system_control_flags</li>
+<li><code>$01FC</code> — SSM port: lookup_input_b</li>
+<li><code>$01FE</code> — SSM port: vehicle_speed</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<p>None (leaf function).</p>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$400D</code></td>
+<td>Mode switch debounce initial value</td>
+</tr>
+<tr>
+<td><code>$42E2</code></td>
+<td>Idle contact speed threshold (normal)</td>
+</tr>
+<tr>
+<td><code>$42E4</code></td>
+<td>Idle contact speed threshold (stall/cranking)</td>
+</tr>
+<tr>
+<td><code>$4CAE</code></td>
+<td>Airflow load minimum for engine running condition</td>
+</tr>
+<tr>
+<td><code>$4CAF</code></td>
+<td>Lookup_input_b minimum for engine running condition</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xC1B9.html">0xC1B9 Turbo Transition Gain Calculator</a><a class="nav-next" href="0xC458.html">0xC458 Multi-Rate Timer Dispatcher</a></nav>
+</body>
+</html>

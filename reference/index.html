@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reference & Help — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../index.html">PovoTune</a><span class="sep">/</span><span>Reference</span></nav>
+
+<style>
+  .landing-hero {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 2px solid #374151;
+    margin-bottom: 2rem;
+  }
+  .landing-hero h1 {
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 0.25em;
+    border: none;
+    padding: 0;
+  }
+  .landing-hero .subtitle {
+    color: #9ca3af;
+    font-size: 0.95rem;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .toc-grid a {
+    display: block;
+    padding: 0.35em 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .section-divider {
+    border: none;
+    border-top: 2px solid #374151;
+    margin: 3rem 0;
+  }
+  .section-header {
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #60a5fa;
+    margin-top: 0;
+  }
+  .view-section {
+    background: #1a2332;
+    border: 1px solid #374151;
+    border-radius: 6px;
+    padding: 1.5rem 1.75rem;
+    margin: 1.5rem 0;
+  }
+  .view-section h3 {
+    margin-top: 0;
+    font-size: 1.15rem;
+  }
+  .view-section h4 {
+    color: #60a5fa;
+    margin-top: 1.25em;
+  }
+  .key-table {
+    font-size: 0.85rem;
+    margin: 0.75em 0;
+  }
+  .key-table td:first-child {
+    white-space: nowrap;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    color: #fbbf24;
+    padding-right: 1.5em;
+    font-size: 0.85em;
+  }
+  .colour-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+</style>
+
+<div class="landing-hero">
+  <h1>PovoTune</h1>
+  <div class="subtitle">BD5A ECU Reverse-Engineering Platform &mdash; Reference &amp; User Guide</div>
+</div>
+
+<nav class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="rom.html">Memory Tables</a>
+    <a href="functions/index.html">Functions</a>
+    <a href="#getting-started">Getting Started</a>
+    <a href="#left-nav">Left-Hand Navigation</a>
+    <a href="#asm-view">ASM View</a>
+    <a href="#hex-view">Hex View</a>
+    <a href="#graph-view">Graph View</a>
+    <a href="#map-view">Map View</a>
+    <a href="#saving">Saving Your Work</a>
+  </div>
+</nav>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="getting-started">Getting Started</h2>
+
+<p>When you first open PovoTune, you have three options:</p>
+<ul>
+  <li><strong>Load Project JSON</strong> &mdash; Open a previously saved <code>.json</code> project file</li>
+  <li><strong>Analyze Binary</strong> &mdash; Load a raw <code>.bin</code> firmware dump and run automated analysis</li>
+  <li><strong>Factory BD5A ROM</strong> &mdash; Load the pre-analysed BD5A factory ROM project instantly</li>
+</ul>
+<p>You can also <strong>drag and drop</strong> a <code>.json</code> or <code>.bin</code> file directly onto the landing page.</p>
+
+<h3>Toolbar</h3>
+<p>The toolbar along the top of the screen provides:</p>
+<ul>
+  <li><strong>View toggle buttons</strong> (ASM, Hex, Graph, Map) &mdash; Click to show or hide each view. Active views are highlighted. Any combination can be open simultaneously.</li>
+  <li><strong>Menu</strong> (hamburger icon, top-right):
+    <ul>
+      <li><strong>Load Project</strong> &mdash; Load a different project file</li>
+      <li><strong>Download Project</strong> &mdash; Save your current project as a <code>.json</code> file</li>
+      <li><strong>Project Settings</strong> &mdash; Configure memory regions and project metadata</li>
+      <li><strong>Help</strong> &mdash; Open this page</li>
+      <li><strong>Reset Session</strong> &mdash; Clear all saved data and start fresh</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Memory Map Strip</h3>
+<p>The thin horizontal bar below the toolbar shows the full 64 KB address space (0x0000&ndash;0xFFFF), colour-coded by memory region.</p>
+<table class="key-table">
+  <tr><td>Click</td><td>Jump both ASM and Hex views to that address</td></tr>
+  <tr><td>Hover</td><td>See region name and address range</td></tr>
+</table>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="left-nav">Left-Hand Navigation</h2>
+
+<p>The sidebar on the left has five collapsible sections. Click any header to collapse or expand it.</p>
+
+<div class="view-section">
+<h3>Functions</h3>
+<p>All detected firmware functions, sorted by address.</p>
+<table class="key-table">
+  <tr><td>Click</td><td>Navigate ASM, Hex, and Graph to that function</td></tr>
+  <tr><td>Double-click name</td><td>Edit the function name inline (Enter to confirm, Escape to cancel)</td></tr>
+</table>
+<p>The coloured badge on each row indicates analysis <strong>confidence level</strong>.</p>
+</div>
+
+<div class="view-section">
+<h3>IO Registers</h3>
+<p>Memory-mapped I/O addresses discovered during analysis.</p>
+<table class="key-table">
+  <tr><td>Click</td><td>Navigate Hex view to that address</td></tr>
+  <tr><td>Double-click name</td><td>Edit the label inline</td></tr>
+</table>
+</div>
+
+<div class="view-section">
+<h3>RAM</h3>
+<p>RAM memory locations with their labels.</p>
+<table class="key-table">
+  <tr><td>Click</td><td>Navigate Hex view to that address</td></tr>
+  <tr><td>Double-click name</td><td>Edit the label inline</td></tr>
+</table>
+</div>
+
+<div class="view-section">
+<h3>Tables (Data Definitions)</h3>
+<p>All declared ROM data tables.</p>
+<table class="key-table">
+  <tr><td>Click</td><td>Navigate Hex view to the table start address</td></tr>
+</table>
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="asm-view">ASM View</h2>
+
+<p>Disassembled firmware code displayed in a virtual-scrolled table with columns: <strong>Address</strong>, <strong>Bytes</strong>, <strong>Mnemonic</strong>, <strong>Operand</strong>, and <strong>Notes</strong>.</p>
+
+<div class="view-section">
+<h3>Navigation &amp; Selection</h3>
+<table class="key-table">
+  <tr><td>Click instruction</td><td>Select it and show details in the Instruction Detail panel</td></tr>
+  <tr><td>Click branch target</td><td>Blue link in the operand column &mdash; jump ASM and Hex to that address</td></tr>
+  <tr><td>Click table ref</td><td>Gold underlined link &mdash; jump Hex view to the referenced table</td></tr>
+  <tr><td>Click function header</td><td>Blue bar &mdash; select and focus that function</td></tr>
+</table>
+
+<h4>Visual Elements</h4>
+<ul>
+  <li><strong>Function headers</strong> &mdash; Blue bars showing function name, address, and size</li>
+  <li><strong>Block boundaries</strong> &mdash; Dashed red lines separating basic blocks</li>
+  <li><strong>Notes column</strong> &mdash; Supports inline annotation editing (click to edit, semicolon prefix)</li>
+</ul>
+</div>
+
+<div class="view-section">
+<h3>Instruction Detail Panel</h3>
+<p>When an instruction is selected, the detail panel (bottom-right) shows:</p>
+<ul>
+  <li>Mnemonic and addressing mode</li>
+  <li>Byte length and raw bytes</li>
+  <li>M flag (memory width: 8-bit or 16-bit) and X flag (index register width)</li>
+</ul>
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="hex-view">Hex View</h2>
+
+<p>Interactive hex memory browser showing 16 bytes per row, colour-coded by object type.</p>
+
+<div class="view-section">
+<h3>Toolbar</h3>
+<table class="key-table">
+  <tr><td>ADDR + Enter</td><td>Type a hex address (<code>4120</code>, <code>0x4120</code>, or <code>$4120</code>) to jump there</td></tr>
+  <tr><td>FIND + Enter</td><td>Search for byte patterns (e.g. <code>A9 00</code>). Bare hex searches bytes in order; prefixed hex (<code>0x4120</code>) searches little-endian</td></tr>
+  <tr><td>Shift+Enter</td><td>Find previous match</td></tr>
+  <tr><td>Arrow buttons</td><td>Navigate between search matches</td></tr>
+</table>
+</div>
+
+<div class="view-section">
+<h3>Selection</h3>
+<table class="key-table">
+  <tr><td>Shift+Click</td><td>Start or extend a byte range selection</td></tr>
+  <tr><td>Shift+Arrow</td><td>Extend selection (Left/Right = 1 byte, Up/Down = 16 bytes)</td></tr>
+  <tr><td>Enter</td><td>Open context menu for current selection</td></tr>
+  <tr><td>Escape</td><td>Clear selection, cancel edit, or dismiss search highlights</td></tr>
+</table>
+</div>
+
+<div class="view-section">
+<h3>Right-Click Context Menu</h3>
+
+<h4>On a Function</h4>
+<ul>
+  <li><strong>Navigate to ASM</strong> &mdash; Jump the disassembly view to this function</li>
+  <li><strong>Rename</strong> &mdash; Edit the function name</li>
+  <li><strong>Re-analyse</strong> &mdash; Re-run analysis on this function</li>
+  <li><strong>Delete</strong> &mdash; Remove the function entry point</li>
+</ul>
+
+<h4>On a Data Definition (Table)</h4>
+<ul>
+  <li><strong>Rename</strong> &mdash; Edit the table name</li>
+  <li><strong>Edit Range</strong> &mdash; Resize the table using arrow keys, Enter to confirm</li>
+  <li><strong>Edit Type</strong> &mdash; Change element type (u8, u16, u32, s8, s16, s32)</li>
+  <li><strong>Colourise / Uncolourise</strong> &mdash; Toggle heatmap visualisation across element values</li>
+  <li><strong>Delete</strong> &mdash; Remove the data definition</li>
+</ul>
+
+<h4>On a Byte Selection</h4>
+<ul>
+  <li><strong>Define Table</strong> &mdash; Create a new data definition from the selection</li>
+  <li><strong>Define Function</strong> &mdash; Create a new function entry point and run analysis</li>
+</ul>
+
+<h4>Always Available</h4>
+<ul>
+  <li><strong>Copy Address</strong> &mdash; Copy as <code>0xABCD</code></li>
+  <li><strong>Copy Bytes</strong> &mdash; Copy selected bytes as hex (e.g. <code>41 20 30 44</code>)</li>
+</ul>
+</div>
+
+<div class="view-section">
+<h3>Colour Coding</h3>
+<ul>
+  <li><span class="colour-swatch" style="background:#3b82f6"></span> <strong>Blue</strong> &mdash; Functions (decoded instructions)</li>
+  <li><span class="colour-swatch" style="background:#f97316"></span> <strong>Orange</strong> &mdash; Data definitions / tables (heatmap gradient when colourised)</li>
+  <li><span class="colour-swatch" style="background:#6b7280"></span> <strong>Grey</strong> &mdash; Memory locations</li>
+  <li><span class="colour-swatch" style="background:#ef4444"></span> <strong>Red</strong> &mdash; Interrupt vectors</li>
+  <li><span class="colour-swatch" style="background:#1f2937"></span> <strong>Dark</strong> &mdash; Unmapped / unknown regions</li>
+</ul>
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="graph-view">Graph View</h2>
+
+<p>Interactive force-directed graph showing the selected node and its immediate neighbours (ego-centric view).</p>
+
+<div class="view-section">
+<h3>Interactions</h3>
+<table class="key-table">
+  <tr><td>Click node</td><td>Navigate ASM, Hex, and sidebar to that function or table</td></tr>
+  <tr><td>Double-click node</td><td>Expand that node's neighbours &mdash; it becomes the new centre</td></tr>
+  <tr><td>Drag node</td><td>Reposition it on the canvas (position is remembered)</td></tr>
+  <tr><td>Mouse wheel</td><td>Zoom in and out</td></tr>
+</table>
+</div>
+
+<div class="view-section">
+<h3>Node Types</h3>
+<ul>
+  <li><span class="colour-swatch" style="background:#3b82f6"></span> <strong>Rounded rectangle</strong> &mdash; Function</li>
+  <li><span class="colour-swatch" style="background:#f97316"></span> <strong>Rounded rectangle + "TBL" badge</strong> &mdash; Data definition / table</li>
+  <li><span class="colour-swatch" style="background:#6b7280"></span> <strong>Circle + "RAM" badge</strong> &mdash; Memory location</li>
+  <li><span class="colour-swatch" style="background:#ef4444"></span> <strong>Diamond + "VEC" badge</strong> &mdash; Interrupt vector</li>
+</ul>
+
+<h3>Edge Types</h3>
+<ul>
+  <li><strong>Solid blue</strong> &mdash; CALLS (function call)</li>
+  <li><strong>Green dashed</strong> &mdash; READS_FROM / WRITES_TO (memory access)</li>
+  <li><strong>Grey dashed</strong> &mdash; MAPS_TO (ROM-to-RAM table pointer)</li>
+  <li><strong>Black solid</strong> &mdash; ENTRY_POINT (vector to function)</li>
+</ul>
+<p>Edge labels show the relationship type and count, e.g. <code>CALLS (3)</code>.</p>
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="map-view">Map View</h2>
+
+<p>A 256&times;256 pixel grid on the right-hand side visualising the entire 64 KB address space. Each pixel represents one byte, coloured by content type.</p>
+
+<div class="view-section">
+<h3>Interactions</h3>
+<table class="key-table">
+  <tr><td>Click cell</td><td>Jump the Hex view to that address</td></tr>
+  <tr><td>Hover</td><td>See address, region, and object information</td></tr>
+</table>
+<p>Teal cells indicate data definitions. Decoded instruction bytes use region-specific colours. The current cursor position is shown as a thin accent line.</p>
+</div>
+
+<div class="view-section">
+<h3>Refs Panel</h3>
+<p>Shows cross-references <strong>to</strong> and <strong>from</strong> the selected address. Opens when you click a reference count in a hover tooltip.</p>
+<table class="key-table">
+  <tr><td>Click ref row</td><td>Navigate to that address</td></tr>
+</table>
+<p>References are colour-coded: calls (blue), branches (purple), memory access (green), maps (orange).</p>
+</div>
+
+<hr class="section-divider">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 class="section-header" id="saving">Saving Your Work</h2>
+
+<p>Your project is <strong>automatically saved</strong> to IndexedDB in your browser after every edit. To create a portable backup:</p>
+<ul>
+  <li>Use <strong>Menu &rarr; Download Project</strong> to export a <code>.json</code> file</li>
+  <li>All annotations, renamed functions, data definitions, and corrections are included</li>
+  <li>Reload the file later with <strong>Load Project JSON</strong> on any machine</li>
+</ul>
+
+<nav class="nav-footer"><span></span><a class="nav-next" href="rom.html">ROM Tables</a></nav>
+</body>
+</html>

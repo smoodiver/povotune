@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xAC26 — Speed Counter — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xAC26 Speed Counter</span></nav>
+<h3 id="0xac26-speed-counter">0xAC26 — Speed Counter</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xAC26</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>68 bytes (0xAC26–0xAC69)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — irq_handler_AAD1 pre-dispatch (0xAAD1 at 0xAB14)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Speed pulse counter that accumulates pulses within a fixed 345-tick measurement window. Called every scheduler ISR entry (pre-dispatch). Counts speed sensor edges on alternating ISR ticks using a toggle flag at 0x31A9 bit 1, providing 2:1 dividing of the raw edge rate. When the tick counter (0x3038) reaches 345 (0x0159), the accumulated pulse count (0x3035) is snapshotted to 0x3167 and the counters are reset. The final speed value is written to 0x309B, with a diagnostic override that forces the value to 5 when 0x332F bit 6 is set.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>AC26  BBS $0C,#$02,$AC31     ; if dp+$0C bit 1 set, skip to odd-edge path
+AC2A  BBC $31A9,#$02,$AC41   ; if toggle flag clear, skip counting
+AC2F  BRA $AC36              ; go to increment
+AC31  BBS $31A9,#$02,$AC41   ; if toggle flag set, skip counting
+AC36  INC $3035              ; increment speed pulse count
+AC39  LDA $31A9
+AC3C  EOR #$02               ; toggle bit 1
+AC3E  STA $31A9
+AC41  LDX $3038              ; load tick counter
+AC44  INX                    ; increment
+AC45  CPX #$0159             ; compare against 345
+AC48  BCC $AC57              ; if &lt; 345, skip snapshot
+AC4A  LDA $3035              ; snapshot pulse count
+AC4D  STA $3167              ; to speed_snapshot
+AC50  LDX #$00               ; reset tick counter
+AC53  LDM $3035,#$00         ; reset pulse counter
+AC57  STX $3038              ; store tick counter
+AC5A  BBC $332F,#$40,$AC63   ; if bit 6 clear, use snapshot
+AC5F  LDA #$05               ; diagnostic override: force 5
+AC61  BRA $AC66
+AC63  LDA $3167              ; load speed snapshot
+AC66  STA $309B              ; write final speed value
+AC69  RTS
+</code></pre>
+<h4 id="logic">Logic</h4>
+<ol>
+<li><strong>Edge gating</strong> (0xAC26–0xAC3E): The function checks dp+$0C bit 1 (IO port edge state) against the toggle flag 0x31A9 bit 1. Only when they disagree does it increment the pulse counter, effectively dividing the edge rate by 2. The toggle flag is flipped after each count.</li>
+<li><strong>Window counter</strong> (0xAC41–0xAC57): The tick counter 0x3038 is incremented on every call. When it reaches 345 (0x0159), the current pulse count 0x3035 is snapshotted to 0x3167 and both counters reset.</li>
+<li><strong>Output</strong> (0xAC5A–0xAC69): The final speed value at 0x309B comes from the snapshot 0x3167, unless 0x332F bit 6 is set (diagnostic/test mode), in which case it is forced to 5.</li>
+</ol>
+<h4 id="key-ram-variables">Key RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Access</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3035</td>
+<td>speed_pulse_count</td>
+<td>R/W</td>
+<td>Pulse counter within current 345-tick window</td>
+</tr>
+<tr>
+<td>0x3038</td>
+<td>speed_tick_count</td>
+<td>R/W</td>
+<td>Tick counter, incremented each ISR entry, reset at 345</td>
+</tr>
+<tr>
+<td>0x3167</td>
+<td>speed_snapshot</td>
+<td>R/W</td>
+<td>Snapshot of pulse count at end of measurement window</td>
+</tr>
+<tr>
+<td>0x309B</td>
+<td>speed_value</td>
+<td>W</td>
+<td>Final speed output value</td>
+</tr>
+<tr>
+<td>0x31A9</td>
+<td>speed_edge_flag</td>
+<td>R/W</td>
+<td>Bit 1: toggle flag for alternating-edge counting</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>temp_override_flags</td>
+<td>R</td>
+<td>Bit 6: diagnostic mode override (forces speed to 5)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA9ED.html">0xA9ED Ignition Timing Output Calculator</a><a class="nav-next" href="0xACBB.html">0xACBB Target A/F Ratio</a></nav>
+</body>
+</html>

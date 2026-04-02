@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xD8C0 — Twin Turbo Switching Port Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xD8C0 Twin Turbo Switching Port Controller</span></nav>
+<h3 id="0xd8c0-twin-turbo-switching-port-controller">0xD8C0 — Twin Turbo Switching Port Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xD8C0</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>74 bytes (0xD8C0–0xD909)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>17</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — multi_rate_timer_dispatcher (0xC458) 10-tick path at 0xC480</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Controls the twin turbo switching port bit ($3275 bit 2) and the pre-speed-control flag ($323F bit 4) using a debounce counter at $316C. Called every 10 P5 scheduler ticks. When conditions are met and the counter reaches threshold 0x0A (10), sets $3275 bit 2 (enables twin turbo switching solenoid) and $323F bit 4 (signals pre-speed-control). At threshold 0x14 (20), returns — holding state. When RPM ($3062) is below 0x20, resets the counter and clears the output bit.</p>
+<p>Calls $9214 (port_2200_shadow_write) to flush $3275 to hardware port $2200 on every execution.</p>
+<p><strong>Entry gate</strong>: Three-level gate:</p>
+<ol>
+<li>If $35A4 bit 0 set: return (system inhibit)</li>
+<li>If $3051 bit 2 set: pass through to main logic</li>
+<li>If $3510 is not 0xFF: pass through to main logic</li>
+<li>Otherwise: return</li>
+</ol>
+<p><strong>Precondition</strong>: $305A bit 3 must be set (engine running). If clear, returns.</p>
+<p><strong>Debounce logic</strong>: If $323F bit 4 is already set OR RPM &gt;= 0x20, increments $316C via JSR $633D (saturating increment). The counter value controls state:</p>
+<ul>
+<li>Counter reaches 0x14 (20): return (hold, debounce complete)</li>
+<li>Counter reaches 0x0A (10): set $3275 bit 2 and $323F bit 4 (activate)</li>
+<li>Counter &lt; 0x0A and RPM &lt; 0x20: reset $316C to 0, clear $3275 bit 2 (deactivate)</li>
+</ul>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>D8C0  BBS $35A4,#$01,$D8CF  ; if system inhibit, return
+D8C5  BBS $3051,#$04,$D8D0  ; if map_mode bit 2 set, continue
+D8CA  BBC $3510,#$FF,$D8D0  ; if diagnostic_mode != 0xFF, continue
+D8CF  RTS                    ; early return
+D8D0  BBC $305A,#$08,$D8CF  ; if engine not running, return
+D8D5  BBS $323F,#$10,$D8E2  ; if pre_speed_control bit 4 already set, skip RPM check
+D8DA  LDX $3062              ; load RPM
+D8DD  CPX #$20               ; compare against threshold (32)
+D8E0  BCC $D8FE              ; if RPM &lt; 32, -&gt; reset path
+D8E2  LDX #$316C             ; point to turbo_entry_gate counter
+D8E5  JSR $633D              ; saturating increment
+D8E8  CMP #$14               ; compare against upper threshold (20)
+D8EA  BEQ $D8EE              ; if == 20, -&gt; activation path
+D8EC  BCS $D8CF              ; if &gt; 20, return (hold)
+D8EE  CMP #$0A               ; compare against lower threshold (10)
+D8F0  BEQ $D8F4              ; if == 10, -&gt; set bits
+D8F2  BCS $D902              ; if &gt; 10 but &lt; 20, -&gt; clear bit path
+D8F4  SEB $3275,#$02         ; set port_control_mirror bit 2 (turbo switch ON)
+D8F8  SEB $323F,#$10         ; set pre_speed_control_flags bit 4
+D8FC  BRA $D906              ; -&gt; write to port
+D8FE  LDM $316C,#$00         ; reset counter to 0
+D902  CLB $3275,#$02         ; clear port_control_mirror bit 2 (turbo switch OFF)
+D906  JSR $9214              ; write $3275 to port $2200
+D909  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$35A4</td>
+<td>system_inhibit_flags</td>
+<td>Bit 0: system inhibit gate</td>
+</tr>
+<tr>
+<td>$3051</td>
+<td>map_mode_control</td>
+<td>Bit 2: operating mode gate</td>
+</tr>
+<tr>
+<td>$3510</td>
+<td>diagnostic_mode</td>
+<td>Must not be 0xFF for alternate entry</td>
+</tr>
+<tr>
+<td>$305A</td>
+<td>system_control_flags</td>
+<td>Bit 3: engine running gate</td>
+</tr>
+<tr>
+<td>$323F</td>
+<td>pre_speed_control_flags</td>
+<td>Bit 4: already-activated flag</td>
+</tr>
+<tr>
+<td>$3062</td>
+<td>rpm</td>
+<td>Compared against 0x20 (32) minimum</td>
+</tr>
+<tr>
+<td>$316C</td>
+<td>turbo_entry_gate</td>
+<td>Debounce counter</td>
+</tr>
+</tbody></table>
+<h4 id="outputs">Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$3275</td>
+<td>port_control_mirror</td>
+<td>Bit 2: twin turbo switching solenoid enable</td>
+</tr>
+<tr>
+<td>$323F</td>
+<td>pre_speed_control_flags</td>
+<td>Bit 4: turbo switching active flag</td>
+</tr>
+<tr>
+<td>$316C</td>
+<td>turbo_entry_gate</td>
+<td>Counter incremented or reset to 0</td>
+</tr>
+<tr>
+<td>Port $2200</td>
+<td></td>
+<td>Written via JSR $9214</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$633D</td>
+<td>saturating_increment</td>
+<td>Increments $316C with 0xFF clamp</td>
+</tr>
+<tr>
+<td>$9214</td>
+<td>port_2200_shadow_write</td>
+<td>Writes $3275 to hardware port $2200</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xD86E.html">0xD86E Boost Target Pressure Adjustment</a><a class="nav-next" href="0xD90A.html">0xD90A Ignition Timing Retard Controller</a></nav>
+</body>
+</html>

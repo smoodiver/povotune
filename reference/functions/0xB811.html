@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB811 — O2 Feedback Correction Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB811 O2 Feedback Correction Calculator</span></nav>
+<h3 id="0xb811-o2-feedback-correction-calculator">0xB811 — O2 Feedback Correction Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB811</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>603 bytes (0xB811–0xBA6B)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>65</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 at 0xAB5F)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes a closed-loop O2 sensor feedback correction factor for fuel injection. The function performs three major phases:</p>
+<ol>
+<li><p><strong>AFM floor clamp</strong> (0xB811–0xB822): Loads the stored AFM value (<code>$301A</code>), clamps it to a minimum from ROM <code>$4C1D</code>, and stores the result to <code>$32F4</code> as the base enrichment reference.</p>
+</li>
+<li><p><strong>Base fuel correction</strong> (0xB823–0xB948): Loads airflow load (<code>$306F</code>), subtracts a 0x20 offset (saturating to 0), multiplies by ROM coefficient <code>$4C1F</code> to produce a 16-bit scaled value stored at <code>$3008</code>. Then performs a 1D table lookup on coolant temperature (<code>$3093</code>) using ROM table at <code>$4C30</code> via JSR <code>$6000</code>, storing the result at <code>$32E2</code>. The lookup result minus <code>$3009</code> (clamped to minimum <code>$4C21</code>) becomes the correction span at <code>$32E4</code>. This is used to compute a complement value at <code>$32E6</code> = (0x100 - correction), and an interpolated blend factor at <code>$32EA</code>. The function then computes an IIR-filtered running average at <code>$32F0</code> using multi-precision multiply-accumulate operations with intermediate storage at <code>$3008</code>–<code>$300B</code>.</p>
+</li>
+<li><p><strong>O2 feedback integration</strong> (0xB955–0xBA6B): When the blend factor (<code>$32EA</code>) is nonzero and AFM (<code>$301A</code>) is nonzero, the function checks whether conditions allow O2 feedback correction. It reads speed control flags (<code>$302A</code> bit 3), a state register at <code>$32F8</code>, injection sequencer state (<code>$31B4</code> bit 0), and various engine condition values (<code>$3071</code>, <code>$3044</code>/<code>$3045</code>, <code>$3268</code>, <code>$32DD</code>). If closed-loop conditions are met, it computes a signed correction delta, scales it by the blend factor, clamps the result to [0xB000..0x7FFF] centered at 0x8000, and stores the feedback integrator at <code>$32F2</code>. The final output writes shifted copies of <code>$32F0</code> and <code>$32EC</code> to SSM diagnostic ports <code>$0114</code>, <code>$0116</code>, and <code>$0118</code>.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$301A</code> (afm_stored_value): current AFM reading</li>
+<li><code>$306F</code> (airflow_load): airflow-derived engine load</li>
+<li><code>$3093</code> (coolant_temp): coolant temperature for table lookup</li>
+<li><code>$302A</code> (speed_control_flags): bit 3 gates feedback, bit 5 checked for state</li>
+<li><code>$31B4</code> (inj_seq_state): bit 0 enables feedback integration</li>
+<li><code>$305A</code> (system_control_flags): bit 4 checked for mode gating</li>
+<li><code>$32F8</code>: O2 feedback state flags (bit 6: lean-detect latch, bit 7: inhibit flag)</li>
+<li><code>$3268</code>: RPM delta (signed, from 0xBA6C)</li>
+<li><code>$32DD</code>: AFM rate-of-change (signed, from 0xBA6C)</li>
+<li><code>$3044</code> (throttle_position), <code>$3045</code>: throttle comparators</li>
+<li><code>$3071</code> (vehicle_speed): speed threshold check</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$32F0</code>: filtered base correction value (IIR averaged)</li>
+<li><code>$32F2</code>: O2 feedback integrator (0x8000 = neutral, &gt;0x8000 = rich correction, &lt;0x8000 = lean correction)</li>
+<li><code>$32F4</code>: clamped AFM reference</li>
+<li><code>$32E2</code>: coolant temp correction lookup result</li>
+<li><code>$32E4</code>: correction span</li>
+<li><code>$32E6</code>: correction complement (0x100 - span)</li>
+<li><code>$32E8</code>: enrichment factor</li>
+<li><code>$32EA</code>: blend factor</li>
+<li><code>$32EC</code>: combined correction output</li>
+<li><code>$32EE</code>: absolute delta (for threshold check)</li>
+<li><code>$0114</code>: SSM diagnostic — filtered correction &gt;&gt; 7</li>
+<li><code>$0116</code>: SSM diagnostic — combined correction &gt;&gt; 4</li>
+<li><code>$0118</code>: SSM diagnostic — feedback integrator high byte</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$4C1D</td>
+<td>afm_floor_min</td>
+<td>Minimum AFM clamp value</td>
+</tr>
+<tr>
+<td>$4C1F</td>
+<td>airflow_correction_coeff</td>
+<td>Multiplier for airflow-based correction</td>
+</tr>
+<tr>
+<td>$4C21</td>
+<td>correction_span_min</td>
+<td>Minimum correction span</td>
+</tr>
+<tr>
+<td>$4C22</td>
+<td>correction_slope_high</td>
+<td>Slope for enrichment &gt; base case</td>
+</tr>
+<tr>
+<td>$4C24</td>
+<td>correction_offset_high</td>
+<td>Offset for enrichment &gt; base case</td>
+</tr>
+<tr>
+<td>$4C26</td>
+<td>correction_max_high</td>
+<td>Max correction (high path)</td>
+</tr>
+<tr>
+<td>$4C28</td>
+<td>correction_slope_low</td>
+<td>Slope for enrichment &lt; base case</td>
+</tr>
+<tr>
+<td>$4C2A</td>
+<td>correction_offset_low</td>
+<td>Offset for enrichment &lt; base case</td>
+</tr>
+<tr>
+<td>$4C2C</td>
+<td>correction_max_low</td>
+<td>Max correction (low path)</td>
+</tr>
+<tr>
+<td>$4C2E</td>
+<td>delta_threshold_high</td>
+<td>Upper dead-band threshold for O2 delta</td>
+</tr>
+<tr>
+<td>$4C2F</td>
+<td>delta_threshold_low</td>
+<td>Lower dead-band threshold for O2 delta</td>
+</tr>
+<tr>
+<td>$4C30</td>
+<td>coolant_correction_table</td>
+<td>1D table for coolant temperature correction (via sub_6000)</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6000</td>
+<td>1d_table_interpolation</td>
+<td>Coolant temperature correction lookup</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB7C8.html">0xB7C8 Final Fuel Pulse Width Blender</a><a class="nav-next" href="0xBA6C.html">0xBA6C RPM/AFM Rate-of-Change History</a></nav>
+</body>
+</html>

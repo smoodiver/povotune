@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xDAEE — Knock Feedback Delta Monitor — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xDAEE Knock Feedback Delta Monitor</span></nav>
+<h3 id="0xdaee-knock-feedback-delta-monitor">0xDAEE — Knock Feedback Delta Monitor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xDAEE</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>99 bytes (0xDAEE–0xDB50)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler ISR at 0xAC0A</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Monitors the rate of change of knock feedback correction values using two sliding-window buffers, and flags rapid-change conditions via <code>$3276</code> bit 5. Also maintains a saturating counter at <code>$322D</code> and an accumulator at <code>$31FD</code> that advances when <code>$3276</code> bit 6 is clear.</p>
+<p>The function operates two parallel delta-check paths:</p>
+<ol>
+<li><strong>Path A</strong> (indexed at <code>$327C</code>): computes <code>current - previous</code> from a 3-entry history buffer at <code>$327C</code>–<code>$327F</code>. If <code>$3276</code> bit 1 is clear and the delta exceeds the ROM threshold at <code>$4443</code>, sets <code>$3276</code> bit 5 (rapid knock change flag).</li>
+<li><strong>Path B</strong> (indexed at <code>$326E</code>): computes <code>previous - current</code> from a 3-entry history buffer at <code>$326E</code>–<code>$3271</code>. If <code>$3276</code> bit 1 is clear and the delta exceeds the ROM threshold at <code>$4444</code>, also sets <code>$3276</code> bit 5.</li>
+</ol>
+<p>Both deltas are biased by +0x80 (signed-to-unsigned offset) before being stored as the newest history entry. The history buffers shift older values down each call (FIFO).</p>
+<h4 id="inputs">Inputs</h4>
+<p>None (reads RAM state directly).</p>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$322D</td>
+<td>knock_delta_counter</td>
+<td>Saturating counter incremented each call</td>
+</tr>
+<tr>
+<td>$31FD</td>
+<td>knock_delta_accumulator</td>
+<td>Running accumulator, incremented by 4 when $3276 bit 6 is clear</td>
+</tr>
+<tr>
+<td>$3276</td>
+<td>turbo_knock_flags</td>
+<td>Bit 6: gates accumulator advance. Bit 1: inhibits threshold comparison</td>
+</tr>
+<tr>
+<td>$327C</td>
+<td>knock_history_a[0]</td>
+<td>Current value for path A delta</td>
+</tr>
+<tr>
+<td>$327D</td>
+<td>knock_history_a[1]</td>
+<td>Previous value for path A</td>
+</tr>
+<tr>
+<td>$327E</td>
+<td>knock_history_a[2]</td>
+<td>Oldest value for path A</td>
+</tr>
+<tr>
+<td>$326E</td>
+<td>knock_history_b[0]</td>
+<td>Current value for path B delta</td>
+</tr>
+<tr>
+<td>$326F</td>
+<td>knock_history_b[1]</td>
+<td>Previous value for path B</td>
+</tr>
+<tr>
+<td>$3270</td>
+<td>knock_history_b[2]</td>
+<td>Oldest value for path B</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$322D</td>
+<td>knock_delta_counter</td>
+<td>Incremented (saturating at 0xFF)</td>
+</tr>
+<tr>
+<td>$31FD</td>
+<td>knock_delta_accumulator</td>
+<td>Incremented by 4, clamped at 0xFF</td>
+</tr>
+<tr>
+<td>$3276 bit 5</td>
+<td>turbo_knock_flags</td>
+<td>Set when delta exceeds threshold (rapid knock change)</td>
+</tr>
+<tr>
+<td>$327F</td>
+<td>knock_history_a[3]</td>
+<td>Biased delta stored (path A)</td>
+</tr>
+<tr>
+<td>$327E</td>
+<td>knock_history_a[2]</td>
+<td>Shifted from [1]</td>
+</tr>
+<tr>
+<td>$327D</td>
+<td>knock_history_a[1]</td>
+<td>Shifted from [0]</td>
+</tr>
+<tr>
+<td>$3271</td>
+<td>knock_history_b[3]</td>
+<td>Biased delta stored (path B)</td>
+</tr>
+<tr>
+<td>$3270</td>
+<td>knock_history_b[2]</td>
+<td>Shifted from [1]</td>
+</tr>
+<tr>
+<td>$326F</td>
+<td>knock_history_b[1]</td>
+<td>Shifted from [0]</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$4443</td>
+<td>knock_delta_threshold_a</td>
+<td>Maximum allowed delta for path A before flagging</td>
+</tr>
+<tr>
+<td>$4444</td>
+<td>knock_delta_threshold_b</td>
+<td>Maximum allowed delta for path B before flagging</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xDA52.html">0xDA52 RPM Acceleration Filter</a><a class="nav-next" href="0xDB51.html">0xDB51 Ignition Timing Recovery Gate</a></nav>
+</body>
+</html>

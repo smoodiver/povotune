@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA9A4 — Knock Timing Interval Counter — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA9A4 Knock Timing Interval Counter</span></nav>
+<h3 id="0xa9a4-knock-timing-interval-counter">0xA9A4 — Knock Timing Interval Counter</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA9A4</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>73 bytes (0xA9A4–0xA9EC)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Background scheduler ISR bit 5 handler (0xAAD1 at 0xABAA)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Periodic counter function called from the background scheduler. Manages two counters:</p>
+<ol>
+<li><p><strong>Decay counter</strong> (<code>$31C5</code>): Incremented each call. When it reaches the ROM threshold (<code>$4D96</code>), resets to zero and performs a timing correction update: if the ISR is in the high-RPM zone (<code>$31A1</code> bit 2), subtracts a ROM decay step (<code>$4D94</code>) from the 16-bit timing correction (<code>$31B8</code>), clamping to zero. The result is mirrored to <code>$01B8</code>.</p>
+</li>
+<li><p><strong>Timing interval counter</strong> (<code>$31BA</code>): Incremented each call under SEI. When it reaches the ROM threshold (<code>$4D9F</code>), resets to zero and sets <code>$3033</code> bit 4 (timing interval flag), signaling the knock_learning_update (0xA826) that an interval has elapsed.</p>
+</li>
+</ol>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- decay counter ---
+A9A4  INC $31C5           ; increment decay counter
+A9A7  LDA $31C5
+A9AA  CMP $4D96           ; compare against threshold
+A9AD  BCC $A9D7           ; if not reached, skip
+A9AF  LDM $31C5,#$00      ; reset counter
+A9B3  SEI                 ; disable interrupts
+A9B4  BBC $31A1,#$02,$A9CE ; if not in high-RPM zone, -&gt; passthrough
+; --- active decay (in RPM zone) ---
+A9B9  CLM                 ; 16-bit mode
+A9BA  LDA $31B8           ; load timing_correction (16-bit)
+A9BD  BEQ $A9CB           ; if already 0, skip
+A9BF  SEC
+A9C0  SBC $4D94           ; subtract decay step
+A9C3  BCS $A9C8           ; if no underflow, keep
+A9C5  LDA #$0000          ; clamp to 0
+A9C8  STA $31B8           ; store updated correction
+A9CB  CLI                 ; re-enable interrupts
+A9CC  BRA $A9D3           ; -&gt; mirror output
+; --- passthrough (not in RPM zone) ---
+A9CE  CLM                 ; 16-bit mode
+A9CF  LDA $31B8           ; just load current value
+A9D2  CLI
+A9D3  STA $01B8           ; mirror to diagnostic output
+A9D6  SEM                 ; back to 8-bit
+; --- timing interval counter ---
+A9D7  SEI                 ; disable interrupts
+A9D8  INC $31BA           ; increment interval counter
+A9DB  LDA $31BA
+A9DE  CMP $4D9F           ; compare against threshold
+A9E1  BCC $A9EB           ; if not reached, skip
+A9E3  LDM $31BA,#$00      ; reset counter
+A9E7  SEB $3033,#$10      ; set timing interval flag
+A9EB  CLI                 ; re-enable interrupts
+A9EC  RTS
+</code></pre>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31C5</td>
+<td>knock_decay_counter</td>
+<td>Decay interval counter</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Bit 2: high-RPM zone state</td>
+</tr>
+<tr>
+<td>0x31B8</td>
+<td>timing_correction</td>
+<td>Current correction value (16-bit)</td>
+</tr>
+<tr>
+<td>0x31BA</td>
+<td>knock_timing_interval</td>
+<td>Timing interval counter</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31C5</td>
+<td>knock_decay_counter</td>
+<td>Incremented, reset at threshold</td>
+</tr>
+<tr>
+<td>0x31B8</td>
+<td>timing_correction</td>
+<td>Decremented by decay step (clamped to 0)</td>
+</tr>
+<tr>
+<td>0x01B8</td>
+<td>diag_timing_mirror</td>
+<td>Mirror of timing_correction for diagnostics</td>
+</tr>
+<tr>
+<td>0x31BA</td>
+<td>knock_timing_interval</td>
+<td>Incremented, reset at threshold</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 4: set when interval elapsed</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4D94</td>
+<td>2 bytes</td>
+<td>Timing correction decay step (16-bit, subtracted per interval)</td>
+</tr>
+<tr>
+<td>0x4D96</td>
+<td>1 byte</td>
+<td>Decay counter threshold (number of calls per decay step)</td>
+</tr>
+<tr>
+<td>0x4D9F</td>
+<td>1 byte</td>
+<td>Timing interval counter threshold (calls per interval flag)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA947.html">0xA947 Knock Sensor Mode Classifier</a><a class="nav-next" href="0xA9ED.html">0xA9ED Ignition Timing Output Calculator</a></nav>
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xCC9F — Twin Turbo Duty Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xCC9F Twin Turbo Duty Controller</span></nav>
+<h3 id="0xcc9f-twin-turbo-duty-controller">0xCC9F — Twin Turbo Duty Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xCC9F</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>2989 bytes (0xCC9F–0xD84B)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>445</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — from scheduler at 0xABB6</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Master sequential twin turbo duty cycle controller. Manages the PWM solenoid valve duty cycles that control exhaust gas routing, pre-spin, and transition timing for the EJ20H sequential twin turbo system. Uses two adjustment map lookups (Call 1 and Call 2) with a proportional step-adjustment controller to drive 6 PWM timer outputs and a digital port output.</p>
+<p>This is the largest function in the ROM (445 blocks). Called from the scheduler — not part of the 23-function main loop or periodic tasks.</p>
+<h4 id="structure-section-level">Structure (Section-Level)</h4>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Address Range</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>State machine</td>
+<td>0xCC9F–0xCDC0</td>
+<td>Counters, threshold checks, state transitions using RAM at 0x3630+ and ROM at 0x49FC+</td>
+</tr>
+<tr>
+<td>Call 1 setup</td>
+<td>0xCDC5–0xCE02</td>
+<td>Select table set by $3291 bit 3. Store map/axis ptrs to $3088/$308A/$308C. Load RPM and $3044</td>
+</tr>
+<tr>
+<td>Call 1 lookup</td>
+<td>0xCE03</td>
+<td><code>JSR $6378</code> — nearest-neighbor lookup from 0x4790 or 0x4940</td>
+</tr>
+<tr>
+<td>Call 1 scaling</td>
+<td>0xCE06–0xCE1B</td>
+<td><code>map × $31E5 × 2 × $31E6 × 2 → $3296</code> (target duty)</td>
+</tr>
+<tr>
+<td>Call 1 proportional ctrl</td>
+<td>0xCE1E–0xCF37</td>
+<td>Compare $3296 vs $32AE; select step direction/magnitude; scale PWM values; write to I/O ports 0x01D0/0x01D2/0x01DA/0x01DC</td>
+</tr>
+<tr>
+<td>Coolant gate</td>
+<td>0xCF38–0xCF67</td>
+<td>Coolant temperature hysteresis ($3092 vs thresholds $485A-$485C); enables/disables correction. Sets $328A bits 1,4</td>
+</tr>
+<tr>
+<td>Speed/load checks</td>
+<td>0xCF67–0xD144</td>
+<td>Vehicle speed comparisons ($3279 vs thresholds), adaptive gain, state management</td>
+</tr>
+<tr>
+<td>Call 2 setup</td>
+<td>0xD145–0xD177</td>
+<td>Select table set. Load RPM and $3044. Map bases: 0x4F00 or 0x4F40</td>
+</tr>
+<tr>
+<td>Call 2 lookup</td>
+<td>0xD178</td>
+<td><code>JSR $6378</code> — nearest-neighbor lookup from 0x4F00 or 0x4F40</td>
+</tr>
+<tr>
+<td>Call 2 processing</td>
+<td>0xD17B–0xD3C7</td>
+<td>Store result to $316E (clamp). 1D graph lookups. Duty clamping, direction logic, transition management</td>
+</tr>
+<tr>
+<td>Final output</td>
+<td>0xD3C8–0xD3E1</td>
+<td>Write $3293 → port 0x01D4, $316F → port 0x01D8. Write $3275 → port 0x2200</td>
+</tr>
+<tr>
+<td>Mode switching</td>
+<td>0xD3E2–0xD84B</td>
+<td>Manage $3291 bits (set at 0xD779, clear at 0xD4AB). Airflow-based mode transitions, speed table lookups, learned value management</td>
+</tr>
+</tbody></table>
+<h4 id="i-o-port-outputs">I/O Port Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>Source</th>
+<th>Written at</th>
+<th>Channel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x01D0</td>
+<td>$329C (Call 1 ch 0)</td>
+<td>0xCF1C</td>
+<td>Turbo solenoid PWM A</td>
+</tr>
+<tr>
+<td>0x01D2</td>
+<td>$329D (Call 1 ch 1)</td>
+<td>0xCF20</td>
+<td>Turbo solenoid PWM B</td>
+</tr>
+<tr>
+<td>0x01D4</td>
+<td>$3293 (Call 2 primary)</td>
+<td>0xD3D7</td>
+<td>Primary turbo duty</td>
+</tr>
+<tr>
+<td>0x01D8</td>
+<td>$316F (Call 2 secondary)</td>
+<td>0xD3DE</td>
+<td>Secondary turbo duty</td>
+</tr>
+<tr>
+<td>0x01DA</td>
+<td>$334E (Call 1 ch 2)</td>
+<td>0xCF31</td>
+<td>Turbo solenoid PWM C</td>
+</tr>
+<tr>
+<td>0x01DC</td>
+<td>$334F (Call 1 ch 3)</td>
+<td>0xCF35</td>
+<td>Turbo solenoid PWM D</td>
+</tr>
+<tr>
+<td>0x2200</td>
+<td>$3275 (mode bits)</td>
+<td>0xD3C2</td>
+<td>Twin turbo switching port</td>
+</tr>
+<tr>
+<td>0x00C1</td>
+<td>$3293 (mirror)</td>
+<td>0xD3CB</td>
+<td>Timer output</td>
+</tr>
+<tr>
+<td>0x00C5</td>
+<td>$316F (mirror)</td>
+<td>0xD3D1</td>
+<td>Timer output</td>
+</tr>
+</tbody></table>
+<h4 id="call-1-primary-turbo-duty-control">Call 1 — Primary Turbo Duty Control</h4>
+<p><strong>Maps:</strong> 0x4790 (twin mode) or 0x4940 (single mode) — 8×8, range 0x84–0xB6
+<strong>Output:</strong> 4 PWM channels (0x01D0, 0x01D2, 0x01DA, 0x01DC)
+<strong>Algorithm:</strong> Proportional step controller</p>
+<ol>
+<li>Look up target from map using RPM × throttle position</li>
+<li>Scale by $31E5 × $31E6 → $3296</li>
+<li>Compare $3296 (target) vs $32AE (feedback from 0xB44B)</li>
+<li>If target &gt; feedback: use increase step table (0x48E0), set $328A bit 5</li>
+<li>If feedback &gt; target: use decrease step table (0x4730), clear $328A bit 5</li>
+<li>Magnitude thresholds at 0x4854–0x4857 select step size (4 levels)</li>
+<li>Scale existing duty values by factor from 0x4980, saturating at 0xFF</li>
+<li>Write final duty values to I/O ports</li>
+</ol>
+<h4 id="call-2-secondary-turbo-duty-clamp">Call 2 — Secondary Turbo Duty Clamp</h4>
+<p><strong>Maps:</strong> 0x4F00 (single mode) or 0x4F40 (twin mode) — 8×8, range 0x00–0xFF
+<strong>Output:</strong> 2 PWM channels (0x01D4, 0x01D8) and port 0x2200
+<strong>Algorithm:</strong></p>
+<ol>
+<li>Look up clamp from map → $316E</li>
+<li>Perform 1D graph lookups using $306F (airflow) at tables 0x4720 and 0x4750</li>
+<li>Clamp combined duty value at $316E (at 0xD2F8)</li>
+<li>Apply minimum ($4859) and maximum ($482F) bounds</li>
+<li>Conditional logic based on $316D bits, $31DE flags, $3020 state</li>
+<li>Final output: $3293 → 0x01D4, $316F → 0x01D8, $3275 → 0x2200</li>
+</ol>
+<h4 id="turbo-mode-switching-3291-bit-3">Turbo Mode Switching ($3291 bit 3)</h4>
+<p>Bit 3 is managed internally by this function:</p>
+<ul>
+<li><strong>Set</strong> at 0xD779 (along with bits 4, 5): transitions to twin-turbo mode. Triggered when accumulated conditions in the mode-switching section are met.</li>
+<li><strong>Cleared</strong> at 0xD4AB: transitions to single-turbo mode. Clears several working variables ($332A, $332B, $3280, $3381, $3382).</li>
+</ul>
+<p>When bit 3 changes, the next execution cycle uses a different set of maps and axes, switching between single-turbo and twin-turbo calibration.</p>
+<h4 id="why-mines-changed-these-tables">Why Modified These Tables</h4>
+<p>Increased the Call 1 map values (0x4790/0x4940) to raise the PWM duty cycle targets for the turbo solenoid valves. Higher targets mean the proportional controller drives the solenoids harder — resulting in:</p>
+<ul>
+<li><strong>More exhaust gas routing</strong> to the secondary turbo</li>
+<li><strong>Faster spool-up</strong> of the secondary turbine</li>
+<li><strong>More aggressive turbo transition</strong> between single and twin modes</li>
+</ul>
+<p>The Call 2 maps (0x4F00/0x4F40) set the upper duty clamp for the secondary turbo. Higher values allow the secondary turbo to reach full duty sooner, enabling peak performance at lower RPM points.</p>
+<p>Combined with the higher max boost duty limit (0x4BC0), these changes create a more aggressive twin turbo system that transitions faster and builds boost more aggressively than stock.</p>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x633D — saturating_increment</li>
+<li>0x6378 — nearest_neighbor_lookup (called 2x — Call 1 and Call 2)</li>
+<li>0xD84C — helper subroutine</li>
+<li>0x601A — utility subroutine</li>
+<li>0x6000 — graph_lookup_2d</li>
+<li>0xD85E — helper subroutine</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xCBA1.html">0xCBA1 Vehicle Speed Processor</a><a class="nav-next" href="0xD86E.html">0xD86E Boost Target Pressure Adjustment</a></nav>
+</body>
+</html>

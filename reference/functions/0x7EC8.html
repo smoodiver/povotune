@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x7EC8 — Fuel Map Lookup — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x7EC8 Fuel Map Lookup</span></nav>
+<h3 id="0x7ec8-fuel-map-lookup">0x7EC8 — Fuel Map Lookup</h3>
+<blockquote>
+<p><strong>NOTE:</strong> ROM[0x4039] selects between two fuel calculation strategies — likely a <strong>turbo/NA hardware variant switch</strong>. Path 1 (0x4039 == 0, turbo): full 16x16 fuel map indexed by RPM and load. Path 2 (0x4039 != 0, NA): simplified derivative-based calculation from AFM rate-of-change (<code>(afm_delta &gt;&gt; 2) + 0x40</code>). The historical analysis confirms this is a fuel map: FHI (factory) values are larger than tuned values at 0x4120, consistent with a tuner leaning out the mixture for performance.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x7EC8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>90 bytes</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (main loop at 0x67F1)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Looks up the fuel duty cycle value from a 16x16 map indexed by RPM and engine load, or alternatively computes it directly from a RAM variable when ROM config byte 0x4039 is non-zero. The result is stored at 0x374A and mirrored to IO register 0x012E. A secondary output derives a shifted fuel value at 0x3122 from 0x3749, and the map lookup table index is copied from 0x3085 to 0x31EC.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>ROM[0x4039]: config byte — selects between map lookup (zero) and direct calculation (non-zero)</li>
+<li>0x3062: current RPM — drives map lookup axis</li>
+<li>0x313C: engine load value, 16-bit — drives map lookup axis</li>
+<li>0x32DE: direct calculation input (used only when ROM[0x4039] != 0)</li>
+<li>0x3749: fuel map low byte, 16-bit</li>
+<li>0x3085: map lookup table index</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x374A: fuel duty cycle result — also written to IO 0x012E</li>
+<li>IO 0x012E: fuel duty cycle mirror (IO output)</li>
+<li>0x3122: shifted fuel value — high byte of 0x3749, right-shifted 2 bits</li>
+<li>0x31EC: table index copy from 0x3085</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6080 — map_lookup_16x16: bilinear interpolation over fuel/boost table (historical: confirmed)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x3062 (rpm)</li>
+<li>0x313C (engine_load)</li>
+<li>0x32DE (afm_rate_of_change)</li>
+<li>0x3749 (fuel_map_raw)</li>
+<li>0x3085 (map_cell_index)</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x3072 (map_table_ptr)</li>
+<li>0x3074 (rpm_axis_ptr)</li>
+<li>0x3076 (load_axis_ptr)</li>
+<li>0x307A (rpm_lookup_value)</li>
+<li>0x3078 (load_lookup_value)</li>
+<li>0x374A (fuel_duty_cycle)</li>
+<li>0x3122 (fuel_value_shifted)</li>
+<li>0x31EC (fuel_table_index)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4039 (fuel_mode_select): selects map lookup vs direct calculation</li>
+<li>0x4100 (rpm_axis): 16x1 RPM axis table</li>
+<li>0x4110 (load_axis): 16x1 engine load axis table</li>
+<li>0x4120 (fuel_map): 16x16 fuel map (RPM × engine load)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x7E8C.html">0x7E8C Boost Output Controller</a><a class="nav-next" href="0x7F22.html">0x7F22 Adjustment Map Lookup</a></nav>
+</body>
+</html>

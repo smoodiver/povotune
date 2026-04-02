@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8F4C — Max Duty Limit Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8F4C Max Duty Limit Calculator</span></nav>
+<h3 id="0x8f4c-max-duty-limit-calculator">0x8F4C — Max Duty Limit Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8F4C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>105 bytes (0x8F4C–0x8FB4)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>17</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (boost_control_main at 0x889A)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes the maximum boost duty cycle limit from coolant temperature lookup tables with conditional offsets and a low-speed bypass path. Two computation paths:</p>
+<ol>
+<li><strong>Low-speed path</strong> (0x305D bit 5 clear, RPM below threshold, speed below threshold): Uses the result from the low-speed table (0x4BA0) directly.</li>
+<li><strong>High-speed path</strong> (all other cases): Uses the high-speed table (0x4BC0) result.</li>
+</ol>
+<p>Both paths look up coolant_temp via graph_lookup_2d, then add the idle duty offset via table_lookup_result_add_offset (0x90AF). The low-speed path additionally applies up to three conditional offsets:</p>
+<ul>
+<li>AT mode offset (0x4BEA) if 0x3210 bit 5 is set</li>
+<li>Decel/idle offset (0x4BEC) if 0x305D bit 5 is set AND 0x305B bit 0 is clear</li>
+<li>Port control offset (0x4BEE) if 0x3275 bits 0 or 3 are set</li>
+</ul>
+<p>Result is clamped to 0xFFFF on overflow and stored to 0x3104 (low-speed) or 0x3106 (final output).</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- Low-speed table lookup ---
+8F4C  LDX #$4BA0             ; low-speed max duty table
+8F4F  LDA $3093              ; load coolant_temp
+8F52  JSR $6000              ; graph_lookup_2d
+8F55  JSR $90AF              ; table_lookup_result_add_offset
+8F58  CLM                    ; 16-bit mode
+8F59  TXA                    ; A = lookup result
+; --- AT mode offset ---
+8F5A  BBC $3210,#$20,$8F66   ; if not AT mode, skip
+8F60  CLC
+8F61  ADC $4BEA              ; + AT offset
+8F64  BCS $8F84              ; if overflow, saturate
+; --- Decel/idle offset ---
+8F66  BBC $305D,#$20,$8F78   ; if bit 5 clear, skip
+8F6C  BBS $305B,#$01,$8F78   ; if bit 0 set, skip
+8F72  CLC
+8F73  ADC $4BEC              ; + decel/idle offset
+8F76  BCS $8F84              ; if overflow, saturate
+; --- Port control offset ---
+8F78  BBC $3275,#$09,$8F87   ; if bits 0,3 both clear, skip
+8F7E  CLC
+8F7F  ADC $4BEE              ; + port control offset
+8F82  BCC $8F87              ; if no overflow, continue
+8F84  LDA #$FFFF             ; saturate to max
+8F87  STA $3104              ; store low-speed result
+8F8A  SEM                    ; 8-bit mode
+; --- Speed/RPM gate ---
+8F8B  BBS $305D,#$20,$8FA5   ; if bit 5 set, use high-speed table
+8F90  LDX $3062              ; load RPM
+8F93  CPX $4BBB              ; compare vs RPM threshold
+8F96  BCS $8FA5              ; if above, use high-speed table
+8F98  LDA $3071              ; load vehicle_speed
+8F9B  CMP $4BBD              ; compare vs speed threshold
+8F9E  BCS $8FA5              ; if above, use high-speed table
+8FA0  LDX $3104              ; use low-speed result
+8FA3  BRA $8FB1              ; goto store
+; --- High-speed table lookup ---
+8FA5  LDX #$4BC0             ; high-speed max duty table
+8FA8  LDA $3093              ; load coolant_temp
+8FAB  JSR $6000              ; graph_lookup_2d
+8FAE  JSR $90AF              ; table_lookup_result_add_offset
+; --- Store final result ---
+8FB1  STX $3106              ; store max duty limit
+8FB4  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3093 (coolant_temp): temperature for table lookups</li>
+<li>0x3062 (rpm): engine speed</li>
+<li>0x3071 (vehicle_speed): vehicle speed</li>
+<li>0x3210 bit 5: AT/MT mode flag</li>
+<li>0x305B bit 0: condition flag</li>
+<li>0x305D bit 5: operating mode flag</li>
+<li>0x3275 bits 0, 3: port control mirror bits</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3104: low-speed max duty result (intermediate, 16-bit)</li>
+<li>0x3106: final max duty limit (16-bit)</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6000 -- graph_lookup_2d (2 calls)</li>
+<li>0x90AF -- table_lookup_result_add_offset (2 calls)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x3093, 0x3062, 0x3071, 0x3210, 0x305B, 0x305D, 0x3275, 0x3104</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x3104, 0x3106</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4BA0 -- low-speed max duty table (coolant temp axis)</li>
+<li>0x4BC0 -- high-speed max duty table (coolant temp axis)</li>
+<li>0x4BEA -- AT mode duty offset (16-bit)</li>
+<li>0x4BEC -- decel/idle duty offset (16-bit)</li>
+<li>0x4BEE -- port control duty offset (16-bit)</li>
+<li>0x4BBB -- RPM threshold for high-speed path selection</li>
+<li>0x4BBD -- vehicle speed threshold for high-speed path selection</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8F1E.html">0x8F1E RPM Rate-of-Change Classifier</a><a class="nav-next" href="0x8FB5.html">0x8FB5 Idle Duty Controller</a></nav>
+</body>
+</html>

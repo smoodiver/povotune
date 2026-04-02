@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB3A9 — ISC Valve Position Sampler — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB3A9 ISC Valve Position Sampler</span></nav>
+<h3 id="0xb3a9-isc-valve-position-sampler">0xB3A9 — ISC Valve Position Sampler</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB3A9</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>162 bytes (0xB3A9–0xB44A)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>16</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P2 (0xAAD1 via 0xAB33)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="cross-reference-heritage-warning">cross-reference Heritage Warning</h4>
+<p>Labeled &quot;ISC Valve Position Sampler&quot; from cross-reference SVX heritage. On the BD5A (EJ20H twin turbo), this function reads ADC channel AN5 which feeds the turbo feedback sensor (0x32AE), used as proportional controller feedback by the twin turbo duty controller (0xCC9F). The physical sensor identity on BD5A needs board-level pin trace verification.</p>
+<h4 id="summary">Summary</h4>
+<p>Samples the ISC (Idle Speed Control) valve position from the ADC result register and computes a 4-sample moving average used for idle control feedback. Called every ~4th scheduler tick (P2 priority). The function reads the ADC result from <code>dp+$22</code>, applies a scaling factor, and maintains a 4-deep history buffer at 0x3368–0x336E. The averaged result is written to 0x3370 (16-bit) and mirrored to IO port 0x011E and to 0x3796 (8-bit, shifted right 4).</p>
+<h4 id="flow">Flow</h4>
+<ol>
+<li><strong>Early exit check:</strong> Reads 0x32B7 (ISC activity counter); if below ROM threshold 0x48C6 (0x0A = 10), checks 0x35A4 bit 0 — if clear, returns early (not enough samples yet).</li>
+<li><strong>ADC capture:</strong> Busy-waits on <code>dp+$20</code> bit 3 (ADC ready flag), then loads X from <code>dp+$22</code> (the raw ADC result). Stores X to 0x3008 (scratch) and conditionally to 0x3360 (if 0x35A4 bit 0 is set) or 0x329E (ISC valve position, if 0x31DF bit 3 is clear).</li>
+<li><strong>Scaling:</strong> Switches to 16-bit mode. Multiplies 0x3008 by constant 0x01F4 (=500), stores result. Subtracts 0x012F (=303) from the high word, clamping to 0 minimum. Stores scaled value to 0x3362.</li>
+<li><strong>RPM gate:</strong> If 0x3062 &gt;= 0x60 (RPM above threshold), skips averaging and clears 0x3166 bit 6 (history-valid flag).</li>
+<li><strong>History buffer (sliding window):</strong> If 0x3166 bit 6 is already set (history valid), shifts values down: 0x3368 -&gt; 0x336A -&gt; 0x336C -&gt; 0x336E, inserts 0x3362 at 0x3368. If bit 6 is clear (first time), initializes all 4 slots to the current value and sets bit 6.</li>
+<li><strong>Averaging:</strong> Sums 0x3368 + 0x336A + 0x336C + 0x336E, divides by 4 (two LSR). Stores 16-bit result to 0x3370 and IO 0x011E. Shifts right 4 more to get 8-bit value, stores to 0x3796.</li>
+</ol>
+<h4 id="ram-variables">RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x32B7</td>
+<td>isc_activity_counter</td>
+<td>R</td>
+<td>Must reach threshold before sampling begins</td>
+</tr>
+<tr>
+<td>0x35A4</td>
+<td>output_port_shadow</td>
+<td>R</td>
+<td>Bit 0: ISC mode select; bit 7: used by 0xB44B</td>
+</tr>
+<tr>
+<td>0x3008</td>
+<td>interp_fraction (scratch)</td>
+<td>RW</td>
+<td>Temporary for ADC value and multiplication</td>
+</tr>
+<tr>
+<td>0x329E</td>
+<td>isc_valve_position</td>
+<td>W</td>
+<td>Raw ADC value stored here when 0x31DF bit 3 clear</td>
+</tr>
+<tr>
+<td>0x3360</td>
+<td>throttle_position_raw</td>
+<td>W</td>
+<td>Raw ADC value stored here when 0x35A4 bit 0 set</td>
+</tr>
+<tr>
+<td>0x3362</td>
+<td>isc_scaled_sample</td>
+<td>RW</td>
+<td>Current scaled ISC sample (16-bit)</td>
+</tr>
+<tr>
+<td>0x3368–0x336E</td>
+<td>isc_history_buffer</td>
+<td>RW</td>
+<td>4-entry 16-bit sliding window (newest at 0x3368)</td>
+</tr>
+<tr>
+<td>0x3370</td>
+<td>isc_average</td>
+<td>W</td>
+<td>4-sample average (16-bit)</td>
+</tr>
+<tr>
+<td>0x3796</td>
+<td>isc_average_8bit</td>
+<td>W</td>
+<td>8-bit version (0x3370 &gt;&gt; 4)</td>
+</tr>
+<tr>
+<td>0x3166</td>
+<td>airflow_rate_change</td>
+<td>RW</td>
+<td>Bit 6: history-valid flag for sliding window</td>
+</tr>
+<tr>
+<td>0x3062</td>
+<td>rpm_zone</td>
+<td>R</td>
+<td>If &gt;= 0x60, skips averaging</td>
+</tr>
+<tr>
+<td>0x31DF</td>
+<td>turbo_feedback_condition_flags</td>
+<td>R</td>
+<td>Bit 3: routes ADC to 0x329E vs 0x3360</td>
+</tr>
+</tbody></table>
+<h4 id="rom-constants">ROM Constants</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x48C6</td>
+<td>0x0A</td>
+<td>ISC activity counter threshold</td>
+</tr>
+<tr>
+<td>0x01F4 (imm)</td>
+<td>500</td>
+<td>ADC scaling multiplier</td>
+</tr>
+<tr>
+<td>0x012F (imm)</td>
+<td>303</td>
+<td>ADC scaling offset (subtracted after multiply)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB2F7.html">0xB2F7 Engine Load Calculator</a><a class="nav-next" href="0xB44B.html">0xB44B Turbo Feedback Sensor Processor</a></nav>
+</body>
+</html>

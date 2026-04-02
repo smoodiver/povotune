@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xBD51 — RPM Processor — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xBD51 RPM Processor</span></nav>
+<h3 id="0xbd51-rpm-processor">0xBD51 — RPM Processor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xBD51</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>138 bytes (0xBD51–0xBDDA)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P6 (0xAAD1 at 0xAB80)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Converts raw timer-derived RPM data into multiple scaled RPM representations used throughout the ECU, maintains a 5-entry RPM history FIFO, and calls the RPM rate-of-change classifier. The function has three phases:</p>
+<ol>
+<li><p><strong>Timer-to-RPM conversion</strong> (0xBD51–0xBDA0): Atomically reads (SEI/CLI) the ISR-produced timer period values <code>$320A</code> (B register) and <code>$320C</code> (A register, low byte only). If the low byte of <code>$320C</code> &gt;= 5, clamps the output to a fixed value of 0x0008 (very high RPM / overflow). Otherwise, performs a 24-bit right-shift-by-3 of the B:A pair using <code>LSR A / ROR $3008</code> three times, then applies a constant mask: <code>LDB #$04, LDA #$93E0, AND $3008</code>, producing a scaled RPM value. Pushes this value into a 5-entry 16-bit FIFO at <code>$3064</code>–<code>$306C</code> (with interrupt protection via SEI/CLI), and stores a right-shifted-by-2 copy to <code>$3062</code> (the standard RPM axis value used by table lookups).</p>
+</li>
+<li><p><strong>Multi-resolution RPM outputs</strong> (0xBDA5–0xBDD4): Produces three 8-bit-clamped RPM values at different resolutions:</p>
+<ul>
+<li><code>$3070</code> = RPM &gt;&gt; 2, clamped to 0xFF (airflow rate)</li>
+<li><code>$306F</code> = RPM &gt;&gt; 3, clamped to 0xFF (airflow load), also written to SSM port <code>$012A</code> and <code>$3778</code></li>
+<li><code>$306E</code> = RPM &gt;&gt; 4, clamped to 0xFF (knock sensor resolution)</li>
+</ul>
+</li>
+<li><p><strong>Rate-of-change</strong> (0xBDD7): Calls <code>JSR $8F1E</code> (RPM rate-of-change classifier) to classify the current RPM acceleration/deceleration state.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$320A</code> (derived_rpm_low): ISR-produced timer period value (low word)</li>
+<li><code>$320C</code>: ISR-produced timer period value (high byte, only low byte used)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$3062</code> (rpm): standard RPM axis value (full precision &gt;&gt; 2)</li>
+<li><code>$3064</code> (rpm_full_precision): full-precision 16-bit RPM (FIFO head)</li>
+<li><code>$3066</code>–<code>$306C</code>: RPM FIFO entries [1]–[4] (16-bit each)</li>
+<li><code>$306E</code> (knock_sensor): RPM &gt;&gt; 4, 8-bit clamped</li>
+<li><code>$306F</code> (airflow_load): RPM &gt;&gt; 3, 8-bit clamped</li>
+<li><code>$3070</code> (airflow_rate): RPM &gt;&gt; 2, 8-bit clamped</li>
+<li><code>$012A</code>: SSM diagnostic — airflow load RPM</li>
+<li><code>$3778</code>: mirror of airflow load RPM</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x8F1E</td>
+<td>rpm_rate_of_change_classifier</td>
+<td>Classifies RPM delta into acceleration/deceleration bands</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xBD28.html">0xBD28 Fuel Pulse Diagnostic Flag</a><a class="nav-next" href="0xBDDB.html">0xBDDB Throttle Decay & Counter Maintenance</a></nav>
+</body>
+</html>

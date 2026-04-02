@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x96AF — Adaptive Learning Integrator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x96AF Adaptive Learning Integrator</span></nav>
+<h3 id="0x96af-adaptive-learning-integrator">0x96AF — Adaptive Learning Integrator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x96AF</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~226 bytes (0x96AF–0x9790)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>35</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (adaptive_learning 0x9481 at 0x9637)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Integrates the current learning observation into the EEPROM-backed adaptive learning workspace. This is the core accumulator for the adaptive learning system: it takes the current observation value, computes a signed delta from center (0x8000), scales it by a rate-of-change factor selected from a 3-tier speed bracket, and adds/subtracts the scaled result to/from the current workspace cell. The workspace cell is clamped against per-mode upper and lower bounds stored in ROM.</p>
+<p>The function operates in two distinct phases:</p>
+<ol>
+<li><p><strong>Scaling phase (0x96AF-0x96ED)</strong>: Subtracts 0x8000 from the input (A), takes the absolute value, stores the magnitude in scratch 0x300C. Then selects a rate multiplier from a 3-level bracket table (0x4652+N indexed by 0x30A7) based on the current speed value in 0x300D against three thresholds at ROM 0x4663/0x4665/0x4667. Multiplies magnitude by the selected rate byte (high byte of result), producing a scaled delta. A zero result is bumped to 1 (minimum step).</p>
+</li>
+<li><p><strong>Accumulation phase (0x96ED-0x9790)</strong>: Tests flag 0x302B bit 3 to select workspace addressing mode. In the normal mode (bit 3 clear), uses 0x30A7 as an index into the EEPROM learn table base at 0x35B0. In the speed-limited mode (bit 3 set), uses fixed addresses 0x351A/0x351C selected by 0x302B bit 4. Then adds or subtracts the scaled delta depending on the carry flag (original sign of the observation - 0x8000 subtraction). The result is clamped to ROM upper bounds at 0x4EF8/0x4EF9/0x4EFA (per-mode, selected by 0x302B bits 3,4) and lower-bounded by the Y-indexed floor value from the ROM table at 0x4EB6. The final value is stored back to the workspace cell and mirrored to 0x3752.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>A (accumulator): current observation value (16-bit, centered around 0x8000)</li>
+<li>0x300D (temp_scaled_hi): current speed/load for rate bracket selection</li>
+<li>0x30A7 (alt_mode_index): operating mode index (selects workspace cell and ROM floor table entry)</li>
+<li>0x302B (interp_mode_control): bit 3 = speed-limited mode, bit 4 = secondary address select</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>Workspace cell at 0x35B0+offset or 0x351A/0x351C: updated learning value</li>
+<li>0x300C/0x300D (scratch): residual scaled delta (B:A)</li>
+<li>0x3752: mirror of final accumulated value</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4652 (learn_rate_base): base address for 3-byte rate multiplier table (indexed by 0x30A7)</li>
+<li>0x4663 (learn_speed_bracket_3): highest speed threshold</li>
+<li>0x4665 (learn_speed_bracket_2): middle speed threshold</li>
+<li>0x4667 (learn_speed_bracket_1): lowest speed threshold</li>
+<li>0x4EB6 (learn_floor_table): Y-indexed floor values per operating mode (index from 0x30A7 &gt;&gt; 1)</li>
+<li>0x4EF8 (learn_ceiling_mode_0): upper clamp for normal mode (bit 3 clear)</li>
+<li>0x4EF9 (learn_ceiling_mode_1): upper clamp for speed-limited mode, bit 4 clear</li>
+<li>0x4EFA (learn_ceiling_mode_2): upper clamp for speed-limited mode, bit 4 set</li>
+</ul>
+<h4 id="assembly-listing">Assembly Listing</h4>
+<pre><code class="language-asm">; === Phase 1: Compute scaled delta ===
+96AF  D8             CLM                 ; 16-bit accumulator
+96B0  38             SEC
+96B1  E9 00 80       SBC #$8000          ; signed delta from center
+96B4  EB 80          PSH #$80            ; push carry (sign) to stack
+96B6  F0 35          BEQ $96ED           ; if zero delta, skip scaling
+96B8  B0 04          BCS $96BE           ; positive: keep as-is
+96BA  49 FF FF       EOR #$FFFF          ; negative: negate (abs value)
+96BD  3A             INA
+96BE  8D 0C 30       STA $300C           ; store magnitude
+96C1  F8             SEM                 ; 8-bit mode
+96C2  AD 0D 30       LDA $300D           ; load current speed value
+96C5  A2 52 46       LDX #$4652          ; rate table base
+96C8  CD 67 46       CMP $4667           ; compare vs bracket 1
+96CB  B0 0D          BCS $96DA           ; &gt;= bracket 1: use index 0
+96CD  E8             INX                 ; else try bracket 2
+96CE  CD 65 46       CMP $4665
+96D1  B0 07          BCS $96DA           ; &gt;= bracket 2: use index 1
+96D3  E8             INX                 ; else try bracket 3
+96D4  CD 63 46       CMP $4663
+96D7  B0 01          BCS $96DA           ; &gt;= bracket 3: use index 2
+96D9  E8             INX                 ; else use index 3 (slowest rate)
+96DA  D8             CLM                 ; 16-bit mode
+96DB  CA             DEX
+96DC  B5 00          LDA $00,X           ; load rate byte (in high byte via 16-bit read)
+96DE  29 00 FF       AND #$FF00          ; isolate high byte
+96E1  89 0D 0C 30    MPY $300C           ; multiply rate * magnitude
+96E5  89 28          XAB                 ; result high word -&gt; A
+96E7  29 FF FF       AND #$FFFF
+96EA  D0 01          BNE $96ED           ; if non-zero, use it
+96EC  3A             INA                 ; bump zero to 1 (minimum step)
+
+; === Phase 2: Accumulate into workspace ===
+96ED  8D 0C 30       STA $300C           ; store scaled delta
+96F0  2C 2B 30 08 00 0D BBS $302B,#$08,$9703  ; bit 3 set? speed-limited mode
+96F6  AD A7 30       LDA $30A7           ; normal mode: use alt_mode_index
+96F9  29 FF 00       AND #$FF
+96FC  18             CLC
+96FD  69 B0 35       ADC #$35B0          ; workspace = 0x35B0 + index
+9700  AA             TAX
+9701  80 0B          BRA $970E
+9703  A2 1A 35       LDX #$351A          ; speed-limited: base = 0x351A
+9706  3C 2B 30 10 00 02 BBC $302B,#$10,$970E  ; bit 4 clear? use 0x351A
+970C  E8             INX                 ; bit 4 set: use 0x351C
+970D  E8             INX
+
+970E  AD A7 30       LDA $30A7           ; compute floor table index
+9711  4A             LSR A               ; index / 2
+9712  29 FF 00       AND #$FF
+9715  18             CLC
+9716  69 B6 4E       ADC #$4EB6          ; floor table base
+9719  A8             TAY                 ; Y = floor table pointer
+
+971A  FB 80          PUL #$80            ; recover sign flag (carry)
+971C  F8             SEM                 ; 8-bit mode
+971D  42 B5 00       LDB $00,X           ; load current workspace B (low)
+9720  B5 01          LDA $01,X           ; load current workspace A (high)
+9722  90 4E          BCC $9772           ; carry clear = subtract path
+
+; --- Add path ---
+9724  18             CLC
+9725  42 6D 0C 30    ADCB $300C          ; add delta low byte
+9729  6D 0D 30       ADC $300D           ; add delta high byte
+972C  B0 1F          BCS $974D           ; overflow: clamp to ceiling
+
+972E  2C 2B 30 08 07 BBS $302B,#$08,$973A  ; select ceiling by mode
+9733  CD F8 4E       CMP $4EF8           ; mode 0 ceiling
+9736  B0 21          BCS $9759
+9738  80 2E          BRA $9768
+973A  2C 2B 30 10 07 BBS $302B,#$10,$9746
+973F  CD F9 4E       CMP $4EF9           ; mode 1 ceiling
+9742  B0 1A          BCS $975E
+9744  80 22          BRA $9768
+9746  CD FA 4E       CMP $4EFA           ; mode 2 ceiling
+9749  B0 18          BCS $9763
+974B  80 1B          BRA $9768
+
+974D  3C 2B 30 08 07 BBC $302B,#$08,$9759  ; overflow: force ceiling
+9752  3C 2B 30 10 07 BBC $302B,#$10,$975E
+9757  80 0A          BRA $9763
+
+9759  AD F8 4E       LDA $4EF8           ; clamp to mode 0 ceiling
+975C  80 20          BRA $977E
+975E  AD F9 4E       LDA $4EF9           ; clamp to mode 1 ceiling
+9761  80 1B          BRA $977E
+9763  AD FA 4E       LDA $4EFA           ; clamp to mode 2 ceiling
+9766  80 16          BRA $977E
+
+9768  D9 00 00       CMP $0000,Y         ; check vs floor
+976B  B0 14          BCS $9781           ; above floor: keep value
+976D  B9 00 00       LDA $0000,Y         ; clamp to floor
+9770  80 0C          BRA $977E
+
+; --- Subtract path ---
+9772  38             SEC
+9773  42 ED 0C 30    SBCB $300C          ; subtract delta low byte
+9777  ED 0D 30       SBC $300D           ; subtract delta high byte
+977A  B0 B2          BCS $972E           ; no underflow: check bounds
+977C  80 EF          BRA $976D           ; underflow: clamp to floor
+
+977E  42 A9 00       LDB #$00            ; clear B (low byte for clamped values)
+9781  42 95 00       STB $00,X           ; store back workspace low
+9784  95 01          STA $01,X           ; store back workspace high
+9786  42 8D 0C 30    STB $300C           ; mirror to scratch
+978A  8D 0D 30       STA $300D
+978D  8D 52 37       STA $3752           ; mirror final value
+9790  60             RTS
+</code></pre>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x9481.html">0x9481 Adaptive Learning</a><a class="nav-next" href="0x97CF.html">0x97CF Diagnostic State Restore / Init</a></nav>
+</body>
+</html>

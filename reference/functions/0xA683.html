@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA683 — Knock Control Dispatcher (Phase 0) — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA683 Knock Control Dispatcher (Phase 0)</span></nav>
+<h3 id="0xa683-knock-control-dispatcher-phase-0">0xA683 — Knock Control Dispatcher (Phase 0)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA683</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>104 bytes (0xA683–0xA6EA)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR Phase 0 (0x98A1 at 0x99DC)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Knock control dispatcher called during ISR Phase 0. Evaluates a chain of preconditions to determine whether to run knock learning (0xA826), knock retard ramp (0xA76F), or just the timing decay (0xA745). The precondition chain tests system mode flags, RPM zone state, error flags, and the knock multiplier state to select the appropriate sub-function.</p>
+<p>When conditions are not met for active knock processing, the function defaults to calling the timing decay function (0xA745) and clearing the knock interval counter.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- early exits ---
+A683  BBS $305C,#$06,$A6D3 ; if mode_select bits 1+2 set, -&gt; hard reset
+A688  BBS $31FC,#$40,$A6D2 ; if knock enable flag set, -&gt; return (already active)
+A68D  BBC $31A1,#$02,$A6C8 ; if not in high-RPM zone, -&gt; soft disable
+A692  BBS $3021,#$80,$A6C8 ; if system error flag set, -&gt; soft disable
+; --- precondition chain ---
+A697  BBC $3034,#$02,$A6DF ; if ign_control bit 1 clear, -&gt; default path
+A69C  BBS $31EA,#$40,$A6DF ; if diag intermittent flag set, -&gt; default
+A6A1  LDA $322C           ; load isr_event_flags
+A6A4  AND #$24            ; test bits 2 and 5
+A6A6  BNE $A6DF           ; if either set, -&gt; default path
+A6A8  LDA $31CC           ; load af_ratio_mode
+A6AB  BNE $A6DF           ; if nonzero, -&gt; default path
+; --- dispatch knock processing ---
+A6AD  BBC $3033,#$40,$A6C0 ; if ign_zone_control bit 6 clear, -&gt; try ramp
+A6B2  BBC $3033,#$02,$A6DF ; if bit 1 also clear, -&gt; default
+A6B7  JSR $A826           ; call knock_learning_update
+A6BA  LDM $31CA,#$00      ; clear knock interval counter
+A6BE  BRA $A6CC           ; -&gt; cleanup
+; --- alternative: knock ramp ---
+A6C0  BBC $3033,#$01,$A6DF ; if bit 0 clear, -&gt; default
+A6C5  JSR $A76F           ; call knock_retard_ramp
+; --- soft disable / cleanup ---
+A6C8  SEB $3034,#$08      ; set ign_control bit 3 (knock processed flag)
+A6CC  LDY #$00
+A6CF  STY $31B8           ; clear timing_correction to 0
+A6D2  RTS
+; --- hard reset ---
+A6D3  CLB $3033,#$40      ; clear ign_zone_control bit 6
+A6D7  CLB $3034,#$04      ; clear ign_control bit 2
+A6DB  LDM $3503,#$00      ; clear knock_multiplier to 0
+A6DF  JSR $A745           ; call timing_decay
+A6E2  LDM $31CA,#$00      ; clear knock interval counter
+A6E6  SEB $3034,#$08      ; set ign_control bit 3
+A6EA  RTS
+</code></pre>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xA826</td>
+<td>knock_learning_update</td>
+<td>When ign_zone bit 6 AND bit 1 both set</td>
+</tr>
+<tr>
+<td>0xA76F</td>
+<td>knock_retard_ramp</td>
+<td>When ign_zone bit 0 set (but not bit 6)</td>
+</tr>
+<tr>
+<td>0xA745</td>
+<td>timing_decay</td>
+<td>Default path when preconditions not met</td>
+</tr>
+</tbody></table>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x305C</td>
+<td>mode_select_flags</td>
+<td>Bits 1+2: hard reset trigger</td>
+</tr>
+<tr>
+<td>0x31FC</td>
+<td>knock_enable_flags</td>
+<td>Bit 6: knock already active</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Bit 2: high-RPM zone state</td>
+</tr>
+<tr>
+<td>0x3021</td>
+<td>system_event_flags</td>
+<td>Bit 7: system error flag</td>
+</tr>
+<tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 1: ignition control active</td>
+</tr>
+<tr>
+<td>0x31EA</td>
+<td>diag_intermittent_flags</td>
+<td>Bit 6: diagnostic intermittent fault</td>
+</tr>
+<tr>
+<td>0x322C</td>
+<td>isr_event_flags</td>
+<td>Bits 2 and 5 tested</td>
+</tr>
+<tr>
+<td>0x31CC</td>
+<td>af_ratio_mode</td>
+<td>Must be 0 for knock processing</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 6: knock learning ready, bit 1: zone confirmed, bit 0: ramp active</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 3: set (knock processed), bit 2: cleared on hard reset, bit 4: cleared on hard reset</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 6: cleared on hard reset</td>
+</tr>
+<tr>
+<td>0x31B8</td>
+<td>timing_correction</td>
+<td>Zeroed on soft disable path</td>
+</tr>
+<tr>
+<td>0x31CA</td>
+<td>knock_interval_counter</td>
+<td>Cleared to 0 after dispatch</td>
+</tr>
+<tr>
+<td>0x3503</td>
+<td>knock_multiplier</td>
+<td>Cleared to 0 on hard reset</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA3F4.html">0xA3F4 RPM Zone Classifier (Phase 1)</a><a class="nav-next" href="0xA6EB.html">0xA6EB RPM Range Classifier (Limiter Flags)</a></nav>
+</body>
+</html>

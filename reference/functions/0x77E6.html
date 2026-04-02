@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x77E6 — MIL Lamp Driver — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x77E6 MIL Lamp Driver</span></nav>
+<h3 id="0x77e6-mil-lamp-driver">0x77E6 — MIL Lamp Driver</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x77E6</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~322 bytes (0x77E6–0x7927)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>70</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 (health_check_dispatcher 0x6B14, slot 25)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0x7928, 0x79C7, 0x7A16, 0x6346, 0x634E, 0x920B</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Controls the Malfunction Indicator Lamp (MIL / Check Engine Light) on the instrument cluster. Manages three distinct operating modes: self-test blink code output, normal-mode steady illumination, and a test-mode fault code readout pattern. Uses port 0x2000 bit 5 (via shadow register 0x35A5) to drive the lamp.</p>
+<p>The function has several major phases:</p>
+<p><strong>Phase 1 — Timer countdown (0x77E6–0x780D):</strong> Decrements two countdown timers (0x3190, 0x3191) via saturating_decrement (0x6346). If 0x35A4 bit 0 (self-test mode) is active and timer 0x3190 has reached zero, reloads it with 0x27 (39 ticks) and toggles port 0x2000 bits 0+5 (EOR #$21) — this creates the blink pattern for the self-test indicator. Returns early while self-test is active.</p>
+<p><strong>Phase 2 — Mode dispatch (0x780E–0x781E):</strong> Three-way branch based on system state:</p>
+<ul>
+<li>If 0x3510 is non-zero (test mode active): jump to Phase 4 (test-mode handler)</li>
+<li>If 0x305C bit 2 is set (clear-codes mode): jump to Phase 3 (clear-codes handler)</li>
+<li>Otherwise: fall through to Phase 2b (normal mode)</li>
+</ul>
+<p><strong>Phase 2b — Normal mode (0x781E–0x7878):</strong> If blink timers (0x3191, 0x3192) are still running, returns (maintains current lamp state). Otherwise checks for active fault codes in 0x332E/0x3330. If faults present and persistent fault counter (0x3216) &gt;= 0x0494 (1172), increments fault persistence counter (0x318E) via saturating_increment_y; when &gt;= 0x62 (98), forces lamp ON. If counter &lt; 0x0494, sets 0x318E to 0xFFFF and forces lamp ON. If no faults present, clears 0x318E, reloads timer (0x3190 = 0x23/35 ticks), and sets lamp state based on 0x3051 bit 2 (engine running indicator).</p>
+<p><strong>Phase 3 — Clear-codes mode (0x7879–0x78C6):</strong> Checks latched fault registers (0x350A, 0x350C). If faults exist, enters a multi-phase blink sequence: calls 0x7928 (fault code bit scanner) to identify the next fault bit, then 0x79C7 (blink pattern generator) to set up the blink timing. If no faults and no active blink sequence, calls 0x7A16 (idle toggle timer) to produce a steady blink.</p>
+<p><strong>Phase 4 — Test mode (0x78C7–0x7927):</strong> Similar to Phase 3 but uses current fault registers (0x332E, 0x3330) instead of latched registers. Also includes an extended idle-check path: if no faults, checks engine conditions (0x3051 bit 2, elapsed timer 0x318C &lt; 0x030D, engine state 0x3030 bits 2,3,7, intermittent flag 0x31EA bit 7) to determine whether to toggle the lamp or hold it steady.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x35A4 bit 0: self-test mode active</li>
+<li>0x35A5: port 0x2000 shadow register</li>
+<li>0x3510: diagnostic mode control (0 = normal, non-zero = test)</li>
+<li>0x305C bit 2: clear-codes mode flag</li>
+<li>0x3051 bit 2: engine running indicator</li>
+<li>0x332E, 0x3330: current fault flags</li>
+<li>0x350A, 0x350C: latched fault flags</li>
+<li>0x3216: persistent fault counter (16-bit)</li>
+<li>0x318C: diagnostic elapsed timer (16-bit)</li>
+<li>0x3030 bits 2,3,7: engine condition flags</li>
+<li>0x31EA bit 7: intermittent fault detection ready</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3190: MIL blink timer / reload counter</li>
+<li>0x3191: MIL blink phase timer (set by 0x79C7)</li>
+<li>0x3192: current fault code being blinked (set by 0x7928)</li>
+<li>0x318E: fault persistence counter (16-bit)</li>
+<li>0x35A5 bit 5: MIL lamp state (via port_2000_shadow_write 0x920B)</li>
+<li>Port 0x2000 bit 5: physical MIL lamp output</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6346 (saturating_decrement): timer countdown</li>
+<li>0x634E (saturating_increment_y): persistence counter</li>
+<li>0x7928 (fault_code_bit_scanner): find next fault to blink</li>
+<li>0x79C7 (blink_pattern_generator): set up blink timing</li>
+<li>0x7A16 (idle_toggle_timer): idle-state lamp toggle</li>
+<li>0x920B (port_2000_shadow_write): update physical port</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x7714.html">0x7714 Fault Output Stage</a><a class="nav-next" href="0x7928.html">0x7928 Fault Code Bit Scanner</a></nav>
+</body>
+</html>

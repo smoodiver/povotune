@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8EB1 — Vehicle Speed Hysteresis Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8EB1 Vehicle Speed Hysteresis Check</span></nav>
+<h3 id="0x8eb1-vehicle-speed-hysteresis-check">0x8EB1 — Vehicle Speed Hysteresis Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8EB1</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>33 bytes (0x8EB1–0x8ED1)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (boost_control_main at 0x8B14)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Speed hysteresis comparator for boost control mode selection. Compares vehicle_speed (0x3071) against a threshold with hysteresis: the threshold is a base value from ROM 0x4A4E, optionally increased by ROM 0x4A52 when the &quot;already above&quot; flag (0x3026 bit 7) is set. If speed &gt;= threshold, sets the flag (entering high-speed mode); if speed &lt; threshold, clears it (returning to normal mode). This prevents oscillation at the speed boundary.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>8EB1  LDA $4A4E              ; load base speed threshold
+8EB4  BBS $3026,#$80,$8EC1   ; if already above, skip hysteresis add
+8EB9  CLC
+8EBA  ADC $4A52              ; add hysteresis offset (raising entry threshold)
+8EBD  BCC $8EC1              ; if no overflow, continue
+8EBF  LDA #$FF               ; saturate to 0xFF
+8EC1  CMP $3071              ; compare threshold vs vehicle_speed
+8EC4  BEQ $8ECD              ; if equal, set flag
+8EC6  BCC $8ECD              ; if speed &gt; threshold, set flag
+8EC8  CLB $3026,#$80          ; speed below: clear high-speed flag
+8ECC  RTS
+8ECD  SEB $3026,#$80          ; speed at/above: set high-speed flag
+8ED1  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3071 (vehicle_speed): current vehicle speed</li>
+<li>0x3026 bit 7: current high-speed state flag</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3026 bit 7: updated high-speed state flag</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x3071, 0x3026</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x3026 (bit 7)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4A4E -- base speed threshold (low-to-high transition)</li>
+<li>0x4A52 -- hysteresis offset (added when transitioning from low to high)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8EAA.html">0x8EAA Load Default Timer Constant</a><a class="nav-next" href="0x8ED2.html">0x8ED2 Boost Duty Floor Enforcer</a></nav>
+</body>
+</html>

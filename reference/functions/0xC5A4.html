@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xC5A4 — Coolant Fan Speed Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xC5A4 Coolant Fan Speed Controller</span></nav>
+<h3 id="0xc5a4-coolant-fan-speed-controller">0xC5A4 — Coolant Fan Speed Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xC5A4</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>147 bytes (0xC5A4–0xC636)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>27</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P5 (0xAAD1 at 0xABAD)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Controls the coolant fan speed output (0x325D) based on knock sensor reading (0x306E), RPM (0x303C), and additional sensor conditions. Uses an adaptive threshold system with hysteresis to ramp the fan speed up or down.</p>
+<p><strong>Entry gate</strong>: Checks knock_sensor ($306E). If &gt;= 0x28 (40) or &lt; ROM[$488D] (10), clears fan_speed_output (0x325D) to 0 and returns.</p>
+<p><strong>Engine running check</strong>: Requires system_control_flags ($305A) bit 3 set (engine running) AND bit 2 clear. Also requires lookup_input_b ($316B) &gt; 0x64 (100). If any condition fails, sets output to 0.</p>
+<p><strong>RPM-based control</strong> (using ad_initial_ch1 at $303C as 16-bit):</p>
+<ul>
+<li>If RPM &lt; 0x0028: below minimum, loads base thresholds from ROM and returns 0</li>
+<li>If RPM &gt;= 0x0028 and &lt; 0x03E0: in active range, runs adaptive controller</li>
+<li>If RPM &gt;= 0x03E0: high RPM, checks sensor_status_flags and runs comparator</li>
+</ul>
+<p><strong>Adaptive controller</strong>: Maintains two 16-bit threshold values:</p>
+<ul>
+<li>0x357A (adaptive_base_value): lower threshold</li>
+<li>0x32AA: upper threshold (base + ROM[$4888] offset of 30)</li>
+</ul>
+<p>Base is initialized from ROM[$4886] (100). When RPM crosses thresholds, the output counter increments or resets. A secondary qualifier checks system_control_flags bit 0, knock_sensor bounds (ROM[$488C] = 20 upper, 0x0A lower), and coolant_temp_raw ($3092) against ROM[$488B] (130) to conditionally lower the threshold.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x306E (knock_sensor): primary input, must be in valid range</li>
+<li>0x303C (ad_initial_ch1): RPM input (16-bit)</li>
+<li>0x305A (system_control_flags): bits 0, 2, 3 gate operation</li>
+<li>0x316B (lookup_input_b): must exceed 100</li>
+<li>0x31CD (sensor_status_flags): bit 5 gates high-RPM path</li>
+<li>0x3092 (coolant_temp_raw): secondary qualifier</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x325D (fan_speed_output): 8-bit output level (0 = off)</li>
+<li>0x357A (adaptive_base_value): lower RPM threshold</li>
+<li>0x32AA: upper RPM threshold</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4886: base RPM threshold (value = 0x64 = 100)</li>
+<li>0x4888: RPM threshold offset (value = 0x1E = 30)</li>
+<li>0x488A: output increment limit (value = 0x0A = 10)</li>
+<li>0x488B: coolant temp qualifier (value = 0x82 = 130)</li>
+<li>0x488C: knock sensor upper bound (value = 0x14 = 20)</li>
+<li>0x488D: knock sensor minimum (value = 0x0A = 10)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x306E (knock_sensor), 0x303C (ad_initial_ch1), 0x305A (system_control_flags)</li>
+<li>0x316B (lookup_input_b), 0x31CD (sensor_status_flags), 0x3092 (coolant_temp_raw)</li>
+<li>0x325D (fan_speed_output), 0x357A (adaptive_base_value), 0x32AA</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x325D (fan_speed_output): output level</li>
+<li>0x357A (adaptive_base_value): threshold updated</li>
+<li>0x32AA: upper threshold updated</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xC54A.html">0xC54A O2 Heater Control</a><a class="nav-next" href="0xC637.html">0xC637 Engine Stall Recovery</a></nav>
+</body>
+</html>

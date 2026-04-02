@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA826 — Knock Learning Update — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA826 Knock Learning Update</span></nav>
+<h3 id="0xa826-knock-learning-update">0xA826 — Knock Learning Update</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA826</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>146 bytes (0xA826–0xA8B7)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>19</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — knock_control_dispatcher (0xA683 at 0xA6B7)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Updates the per-cylinder knock learning table based on current knock state. Called when the knock retard ramp has found the knock boundary (ign_zone_control bit 6 set). The function has three operating modes:</p>
+<ol>
+<li><strong>Knock correction fully enabled</strong> (<code>$31C2</code> = 0xFF): Clears the timing interval counter, sets ign_control bit 3, loads B=0, stores cylinder ID to diagnostic mirror. Minimal update.</li>
+<li><strong>Sensor active</strong> (<code>$31C1</code> nonzero): Performs a ROM table lookup using airflow load (<code>$306F</code>) against table at <code>$44B0</code> to compute a knock correction base value (<code>$31BD</code>). Then indexes into the per-cylinder knock learning RAM table at <code>$3630 + cylinder_id</code> to read the current learning value, adds the correction, passes through the knock clamp function (0xA8B8), and writes the result back.</li>
+<li><strong>Normal path</strong>: Checks if the cylinder has changed since last update, waits for the knock timing interval flag, and conditionally loads a ROM default correction value from <code>$4D9E</code>.</li>
+</ol>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- knock correction fully enabled ---
+A826  BBC $31C2,#$FF,$A838 ; if not fully enabled, -&gt; sensor check
+A82B  LDM $31BA,#$00      ; clear timing interval counter
+A82F  SEB $3034,#$08      ; set knock processed flag
+A833  LDB #$00            ; correction = 0
+A836  BRA $A8B1           ; -&gt; store cylinder ID and return
+; --- sensor active path ---
+A838  BBC $31C1,#$FF,$A857 ; if sensor not active, -&gt; normal path
+A83D  LDM $31BA,#$00      ; clear timing interval counter
+A841  CLB $3033,#$10      ; clear ign_zone bit 4
+A845  LDA $306F           ; load airflow_load
+A848  LDX #$44B0          ; ROM table address
+A84B  JSR $6000           ; 1D table interpolation
+A84E  STA $31BD           ; store knock correction base
+A851  SEB $3034,#$08      ; set knock processed flag
+A855  BRA $A88A           ; -&gt; apply to learning table
+; --- normal path ---
+A857  BBC $3034,#$08,$A862 ; if not previously processed, -&gt; check cylinder
+A85C  CLB $3034,#$08      ; clear processed flag
+A860  BRA $A87B           ; -&gt; reset
+A862  LDA $31C4           ; load previous cylinder ID
+A865  CMP $31C3           ; compare against current cylinder
+A868  BNE $A87B           ; if different, -&gt; reset
+A86A  BBC $3033,#$10,$A889 ; if timing interval flag clear, -&gt; return
+A86F  CLB $3033,#$10      ; clear timing interval flag
+A873  LDA $4D9E           ; load ROM default correction
+A876  STA $31BD           ; store correction
+A879  BRA $A88A           ; -&gt; apply to learning table
+; --- reset ---
+A87B  LDM $31BA,#$00      ; clear timing interval counter
+A87F  CLB $3033,#$10      ; clear timing interval flag
+A883  LDA $31C3           ; load current cylinder
+A886  STA $31C4           ; save as previous cylinder
+A889  RTS
+; --- apply correction to learning table ---
+A88A  LDA $31C3           ; load cylinder ID
+A88D  CLM                 ; 16-bit mode
+A88E  AND #$FF            ; mask to byte
+A891  CLC
+A892  ADC #$3630          ; compute table address: $3630 + cyl_id
+A895  TAX
+A896  SEM                 ; back to 8-bit
+A897  LDB $00,X           ; load current learning value from table
+A89A  BBC $31C1,#$FF,$A8A1 ; if sensor not active, -&gt; conditional add
+A89F  BRA $A8A6           ; -&gt; add correction
+A8A1  BBS $3034,#$01,$A8AB ; if ign_control bit 0 set, skip correction
+A8A6  CLC
+A8A7  ADCB $31BD          ; add correction to learning value
+A8AB  JSR $A8B8           ; call knock_clamp
+A8AE  STB $00,X           ; store clamped result back to table
+A8B1  LDA $31C3           ; load cylinder ID
+A8B4  STA $01BE           ; store to diagnostic output mirror
+A8B7  RTS
+</code></pre>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6000</td>
+<td>1d_table_interpolation</td>
+<td>Airflow-to-correction lookup from ROM table $44B0</td>
+</tr>
+<tr>
+<td>0xA8B8</td>
+<td>knock_clamp</td>
+<td>Clamps the correction value to safe limits</td>
+</tr>
+</tbody></table>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31C2</td>
+<td>knock_corr_enable</td>
+<td>Dispatch mode selector</td>
+</tr>
+<tr>
+<td>0x31C1</td>
+<td>sensor_activity_flags</td>
+<td>Sensor active flag</td>
+</tr>
+<tr>
+<td>0x306F</td>
+<td>airflow_load</td>
+<td>Input to correction table lookup</td>
+</tr>
+<tr>
+<td>0x31C3</td>
+<td>current_cylinder_id</td>
+<td>Current cylinder for learning table index</td>
+</tr>
+<tr>
+<td>0x31C4</td>
+<td>previous_cylinder_id</td>
+<td>Previous cylinder for change detection</td>
+</tr>
+<tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bits 0, 3, 8: various control state</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 4: timing interval flag</td>
+</tr>
+<tr>
+<td>0x31BD</td>
+<td>knock_correction_base</td>
+<td>Correction value from lookup or ROM default</td>
+</tr>
+<tr>
+<td>0x3630+</td>
+<td>knock_learned_values</td>
+<td>Per-cylinder learning table (indexed by cylinder ID)</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31BA</td>
+<td>knock_timing_interval</td>
+<td>Cleared to 0</td>
+</tr>
+<tr>
+<td>0x31BD</td>
+<td>knock_correction_base</td>
+<td>Stores lookup result</td>
+</tr>
+<tr>
+<td>0x31C4</td>
+<td>previous_cylinder_id</td>
+<td>Updated to current cylinder</td>
+</tr>
+<tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 3: set/cleared, bit 8: cleared</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 4: cleared after use</td>
+</tr>
+<tr>
+<td>0x3630+</td>
+<td>knock_learned_values</td>
+<td>Updated with corrected value</td>
+</tr>
+<tr>
+<td>0x01BE</td>
+<td>diag_cylinder_mirror</td>
+<td>Diagnostic output mirror of cylinder ID</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x44B0</td>
+<td>varies</td>
+<td>1D interpolation table: airflow_load to knock correction</td>
+</tr>
+<tr>
+<td>0x4D9E</td>
+<td>1 byte</td>
+<td>Default knock correction value (used when sensor not active)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA76F.html">0xA76F Knock Retard Ramp Controller</a><a class="nav-next" href="0xA8B8.html">0xA8B8 Knock Correction Clamp</a></nav>
+</body>
+</html>

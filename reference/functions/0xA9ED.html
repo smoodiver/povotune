@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA9ED — Ignition Timing Output Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA9ED Ignition Timing Output Calculator</span></nav>
+<h3 id="0xa9ed-ignition-timing-output-calculator">0xA9ED — Ignition Timing Output Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA9ED</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>228 bytes (0xA9ED–0xAAD0)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>40</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR secondary chain (0x98A1 region at 0x9BF2)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes the final ignition timing output value (<code>$30BA</code>) from the dwell start angle (<code>$304F</code>), applies knock correction offsets, rate-limiting (slew control), and stores the smoothed result to <code>$309A</code> (dwell_cranking). Then calls three sub-functions to compute derived timing outputs for the ignition system.</p>
+<p>The function has four main paths:</p>
+<ol>
+<li><strong>System error</strong> (<code>$3021</code> bit 7 set): Clears af_ratio_mode and jumps to output.</li>
+<li><strong>Knock correction fully enabled</strong> (<code>$31C2</code> = 0xFF): Clears af_ratio_mode, subtracts a ROM offset from dwell angle, clamps to zero.</li>
+<li><strong>Active knock processing</strong>: Evaluates multiple preconditions (ign_control bits, zone flags, event flags), subtracts timing offsets, applies knock-direction-dependent correction.</li>
+<li><strong>Fallback</strong>: Subtracts base timing offset, clamps to zero.</li>
+</ol>
+<p>After computing the raw output, applies rate-limiting (slew control) against the previous value (<code>$309A</code>), using ROM step limits (<code>$4480</code>, <code>$4481</code>) and a slow-ramp counter (<code>$3132</code>/<code>$4479</code>) gated by <code>$3276</code> bit 7. The final value is clamped to a maximum of 0x3C (60 degrees), stored to three outputs, and three sub-functions are called.</p>
+<h4 id="key-computation-path-active-knock-processing">Key Computation Path (Active Knock Processing)</h4>
+<pre><code>A9ED  LDA $304F           ; load dwell_start_angle
+A9F0  BBS $3021,#$80,$AA5C ; if system error, -&gt; clear and output
+; ...precondition checks...
+AA1E  LDB $322C           ; check event flags
+AA22  ANDB #$24           ; bits 2+5 must be clear
+AA27  LDB $31CC           ; af_ratio_mode must be 0
+; ...
+AA32  SEC
+AA33  SBC $31B9           ; subtract timing_advance_offset
+AA36  BCC $AA43           ; clamp to 0 on underflow
+AA3A  LDB $31B8           ; load timing_correction (signed)
+AA3E  BPL $AA45           ; if positive, skip extra subtraction
+AA40  DEA                 ; subtract 1 (signed adjustment)
+; ...
+AA45  BBC $31FC,#$40,$AA52 ; if knock feedback not enabled, skip
+AA4A  SEC
+AA4B  SBC $445C           ; subtract ROM knock offset
+AA4E  BCS $AA52           ; clamp to 0
+AA50  LDA #$00
+; ...
+AA52  BBC $31CC,#$FF,$AA60 ; if af_ratio_mode not active, skip
+AA57  DEC $31CC           ; decrement af_ratio_mode counter
+</code></pre>
+<h4 id="rate-limiting-0xaa60-0xaab2">Rate Limiting (0xAA60–0xAAB2)</h4>
+<pre><code>AA60  STA $30BA           ; store raw output
+AA63  SEC
+AA64  SBC $309A           ; compare against previous smoothed value
+AA67  BCS $AA7E           ; if new &gt;= old (increasing), -&gt; ramp up
+; --- decreasing ---
+AA69  EOR #$FF            ; negate difference
+AA6B  INA
+AA6C  CMP $4481           ; compare against max decrease step
+AA6F  BCC $AAAF           ; if within limit, use raw value
+AA71  LDA $309A           ; else: old - step
+AA74  SEC
+AA75  SBC $4481
+AA78  BCS $AAB2
+AA7A  LDA #$00            ; clamp to 0
+; --- increasing ---
+AA7E  BBS $3276,#$80,$AA95 ; if slow-ramp mode, -&gt; slow path
+AA83  CMP $4480           ; compare against max increase step
+AA86  BCC $AAAF           ; if within limit, use raw value
+AA88  LDA $309A           ; else: old + step
+AA8B  CLC
+AA8C  ADC $4480
+AA8F  BCC $AAB2
+AA91  LDA #$3C            ; clamp to max (60)
+; --- slow ramp ---
+AA95  LDA $309A           ; load previous value
+AA98  INC $3132           ; increment slow-ramp counter
+AA9B  LDB $3132
+AA9F  CMPB $4479          ; compare against slow-ramp threshold
+AAA3  BCC $AAB2           ; if not reached, hold previous value
+AAA5  LDM $3132,#$00      ; reset counter
+AAA9  INA                 ; increment by 1
+AAAA  CMP $30BA           ; compare against raw target
+AAAD  BCC $AAB2           ; if still below target, use incremented
+AAAF  LDA $30BA           ; else use raw value
+AAB2  STA $309A           ; store smoothed result
+</code></pre>
+<h4 id="final-output-0xaab5-0xaad0">Final Output (0xAAB5–0xAAD0)</h4>
+<pre><code>AAB5  JSR $DB51           ; sub_DB51 (timing conversion 1)
+AAB8  STA $3278           ; store converted value
+AABB  JSR $D90A           ; sub_D90A (timing conversion 2)
+AABE  JSR $DBBB           ; sub_DBBB (timing conversion 3)
+AAC1  CMP #$3C            ; clamp to max 60
+AAC3  BCC $AAC7
+AAC5  LDA #$3C
+AAC7  STA $3050           ; store to dwell_output
+AACA  STA $01A4           ; mirror to diagnostic output
+AACD  STA $3763           ; store to timing_output_mirror
+AAD0  RTS
+</code></pre>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xDB51</td>
+<td>timing_conversion_1</td>
+<td>Processes smoothed dwell value</td>
+</tr>
+<tr>
+<td>0xD90A</td>
+<td>ignition_timing_retard_controller</td>
+<td>Load-transient timing retard based on RPM acceleration and coolant temp</td>
+</tr>
+<tr>
+<td>0xDBBB</td>
+<td>timing_conversion_3</td>
+<td>Final timing output computation</td>
+</tr>
+</tbody></table>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x304F</td>
+<td>dwell_start_angle</td>
+<td>Base ignition timing input</td>
+</tr>
+<tr>
+<td>0x3021</td>
+<td>system_event_flags</td>
+<td>Bit 7: system error</td>
+</tr>
+<tr>
+<td>0x31C2</td>
+<td>knock_corr_enable</td>
+<td>Dispatch mode selector</td>
+</tr>
+<tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 1: precondition</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bits 0,1,6: zone state</td>
+</tr>
+<tr>
+<td>0x322C</td>
+<td>isr_event_flags</td>
+<td>Bits 2,5: error flags</td>
+</tr>
+<tr>
+<td>0x31CC</td>
+<td>af_ratio_mode</td>
+<td>Counter/mode flag</td>
+</tr>
+<tr>
+<td>0x31EA</td>
+<td>diag_intermittent_flags</td>
+<td>Bit 6: intermittent fault</td>
+</tr>
+<tr>
+<td>0x31B9</td>
+<td>timing_advance_offset</td>
+<td>Subtracted from base timing</td>
+</tr>
+<tr>
+<td>0x31B8</td>
+<td>timing_correction</td>
+<td>Signed knock correction</td>
+</tr>
+<tr>
+<td>0x31FC</td>
+<td>knock_enable_flags</td>
+<td>Bit 6: knock feedback enabled</td>
+</tr>
+<tr>
+<td>0x309A</td>
+<td>dwell_cranking</td>
+<td>Previous smoothed value (for rate limiting)</td>
+</tr>
+<tr>
+<td>0x3276</td>
+<td>slow_ramp_control</td>
+<td>Bit 7: slow ramp mode</td>
+</tr>
+<tr>
+<td>0x3132</td>
+<td>slow_ramp_counter</td>
+<td>Counter for slow ramp rate</td>
+</tr>
+<tr>
+<td>0x30BA</td>
+<td>raw_timing_output</td>
+<td>Intermediate computation storage</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x30BA</td>
+<td>raw_timing_output</td>
+<td>Raw computed timing before smoothing</td>
+</tr>
+<tr>
+<td>0x309A</td>
+<td>dwell_cranking</td>
+<td>Smoothed/rate-limited timing output</td>
+</tr>
+<tr>
+<td>0x31CC</td>
+<td>af_ratio_mode</td>
+<td>Decremented when active</td>
+</tr>
+<tr>
+<td>0x3132</td>
+<td>slow_ramp_counter</td>
+<td>Incremented during slow ramp, reset at threshold</td>
+</tr>
+<tr>
+<td>0x3278</td>
+<td>timing_converted_1</td>
+<td>Output from sub_DB51</td>
+</tr>
+<tr>
+<td>0x3050</td>
+<td>dwell_output</td>
+<td>Final output, clamped to 60 max</td>
+</tr>
+<tr>
+<td>0x01A4</td>
+<td>diag_timing_output</td>
+<td>Diagnostic mirror</td>
+</tr>
+<tr>
+<td>0x3763</td>
+<td>timing_output_mirror</td>
+<td>Secondary output mirror</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4D9C</td>
+<td>1 byte</td>
+<td>Timing offset for knock-enabled mode</td>
+</tr>
+<tr>
+<td>0x445C</td>
+<td>1 byte</td>
+<td>Knock feedback timing reduction</td>
+</tr>
+<tr>
+<td>0x4479</td>
+<td>1 byte</td>
+<td>Slow ramp counter threshold</td>
+</tr>
+<tr>
+<td>0x4480</td>
+<td>1 byte</td>
+<td>Maximum timing increase step per cycle</td>
+</tr>
+<tr>
+<td>0x4481</td>
+<td>1 byte</td>
+<td>Maximum timing decrease step per cycle</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA9A4.html">0xA9A4 Knock Timing Interval Counter</a><a class="nav-next" href="0xAC26.html">0xAC26 Speed Counter</a></nav>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xBD28 — Fuel Pulse Diagnostic Flag — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xBD28 Fuel Pulse Diagnostic Flag</span></nav>
+<h3 id="0xbd28-fuel-pulse-diagnostic-flag">0xBD28 — Fuel Pulse Diagnostic Flag</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xBD28</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>41 bytes (0xBD28–0xBD50)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 at 0xAB6B)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Sets or clears bit 5 of the diagnostic auxiliary fault register (<code>$333B</code>) based on whether fuel injection is active and conditions are normal. If the fuel pulse accumulator (<code>$3054</code>) is zero, or any of six inhibit conditions are true, sets <code>$333B</code> bit 5 (indicating fuel cut/fault). Otherwise clears the bit (fuel normal).</p>
+<p>The inhibit conditions checked are:</p>
+<ul>
+<li><code>$314E</code> bit 6 (hard rev limiter active)</li>
+<li><code>$314E</code> bit 7 (soft rev limiter active)</li>
+<li><code>$302A</code> bit 4 (speed control fuel cut)</li>
+<li><code>$323F</code> bit 0 (map selection fuel cut)</li>
+<li><code>$3211</code> != 0 (closed-loop readiness not at level 0)</li>
+</ul>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$3054</code>: fuel pulse width accumulator</li>
+<li><code>$314E</code> (limiter_flags): bits 6/7 — rev limiter states</li>
+<li><code>$302A</code> (speed_control_flags): bit 4 — speed control fuel cut</li>
+<li><code>$323F</code>: bit 0 — map selection fuel cut flag</li>
+<li><code>$3211</code> (closed_loop_readiness_level): nonzero inhibits</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$333B</code> (diag_aux_fault_bits): bit 5 set = fuel cut active, bit 5 clear = fuel normal</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xBB8D.html">0xBB8D Injection Pulse Width & Cylinder Distribution</a><a class="nav-next" href="0xBD51.html">0xBD51 RPM Processor</a></nav>
+</body>
+</html>

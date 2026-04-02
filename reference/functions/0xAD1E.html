@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xAD1E — Airflow Rate Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xAD1E Airflow Rate Calculator</span></nav>
+<h3 id="0xad1e-airflow-rate-calculator">0xAD1E — Airflow Rate Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xAD1E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>258 bytes (0xAD1E–0xAE1F)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>31</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — measure_airflow (0xACE1) at 0xAD03</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes a smoothed airflow rate-of-change value from the raw AFM reading, used for transient fuel enrichment and load prediction. The function selects a rate limit from ROM ($46FC or $46FE depending on $305A bit 4), multiplies the RPM-derived value ($320A) against a scaling factor ($46F9), applies bounding (min 0x0100), and runs an exponential smoothing filter to produce the final airflow rate output. On first call (when $3025 bit 2 is clear), it initializes the filter state from a ROM default ($46FA) and returns early.</p>
+<h4 id="detailed-flow">Detailed Flow</h4>
+<p><strong>Rate limit selection (0xAD1E–0xAD32):</strong></p>
+<pre><code>AD1E  LDX $46FC           ; default rate limit (normal)
+AD21  BBS $305A,#$10,$AD29 ; if bit 4 set, skip alternate
+AD26  LDX $46FE           ; alternate rate limit
+AD29  CPX $3240           ; compare with current stored limit
+AD2C  BEQ $AD32           ; if same, skip flag
+AD2E  SEB $3166,#$01      ; set rate-change-detected flag
+AD32  STX $3240           ; store selected limit
+</code></pre>
+<p><strong>RPM-based scaling (0xAD35–0xAD76):</strong></p>
+<pre><code>AD35  LDA $46F9           ; 8-bit scale factor
+AD38  CLM                 ; 16-bit mode
+AD39  AND #$FF            ; zero-extend to 16-bit
+AD3C  ASL A               ; multiply by 4
+AD3D  ASL A
+AD3E  STA $3008           ; temp = scale * 4
+AD41  SEI                 ; disable interrupts
+AD42  LDX $320A           ; load RPM-derived value (atomic)
+AD46  LDA $320C           ; overflow check
+AD4A  BEQ $AD4F           ; if zero, use raw value
+AD4C  LDX #$FFFF          ; saturate to max
+AD4F  CLI                 ; re-enable interrupts
+AD50  TXA
+AD51  MPY $3008           ; result = RPM_value * (scale * 4)
+</code></pre>
+<p>The 32-bit MPY result is split into high:low words. The function then selects the bounded result — taking the minimum of the computed value and the rate limit $3240, with a floor clamp at 0x0100:</p>
+<pre><code>AD6E  CPX #$0100          ; minimum bound
+AD71  BCS $AD76
+AD73  LDX #$0100          ; clamp to floor
+AD76  STX $321C           ; store as airflow_rate_low
+</code></pre>
+<p><strong>Init-or-update branch (0xAD7A–0xADA5):</strong>
+If $305A bit 4 is set OR $3166 bit 0 is set (rate-change detected), the rate high ($321E) is updated to match $321C. If $3025 bit 2 is clear (first call / not initialized), the function loads defaults from ROM $46FA into $321C/$321E, zeros $3222 (fractional accumulator), copies $3018 to $3220 (initial smoothed value), and returns.</p>
+<p><strong>Exponential smoothing filter (0xADA6–0xAE1F):</strong>
+The main filter logic at 0xADA6 computes a weighted blend between the current airflow rate and the previous smoothed value. It uses a shift-and-accumulate approach:</p>
+<ol>
+<li>Load $3018 (current AFM reading) into A</li>
+<li>Iteratively shift left, counting leading zeros (up to 6 iterations) — this normalizes the value</li>
+<li>Compute <code>delta = rate_high - 0x0100</code> and multiply by the smoothed value ($3220)</li>
+<li>Add the product to the workspace accumulators ($3008/$300A)</li>
+<li>Saturate on overflow to 0xFFFF:FFFF</li>
+<li>Divide result by $321C (via AND operation), clamp on overflow</li>
+<li>Right-shift by the normalization count from step 2</li>
+<li>Store result to $3220 (smoothed airflow value)</li>
+<li>Copy $321C to $321E for next iteration</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Address</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ROM</td>
+<td>$46FC</td>
+<td>Airflow rate limit (normal operation)</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$46FE</td>
+<td>Airflow rate limit (alternate — when $305A bit 4 set)</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$46F9</td>
+<td>8-bit scaling factor for RPM multiplication</td>
+</tr>
+<tr>
+<td>ROM</td>
+<td>$46FA</td>
+<td>Default airflow rate for initialization</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$305A</td>
+<td>System flags — bit 4 selects rate limit source</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$320A</td>
+<td>RPM-derived value (set by Timer A ISR)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$320C</td>
+<td>RPM overflow flag</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$3018</td>
+<td>Raw AFM reading (from measure_airflow)</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$3025</td>
+<td>Init flags — bit 2 = airflow rate calc initialized</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>$3166</td>
+<td>Bit 0 = rate-change detected</td>
+</tr>
+</tbody></table>
+<h4 id="outputs">Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$3240</td>
+<td>Current airflow rate limit (from ROM lookup)</td>
+</tr>
+<tr>
+<td>$321C</td>
+<td>Bounded airflow rate (low), clamped min 0x0100</td>
+</tr>
+<tr>
+<td>$321E</td>
+<td>Bounded airflow rate (high), tracks $321C with lag</td>
+</tr>
+<tr>
+<td>$3220</td>
+<td>Smoothed airflow value (exponential filter output)</td>
+</tr>
+<tr>
+<td>$3222</td>
+<td>Fractional accumulator for smoothing filter</td>
+</tr>
+<tr>
+<td>$3166</td>
+<td>Bit 0 set if rate limit changed from previous call</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xACE1.html">0xACE1 Measure Airflow</a><a class="nav-next" href="0xAE20.html">0xAE20 Stall/Cranking Detector</a></nav>
+</body>
+</html>

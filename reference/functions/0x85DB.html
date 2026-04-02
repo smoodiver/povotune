@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x85DB — Knock Retard Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x85DB Knock Retard Calculator</span></nav>
+<h3 id="0x85db-knock-retard-calculator">0x85DB — Knock Retard Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x85DB</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>255 bytes (0x85DB–0x86D9)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (ignition_output_controller at 0x81AC)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Detects knock conditions via a state machine, accumulates a retard amount over time when knock persists, scales it by engine temperature and current timing angle, and produces a knock-proportional reduction value (0x330F) that is subtracted from the dwell start angle. The function also performs a temperature-dependent knock sensitivity calculation and manages the knock event state through control register 0x330A.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x306E: knock sensor input value</li>
+<li>0x3093: coolant temperature (drives knock sensitivity)</li>
+<li>0x3092: engine state / temperature value</li>
+<li>0x30DC: reference value (subtracted from 0x3092 for delta)</li>
+<li>0x3044: comparison value (used in knock event detection)</li>
+<li>0x3046: comparison value (subtracted from 0x3044)</li>
+<li>0x3023 bit 0: control flag (gates knock processing)</li>
+<li>0x31BB: final ignition timing angle (scales the output)</li>
+<li>0x330A: knock state register (bits 0–2 read and written)</li>
+<li>0x330B: accumulated knock retard amount</li>
+<li>0x3310, 0x3311: knock event counters</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x330F: <strong>knock-proportional dwell reduction</strong> — subtracted from dwell angle in ignition_output_controller</li>
+<li>IO 0x0228: knock reduction mirror (diagnostic output)</li>
+<li>0x330B: updated knock retard amount (accumulated over time)</li>
+<li>IO 0x0226: knock retard amount mirror</li>
+<li>0x330A: updated knock state flags</li>
+<li>0x330C: temperature-dependent knock sensitivity factor</li>
+<li>0x330D: engine-state knock scaling factor</li>
+<li>0x330E: intermediate knock product</li>
+<li>0x3310, 0x3311: updated knock event counters</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6000 — graph_lookup_2d: coolant temperature → knock sensitivity (table 0x4C50)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4C40 (knock_enable_threshold): 0x30DC comparison</li>
+<li>0x4C41 (knock_sensor_hyst_upper): 0x306E comparison upper</li>
+<li>0x4C42 (knock_sensor_hyst_lower): 0x306E comparison lower</li>
+<li>0x4C43 (knock_event_threshold): 0x306E comparison</li>
+<li>0x4C44 (knock_confirm_threshold): 0x3044 - 0x3046 comparison</li>
+<li>0x4C45 (knock_initial_retard): loaded to 0x330B on first detection</li>
+<li>0x4C46 (knock_max_retard): clamp for 0x330B</li>
+<li>0x4C47 (knock_counter_reload): knock event counter reload</li>
+<li>0x4C48 (knock_retard_increment): added to 0x330B each cycle</li>
+<li>0x4C49 (knock_max_reduction): clamp for 0x330F</li>
+<li>0x4C4A (knock_state_scale_factor): engine state scaling</li>
+<li>0x4C4B (knock_state_delta_clamp): engine state delta clamp</li>
+<li>0x4C50 (knock_temp_sensitivity_table): 16-entry coolant-temp-to-sensitivity</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x85A7.html">0x85A7 Knock Position Tracker</a><a class="nav-next" href="0x86DA.html">0x86DA Dual Lookup Multiply</a></nav>
+</body>
+</html>

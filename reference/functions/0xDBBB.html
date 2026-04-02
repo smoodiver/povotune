@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xDBBB — Idle Dashpot Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xDBBB Idle Dashpot Controller</span></nav>
+<h3 id="0xdbbb-idle-dashpot-controller">0xDBBB — Idle Dashpot Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xDBBB</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>75 bytes (0xDBBB–0xDC05)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler ISR at 0xAABE</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Manages an idle dashpot (deceleration air valve) timer that holds a duty cycle override for a countdown period after specific conditions are met. The function monitors port <code>$2000</code> bit 1 (idle switch state) and uses a state latch in <code>$322C</code> bit 7 to detect transitions. When the idle switch releases (port bit 1 clears) under qualifying speed/RPM conditions, loads a timer value and returns an override duty value. Otherwise, counts down the existing timer and returns a default value.</p>
+<h4 id="flow">Flow</h4>
+<ol>
+<li><p><strong>Port check:</strong> Tests <code>$2000</code> bit 1:</p>
+<ul>
+<li>If set: sets <code>$322C</code> bit 7 (idle switch active latch), skips to countdown path</li>
+<li>If clear: tests <code>$322C</code> bit 7 for edge detection<ul>
+<li>If <code>$322C</code> bit 7 was set: clears it (falling edge detected), enters qualification</li>
+<li>If already clear: skips to countdown path</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Qualification</strong> (falling edge only):</p>
+<ul>
+<li><code>$3071</code> (vehicle speed) &lt; ROM <code>$42D2</code></li>
+<li><code>$3062</code> (RPM) &lt; ROM 16-bit <code>$42D3</code> and RPM &gt; ROM 16-bit <code>$42D5</code> (RPM in window, with equality check on lower bound)</li>
+<li>If all pass: loads <code>$42D0</code> into timer <code>$32C3</code>, returns with A = ROM <code>$42D1</code> (dashpot duty override)</li>
+</ul>
+</li>
+<li><p><strong>Countdown path:</strong> If <code>$32C3</code> &gt; 0, decrements it. While nonzero, returns A = ROM <code>$42D1</code>. When timer reaches 0, returns A = 0.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>Stack: caller&#39;s A register is preserved/restored via PHA/PLA</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>A register: override duty value (ROM <code>$42D1</code> while timer active, 0 when expired)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$2000</td>
+<td>io_port_2000</td>
+<td>Bit 1: idle switch state</td>
+</tr>
+<tr>
+<td>$322C</td>
+<td>isr_event_flags</td>
+<td>Bit 7: idle switch active latch for edge detection</td>
+</tr>
+<tr>
+<td>$3071</td>
+<td>vehicle_speed</td>
+<td>Must be below speed threshold</td>
+</tr>
+<tr>
+<td>$3062</td>
+<td>rpm</td>
+<td>Must be within RPM window</td>
+</tr>
+<tr>
+<td>$32C3</td>
+<td>dashpot_timer</td>
+<td>Countdown timer</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$322C bit 7</td>
+<td>isr_event_flags</td>
+<td>Set when idle switch active; cleared on falling edge</td>
+</tr>
+<tr>
+<td>$32C3</td>
+<td>dashpot_timer</td>
+<td>Loaded with ROM $42D0 on trigger; decremented each call</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$42D0</td>
+<td>dashpot_timer_init</td>
+<td>Initial countdown value loaded into $32C3</td>
+</tr>
+<tr>
+<td>$42D1</td>
+<td>dashpot_duty_value</td>
+<td>Duty cycle override value returned while timer active</td>
+</tr>
+<tr>
+<td>$42D2</td>
+<td>dashpot_max_speed</td>
+<td>Maximum vehicle speed for dashpot activation</td>
+</tr>
+<tr>
+<td>$42D3</td>
+<td>dashpot_max_rpm</td>
+<td>Upper RPM bound for dashpot activation (16-bit)</td>
+</tr>
+<tr>
+<td>$42D5</td>
+<td>dashpot_min_rpm</td>
+<td>Lower RPM bound for dashpot activation (16-bit)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xDB51.html">0xDB51 Ignition Timing Recovery Gate</a><span></span></nav>
+</body>
+</html>

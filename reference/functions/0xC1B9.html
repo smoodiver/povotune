@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xC1B9 — Turbo Transition Gain Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xC1B9 Turbo Transition Gain Calculator</span></nav>
+<h3 id="0xc1b9-turbo-transition-gain-calculator">0xC1B9 — Turbo Transition Gain Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xC1B9</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>450 bytes (0xC1B9–0xC39A)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>53</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — turbo_transition_controller (0xBDFF)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes four gain/correction coefficients used by the turbo transition controller (0xBDFF) for sequential turbo switchover dynamics. The function performs ROM table lookups based on RPM and produces asymmetric up/down ramp rates for turbo duty transitions.</p>
+<p>The function has four phases:</p>
+<ol>
+<li><p><strong>RPM scaling</strong> (0xC1B9–0xC1D9): Reads the raw RPM value at <code>$301A</code>, right-shifts by 5 to produce a coarse RPM index, clamps each byte independently to 0xFF. Stores the high portion to <code>$3009</code> and low portion to <code>$3008</code>.</p>
+</li>
+<li><p><strong>Four table lookups</strong> (0xC1E4–0xC21F): Performs four calls to the 1D table interpolation routine (<code>JSR $6000</code>) using different ROM tables:</p>
+<ul>
+<li><code>$3008</code> through ROM table at <code>$45B0</code> -&gt; <code>$331B</code> (ramp gain A, floor clamped to 1)</li>
+<li><code>$3008</code> through ROM table at <code>$45C0</code> -&gt; <code>$331C</code> (ramp gain B, floor clamped to 1)</li>
+<li><code>$3009</code> through ROM table at <code>$45A0</code> -&gt; <code>$331A</code> (base correction factor)</li>
+<li><code>$3009</code> through ROM table at <code>$45D0</code> (or <code>$45E0</code> if <code>$305C</code> bit 5 set) -&gt; <code>$331D</code> (directional bias)</li>
+</ul>
+</li>
+<li><p><strong>Speed-based gain selection</strong> (0xC222–0xC265): Selects a speed-dependent multiplier pair (<code>$331E</code>, <code>$331F</code>) using vehicle speed (<code>$3071</code>) and boost pressure (<code>$30DC</code>) compared against ROM thresholds at <code>$45F0</code>–<code>$45F7</code>. The <code>$305C</code> bit 5 selects between two ROM threshold sets, providing mode-dependent behavior.</p>
+</li>
+<li><p><strong>Asymmetric ramp computation</strong> (0xC268–0xC37A): Computes four output coefficients using signed arithmetic around a center point of 0x80:</p>
+<ul>
+<li><code>$3316</code> (up-ramp duty subtract rate): <code>(|$331D - 0x80| +/- $331A) * $331F</code>, using MPY multiply</li>
+<li><code>$3317</code> (down-ramp duty add rate): inverse computation of the same inputs</li>
+<li><code>$3318</code> (up-ramp scaled gain): <code>($331A * $331F) &gt;&gt; 3</code>, multiplied by <code>$331B</code>, with rounding</li>
+<li><code>$3319</code> (down-ramp scaled gain): <code>($331A * $331F) &gt;&gt; 3</code>, multiplied by <code>$331C</code>, with rounding</li>
+</ul>
+</li>
+</ol>
+<p>The signed arithmetic treats <code>$331D</code> as a signed offset around 0x80 (neutral). Values below 0x80 add to the base correction on one path and subtract on the other, creating intentional asymmetry between turbo ramp-up and ramp-down rates.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$301A</code> — raw RPM timer value (16-bit)</li>
+<li><code>$3071</code> — vehicle_speed</li>
+<li><code>$30DC</code> — boost pressure reading</li>
+<li><code>$305C</code> — mode_select_flags (bit 5 selects ROM table variant)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$3008</code> — scratch: RPM index (low, 8-bit clamped)</li>
+<li><code>$3009</code> — scratch: RPM index (high, 8-bit clamped)</li>
+<li><code>$331A</code> — base correction factor (from RPM lookup)</li>
+<li><code>$331B</code> — ramp gain A (from RPM lookup, min 1)</li>
+<li><code>$331C</code> — ramp gain B (from RPM lookup, min 1)</li>
+<li><code>$331D</code> — directional bias (from RPM lookup, mode-dependent)</li>
+<li><code>$331E</code> — speed-based multiplier A</li>
+<li><code>$331F</code> — speed-based multiplier B</li>
+<li><code>$3316</code> — up-ramp duty subtract rate (used by 0xBDFF above-target path)</li>
+<li><code>$3317</code> — down-ramp duty add rate (used by 0xBDFF below-target path)</li>
+<li><code>$3318</code> — up-ramp scaled gain (used by 0xBDFF above-target path)</li>
+<li><code>$3319</code> — down-ramp scaled gain (used by 0xBDFF below-target path)</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6000</td>
+<td>1d_table_interpolation</td>
+<td>Four lookups: <code>$45B0</code>, <code>$45C0</code>, <code>$45A0</code>, <code>$45D0</code>/<code>$45E0</code></td>
+</tr>
+</tbody></table>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$301A</code></td>
+<td>raw_rpm_timer</td>
+<td>Source for RPM index computation</td>
+</tr>
+<tr>
+<td><code>$3071</code></td>
+<td>vehicle_speed</td>
+<td>Speed-based gain selection thresholds</td>
+</tr>
+<tr>
+<td><code>$30DC</code></td>
+<td>boost_pressure</td>
+<td>Gain selection at high boost</td>
+</tr>
+<tr>
+<td><code>$305C</code></td>
+<td>mode_select_flags</td>
+<td>Bit 5 selects ROM table / threshold variant</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$3008</code></td>
+<td>scratch_low</td>
+<td>RPM index low byte, intermediate results</td>
+</tr>
+<tr>
+<td><code>$3009</code></td>
+<td>scratch_high</td>
+<td>RPM index high byte</td>
+</tr>
+<tr>
+<td><code>$331A</code></td>
+<td>base_correction_factor</td>
+<td>RPM-dependent base factor</td>
+</tr>
+<tr>
+<td><code>$331B</code></td>
+<td>ramp_gain_a</td>
+<td>RPM-dependent gain (floor 1)</td>
+</tr>
+<tr>
+<td><code>$331C</code></td>
+<td>ramp_gain_b</td>
+<td>RPM-dependent gain (floor 1)</td>
+</tr>
+<tr>
+<td><code>$331D</code></td>
+<td>directional_bias</td>
+<td>Signed offset around 0x80</td>
+</tr>
+<tr>
+<td><code>$331E</code></td>
+<td>speed_multiplier_a</td>
+<td>Speed/boost dependent multiplier</td>
+</tr>
+<tr>
+<td><code>$331F</code></td>
+<td>speed_multiplier_b</td>
+<td>Speed/boost dependent multiplier</td>
+</tr>
+<tr>
+<td><code>$3316</code></td>
+<td>up_ramp_subtract_rate</td>
+<td>Duty reduction rate when above target</td>
+</tr>
+<tr>
+<td><code>$3317</code></td>
+<td>down_ramp_add_rate</td>
+<td>Duty increase rate when below target</td>
+</tr>
+<tr>
+<td><code>$3318</code></td>
+<td>up_ramp_scaled_gain</td>
+<td>Scaled gain for above-target path</td>
+</tr>
+<tr>
+<td><code>$3319</code></td>
+<td>down_ramp_scaled_gain</td>
+<td>Scaled gain for below-target path</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$45A0</code></td>
+<td>1D table: RPM -&gt; base correction factor (<code>$331A</code>)</td>
+</tr>
+<tr>
+<td><code>$45B0</code></td>
+<td>1D table: RPM -&gt; ramp gain A (<code>$331B</code>)</td>
+</tr>
+<tr>
+<td><code>$45C0</code></td>
+<td>1D table: RPM -&gt; ramp gain B (<code>$331C</code>)</td>
+</tr>
+<tr>
+<td><code>$45D0</code></td>
+<td>1D table: RPM -&gt; directional bias (normal mode)</td>
+</tr>
+<tr>
+<td><code>$45E0</code></td>
+<td>1D table: RPM -&gt; directional bias (alternate mode, <code>$305C</code> bit 5)</td>
+</tr>
+<tr>
+<td><code>$45F0</code></td>
+<td>Speed threshold low for gain selection</td>
+</tr>
+<tr>
+<td><code>$45F1</code></td>
+<td>Speed threshold high for gain selection</td>
+</tr>
+<tr>
+<td><code>$45F2</code></td>
+<td>Boost threshold for gain selection</td>
+</tr>
+<tr>
+<td><code>$45F3</code></td>
+<td>Multiplier B value when speed below low threshold</td>
+</tr>
+<tr>
+<td><code>$45F4</code></td>
+<td>Multiplier A value when boost below threshold (normal)</td>
+</tr>
+<tr>
+<td><code>$45F5</code></td>
+<td>Multiplier A value when boost above threshold (normal)</td>
+</tr>
+<tr>
+<td><code>$45F6</code></td>
+<td>Multiplier A value when boost below threshold (alt mode)</td>
+</tr>
+<tr>
+<td><code>$45F7</code></td>
+<td>Multiplier A value when boost above threshold (alt mode)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xBDFF.html">0xBDFF Turbo Transition Controller</a><a class="nav-next" href="0xC37B.html">0xC37B System Status Update</a></nav>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA8B8 — Knock Correction Clamp — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA8B8 Knock Correction Clamp</span></nav>
+<h3 id="0xa8b8-knock-correction-clamp">0xA8B8 — Knock Correction Clamp</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA8B8</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>143 bytes (0xA8B8–0xA946)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>19</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — knock_learning_update (0xA826 at 0xA8AB)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Clamps and scales the knock correction value in B to safe limits. Implements a two-stage limiting:</p>
+<ol>
+<li><strong>Positive correction</strong> (B &gt;= 0): Computes a dynamic maximum based on the knock multiplier and advance timing, then clamps B to the lesser of the computed maximum or the ROM hard maximum. The formula is: <code>max = min(B, (0x10 - knock_multiplier) * advance_timing &gt;&gt; 4)</code>, clamped to ROM limit <code>$4DA0</code>.</li>
+<li><strong>Negative correction</strong> (B &lt; 0): Simply clamps to the ROM minimum <code>$4DA1</code>.</li>
+</ol>
+<p>After clamping, a secondary check evaluates whether the correction should be canceled entirely: if the advance timing (<code>$31C7</code>) exceeds a ROM threshold (<code>$4DA2</code>) and certain zone conditions are met, it computes a scaled comparison and may clear the knock zone flags, ending the knock control cycle.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; --- sign check ---
+A8B8  ANDB #$FF           ; mask B to byte (set flags)
+A8BB  BMI $A8F0           ; if negative, -&gt; negative clamp
+; --- positive path ---
+A8BD  PHB                 ; save original B
+A8BF  LDA #$10            ; max multiplier = 16
+A8C1  SEC
+A8C2  SBC $3503           ; A = 16 - knock_multiplier
+A8C5  MPY $31C7           ; multiply by advance_timing -&gt; B:A
+A8C9  XAB                 ; swap A and B
+A8CB  LSR A               ; shift result right by 4
+A8CC  ROR A               ; (effectively divide by 16)
+A8CE  LSR A
+A8CF  ROR A
+A8D1  AND #$FF            ; mask to byte
+A8D3  BEQ $A8D8           ; if result = 0, saturate B to 0xFF
+A8D5  LDB #$FF            ; B = 0xFF (maximum)
+A8D8  PLA                 ; restore original B (from stack as A)
+A8D9  STB $301E           ; store computed max to scratch
+A8DD  CMP $301E           ; compare original vs computed max
+A8E0  BCS $A8E4           ; if original &gt;= max, keep original (A)
+A8E2  XAB                 ; else swap (use computed max)
+A8E4  CMPB $4DA0          ; compare against ROM hard max
+A8E8  BCC $A8FA           ; if below, keep value
+A8EA  LDB $4DA0           ; clamp to ROM hard max
+A8EE  BRA $A8FA
+; --- negative path ---
+A8F0  CMPB $4DA1          ; compare against ROM hard min
+A8F4  BCS $A8FA           ; if above minimum, keep
+A8F6  LDB $4DA1           ; clamp to ROM hard min
+; --- secondary evaluation ---
+A8FA  PHB                 ; save clamped B
+A8FC  LDA $31C7           ; load advance_timing
+A8FF  CMP $4DA2           ; compare against activation threshold
+A902  BCC $A944           ; if below threshold, -&gt; return
+A904  BBC $3033,#$04,$A944 ; if ign_zone bit 2 clear, -&gt; return
+A909  ANDB #$FF           ; check sign of correction
+A90C  BPL $A91B           ; if positive, -&gt; scale check
+A90E  LDA $3503           ; load knock_multiplier
+A911  CMP $4DA3           ; compare against ROM threshold
+A914  BCC $A944           ; if below, -&gt; return (allow negative correction)
+A916  EORB #$FF           ; negate B (make positive)
+A919  INB
+A91B  PHB                 ; save |B|
+A91D  LDA $4DA4           ; load ROM scale factor
+A920  MPY $31C7           ; multiply by advance_timing
+A924  JSR $6307           ; shift_left_BA_by_2 (×4)
+A927  XAB                 ; result to B
+A929  PLAB                ; restore |B| to B
+A92B  STB $301E           ; store |B| to scratch
+A92F  CMP $301E           ; compare scaled threshold vs |B|
+A932  BCS $A944           ; if threshold &gt;= |B|, -&gt; return
+A934  LDA $4DA5           ; load secondary threshold
+A937  CMP $301E           ; compare against |B|
+A93A  BCS $A944           ; if threshold &gt;= |B|, -&gt; return
+A93C  CLB $3033,#$40      ; clear ign_zone bit 6 (knock boundary found)
+A940  CLB $3034,#$04      ; clear ign_control bit 2 (initialized)
+A944  PLAB                ; restore clamped B
+A946  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><strong>B</strong> — unclamped knock correction value (signed byte)</li>
+<li><code>$3503</code> (knock_multiplier) — current knock multiplier (0–16)</li>
+<li><code>$31C7</code> (advance_timing) — current ignition advance</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><strong>B</strong> — clamped knock correction value</li>
+<li>May clear <code>$3033</code> bit 6 and <code>$3034</code> bit 2 (canceling knock control cycle)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3503</td>
+<td>knock_multiplier</td>
+<td>Used in dynamic max calculation</td>
+</tr>
+<tr>
+<td>0x31C7</td>
+<td>advance_timing</td>
+<td>Multiplied for both max calc and secondary check</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 2: gating for secondary evaluation</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x301E</td>
+<td>scratch_byte</td>
+<td>Temporary storage for comparisons</td>
+</tr>
+<tr>
+<td>0x3033</td>
+<td>ign_zone_control</td>
+<td>Bit 6: may be cleared (cancel knock boundary)</td>
+</tr>
+<tr>
+<td>0x3034</td>
+<td>ign_control_flags</td>
+<td>Bit 2: may be cleared (reset initialized state)</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4DA0</td>
+<td>1 byte</td>
+<td>Positive correction hard maximum</td>
+</tr>
+<tr>
+<td>0x4DA1</td>
+<td>1 byte</td>
+<td>Negative correction hard minimum (signed)</td>
+</tr>
+<tr>
+<td>0x4DA2</td>
+<td>1 byte</td>
+<td>Advance timing activation threshold for secondary check</td>
+</tr>
+<tr>
+<td>0x4DA3</td>
+<td>1 byte</td>
+<td>Knock multiplier threshold for negative correction cancel</td>
+</tr>
+<tr>
+<td>0x4DA4</td>
+<td>1 byte</td>
+<td>Scale factor for secondary threshold computation</td>
+</tr>
+<tr>
+<td>0x4DA5</td>
+<td>1 byte</td>
+<td>Secondary absolute threshold for correction cancel</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6307</td>
+<td>shift_left_BA_by_2</td>
+<td>Multiply by 4 during secondary threshold computation</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA826.html">0xA826 Knock Learning Update</a><a class="nav-next" href="0xA947.html">0xA947 Knock Sensor Mode Classifier</a></nav>
+</body>
+</html>

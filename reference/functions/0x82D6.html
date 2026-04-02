@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x82D6 — Ignition Timing — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x82D6 Ignition Timing</span></nav>
+<h3 id="0x82d6-ignition-timing">0x82D6 — Ignition Timing</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x82D6</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>721 bytes (0x82D6–0x85A6)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>87</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (sub_8185 at 0x81A9)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes the final ignition timing angle by looking up base and advance timing from two 16x16 ROM maps, applying knock correction from learned values, and enforcing zone-based limits. The function performs two map_lookup_16x16 calls (base map 0x5100, advance map 0x5000), sums them to get the raw combined timing, then runs an 8-zone RPM/load detection system that gates knock correction application. The final output at 0x31BB is the ignition timing value used by the hardware driver.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3062: current RPM — drives map lookup axis</li>
+<li>0x313C: engine load, 16-bit — drives map lookup axis</li>
+<li>0x3092: engine state value — compared against 0x4D8F</li>
+<li>0x3503: knock correction multiplier</li>
+<li>0x31C2: knock correction enable</li>
+<li>0x31B9: timing advance offset</li>
+<li>0x323A: knock correction channel 1</li>
+<li>0x323C: knock correction channel 2</li>
+<li>0x35A4 bit 0: self-test status — skips knock correction when active</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x31BB: <strong>final ignition timing</strong> — drives hardware</li>
+<li>0x3017: combined base + advance timing</li>
+<li>0x31C8: base timing from map 0x5100</li>
+<li>0x31C7: advance timing from map 0x5000</li>
+<li>0x31EE: map lookup index copy</li>
+<li>0x31BE: load zone value — shifted load used for zone detection</li>
+<li>0x31BF: RPM zone value — RPM &gt;&gt; 4, 8-bit</li>
+<li>0x31C0: RPM-to-timing table value from ROM 0x4DC0</li>
+<li>0x31CB: combined knock correction</li>
+<li>0x323A: updated knock correction channel 1</li>
+<li>0x323C: updated knock correction channel 2</li>
+<li>0x3036: RPM/load zone flags (8 bits, hysteresis) — bits 0–3 for RPM zones, bits 4–7 for load zones</li>
+<li>0x3033: zone control flags — bits 0, 1, 2 aggregated from zone detection</li>
+<li>0x3034 bits 0–2: ignition control flags</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6080 — map_lookup_16x16: bilinear interpolation (called twice: base map 0x5100, advance map 0x5000)</li>
+<li>0x85A7 — sub_85A7: knock correction calculation (called twice: channels at 0x4700 and 0x4708). Historical: &quot;possibly knock reduction&quot;</li>
+<li>0x630E — sub_630E: bit shift left 4 (historical: &quot;Shift AL and BL 4 bits to the left&quot;)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x3062 (rpm)</li>
+<li>0x313C (engine_load)</li>
+<li>0x3092 (coolant_temp_raw)</li>
+<li>0x3503 (knock_multiplier)</li>
+<li>0x31C2 (knock_corr_enable)</li>
+<li>0x31B9 (timing_advance_offset)</li>
+<li>0x323A (knock_rpm_position)</li>
+<li>0x323C (knock_load_position)</li>
+<li>0x35A4 (diag_self_test_status)</li>
+<li>0x3036 (ign_zone_flags)</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x31BB (final_ign_timing)</li>
+<li>0x3017 (combined_timing)</li>
+<li>0x31C8 (base_timing)</li>
+<li>0x31C7 (advance_timing)</li>
+<li>0x31EE (ign_map_index)</li>
+<li>0x31BE (load_zone_value)</li>
+<li>0x31BF (rpm_zone_value)</li>
+<li>0x31C0 (rpm_timing_factor)</li>
+<li>0x31CB (knock_correction_combined)</li>
+<li>0x323A (knock_rpm_position)</li>
+<li>0x323C (knock_load_position)</li>
+<li>0x3036 (ign_zone_flags)</li>
+<li>0x3033 (ign_zone_control)</li>
+<li>0x3034 (ign_control_flags)</li>
+<li>0x300C (tracker_lower_bound)</li>
+<li>0x3768 (knock_correction_mirror)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x5100 (base_timing_map): 16x16 base ignition timing</li>
+<li>0x5000 (advance_timing_map): 16x16 advance ignition timing</li>
+<li>0x44D0 (rpm_axis_ign): RPM axis, identical to 0x4100</li>
+<li>0x44E0 (load_axis_ign): load axis, identical to 0x4110</li>
+<li>0x4DC0 (rpm_to_timing_table): RPM-to-timing lookup</li>
+<li>0x4DF0 (rpm_zone_breakpoints): 16 entries descending</li>
+<li>0x4700 (knock_rpm_breakpoints): knock correction channel 1</li>
+<li>0x4708 (knock_load_breakpoints): knock correction channel 2</li>
+<li>0x4710 (knock_table_upper_bound): upper bound</li>
+<li>0x4D76–0x4D86 (zone_thresholds): 8 pairs with hysteresis</li>
+<li>0x4D89, 0x4D8A (knock_step_sizes): step size constants</li>
+<li>0x4D8F (engine_state_threshold): for 0x3034 bit 1</li>
+<li>0x4D7E (advance_timing_threshold): zone control</li>
+<li>0x4482 (timing_offset_constant): subtracted in final calculation</li>
+<li>0x3630 (knock_learned_values): ROM-initialized RAM table</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8185.html">0x8185 Ignition Output Controller</a><a class="nav-next" href="0x85A7.html">0x85A7 Knock Position Tracker</a></nav>
+</body>
+</html>

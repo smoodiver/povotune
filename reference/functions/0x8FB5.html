@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x8FB5 — Idle Duty Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x8FB5 Idle Duty Controller</span></nav>
+<h3 id="0x8fb5-idle-duty-controller">0x8FB5 — Idle Duty Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x8FB5</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>186 bytes (0x8FB5–0x906E)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>27</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>likely</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Idle speed control (ISC) valve duty cycle controller. Manages a stepped ramp of the ISC duty target (0x351E) with qualification gating, clamping, and coolant temperature correction. Checks master enable (0x4B7E), qualifies conditions (warm engine, idle state, timer interval), then computes new duty from airflow correction + offset, clamped to ROM limits. Applies coolant-temp correction by looking up table 0x4B20 and scaling around 0x4000 midpoint bias. Final corrected value written to I/O port 0x021E.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3092 (coolant_temp_raw): qualification check</li>
+<li>0x3093 (coolant_temp): correction factor lookup</li>
+<li>0x305A, 0x305B, 0x305E: engine state qualification</li>
+<li>0x316B (lookup_input_b): load qualification</li>
+<li>0x30F8: airflow-derived correction</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x351E (idle_duty_target): updated duty target</li>
+<li>0x3520 (idle_duty_step_counter): step state</li>
+<li>0x32CC (idle_duty_corrected): final corrected value</li>
+<li>0x021E (I/O port): ISC valve output</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x633D — timer comparison</li>
+<li>0x906F — coolant correction subroutine (split from this function by flood-fill; contains the 0x6000 table lookup for coolant temp correction via table 0x4B20)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4B20 (idle_coolant_correction): correction factor table</li>
+<li>0x4B70–0x4B7E: controller constants (initial, min, max, thresholds)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x8F4C.html">0x8F4C Max Duty Limit Calculator</a><a class="nav-next" href="0x906F.html">0x906F Idle Duty Coolant Correction and Output</a></nav>
+</body>
+</html>

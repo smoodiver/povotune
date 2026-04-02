@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA064 — Injection Timing Calculator (Channel 3) — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA064 Injection Timing Calculator (Channel 3)</span></nav>
+<h3 id="0xa064-injection-timing-calculator-channel-3">0xA064 — Injection Timing Calculator (Channel 3)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA064</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>291 bytes (0xA064–0xA186)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>49</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — 0x9E17 (injection dispatch chain)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Per-cylinder injection timing calculator for channel 3. One of four identical-structure sub-functions (0x9E1E, 0x9F41, 0xA064, 0xA187) that compute injection timing parameters and arm the hardware timer for a specific injector channel. Called in sequence by the injection dispatch chain (0x9E11).</p>
+<p>The function operates in three modes based on <code>$31B4</code> (injection state) and <code>$31B5</code> (output channel flags):</p>
+<ol>
+<li><strong>Cranking mode</strong> (<code>$31B4</code> bit 0 clear): Loads a fixed cranking pulse width from <code>$30BE</code>, sets <code>$3004</code> = 0x0A (fixed dwell), and jumps to timer arm.</li>
+<li><strong>Re-fire mode</strong> (<code>$31B5</code> bit 4 set): Checks if this is the correct cylinder for re-fire (<code>$31A1</code> bit 7 and <code>$319C</code> == 3), loads <code>$3174</code> as pulse width, fixed dwell 0x0A, arms timer.</li>
+<li><strong>Running mode</strong> (normal): Computes injection pulse width from base value <code>$3174</code> (with optional enrichment <code>$312A</code> added if <code>$31D4</code> != 0 and <code>$31E1</code> == 0), then enters the sequencing state machine.</li>
+</ol>
+<h4 id="running-mode-state-machine">Running Mode State Machine</h4>
+<p>Reads direct-page <code>$6A</code> bits 4–5 to determine current timer state:</p>
+<ul>
+<li><strong>State 0x20</strong> (active injection): Checks <code>$321A</code> (injection step counter) against expected values with cylinder-specific gating via <code>$31A1</code> bit 2 and <code>$319C</code>. If conditions met, enters re-fire path. Otherwise clears <code>$31B5</code> bit 2 and returns.</li>
+<li><strong>State 0x30</strong> (post-injection): Decrements countdown timers <code>$31E1</code> and <code>$31D4</code>. Indexes into ROM table at <code>$A2B1</code> (base) using <code>$319C</code> as cylinder selector. Loads per-cylinder timing compare value, compares against <code>$3200</code>. Updates <code>$321A</code> and <code>$3199</code> accordingly.</li>
+<li><strong>Default</strong> (idle): Loads <code>$3199</code> directly, jumps to timer calculation.</li>
+</ul>
+<h4 id="timer-arm-sequence-0xa155-0xa186">Timer Arm Sequence (0xA155–0xA186)</h4>
+<ol>
+<li>Stores injection schedule value to <code>$3200</code>, decrements <code>$3199</code>.</li>
+<li>Calls <code>$A2CE</code> (injection period scaling) to compute final period, stores to <code>$3004</code>.</li>
+<li>Tests direct-page <code>$0D</code> bit 2 and <code>$301F</code> bit 3 for abort conditions.</li>
+<li>Loads <code>$63</code> = 0xFB, clears <code>$62</code> bit 2.</li>
+<li>Writes <code>$3004</code> to direct-page <code>$48</code> (timer period), <code>$3006</code> to <code>$4A</code> (timer compare).</li>
+<li>Writes 0x02 to <code>$6A</code> (timer control), sets <code>$62</code> bit 2, clears <code>$63</code> to 0.</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$3174</code> — base injection pulse width (channel 3)</li>
+<li><code>$312A</code> — injection enrichment adder</li>
+<li><code>$31D4</code> — enrichment countdown (channel 3)</li>
+<li><code>$31E1</code> — enrichment delay counter</li>
+<li><code>$31B4</code> — injection sequencing state</li>
+<li><code>$31B5</code> — output channel flags (bit 2 = channel 3 active, bit 4 = re-fire)</li>
+<li><code>$3199</code> — injection schedule (channel 3)</li>
+<li><code>$319C</code> — cylinder counter</li>
+<li><code>$31A1</code> — engine running flags</li>
+<li><code>$3200</code> — timer compare reference (channel 3)</li>
+<li><code>$321A</code> — injection step counter (channel 3)</li>
+<li><code>$30BE</code> — cranking injection pulse width</li>
+<li><code>$35A4</code> — alternate mode flags</li>
+<li><code>$3574</code> — alternate injection pulse width</li>
+<li><code>$6A</code> — direct-page timer control (bits 4–5: state)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$48</code> — timer period register (channel 3)</li>
+<li><code>$4A</code> — timer compare register (channel 3)</li>
+<li><code>$6A</code> — timer control register (channel 3)</li>
+<li><code>$62</code> / <code>$63</code> — timer enable/status</li>
+<li><code>$3200</code> — updated timing compare value</li>
+<li><code>$3199</code> — decremented injection schedule</li>
+<li><code>$321A</code> — updated/cleared injection step counter</li>
+<li><code>$31B5</code> — output channel flags updated</li>
+<li><code>$31D4</code> — enrichment countdown decremented</li>
+<li><code>$31E1</code> — enrichment delay decremented</li>
+<li><code>$3004</code> — computed injection period (scratch)</li>
+<li><code>$3006</code> — injection pulse width (scratch)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3174</td>
+<td>inj_base_pulse_ch3</td>
+<td>Base injection pulse width</td>
+</tr>
+<tr>
+<td>0x312A</td>
+<td>inj_enrichment_adder</td>
+<td>Added to base for enrichment</td>
+</tr>
+<tr>
+<td>0x31D4</td>
+<td>enrich_countdown_ch3</td>
+<td>Enrichment active counter</td>
+</tr>
+<tr>
+<td>0x31E1</td>
+<td>enrich_delay</td>
+<td>Global enrichment delay</td>
+</tr>
+<tr>
+<td>0x30BE</td>
+<td>cranking_pulse_width</td>
+<td>Fixed pulse for cranking mode</td>
+</tr>
+<tr>
+<td>0x319C</td>
+<td>cylinder_counter</td>
+<td>Cylinder identification</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>State bits for mode selection</td>
+</tr>
+<tr>
+<td>0x31B4</td>
+<td>inj_seq_state</td>
+<td>Cranking/running mode select</td>
+</tr>
+<tr>
+<td>0x31B5</td>
+<td>inj_output_flags</td>
+<td>Channel activity/re-fire flags</td>
+</tr>
+<tr>
+<td>0x3199</td>
+<td>inj_sched_ch3</td>
+<td>Injection schedule countdown</td>
+</tr>
+<tr>
+<td>0x3200</td>
+<td>timer_compare_ch3</td>
+<td>Timer compare reference value</td>
+</tr>
+<tr>
+<td>0x321A</td>
+<td>inj_step_counter_ch3</td>
+<td>Injection step position</td>
+</tr>
+<tr>
+<td>0x35A4</td>
+<td>alt_mode_flags</td>
+<td>Alternate mode select</td>
+</tr>
+<tr>
+<td>0x3574</td>
+<td>alt_inj_pulse</td>
+<td>Alternate mode pulse width</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3200</td>
+<td>timer_compare_ch3</td>
+<td>Updated timing compare</td>
+</tr>
+<tr>
+<td>0x3199</td>
+<td>inj_sched_ch3</td>
+<td>Decremented schedule</td>
+</tr>
+<tr>
+<td>0x321A</td>
+<td>inj_step_counter_ch3</td>
+<td>Step counter updated/cleared</td>
+</tr>
+<tr>
+<td>0x31B5</td>
+<td>inj_output_flags</td>
+<td>Channel flags modified</td>
+</tr>
+<tr>
+<td>0x31D4</td>
+<td>enrich_countdown_ch3</td>
+<td>Decremented</td>
+</tr>
+<tr>
+<td>0x31E1</td>
+<td>enrich_delay</td>
+<td>Decremented</td>
+</tr>
+<tr>
+<td>0x3004</td>
+<td>scratch_workspace</td>
+<td>Injection period</td>
+</tr>
+<tr>
+<td>0x3006</td>
+<td>scratch_workspace_2</td>
+<td>Pulse width value</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xA2B1</td>
+<td>8 bytes</td>
+<td>Per-cylinder injection timing table (4 entries x 2 bytes, indexed by $319C)</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xA2CE</td>
+<td>Injection Period Scaling</td>
+<td>Converts schedule value to timer period</td>
+</tr>
+</tbody></table>
+<h4 id="channel-register-mapping-ch-1-vs-ch-3">Channel Register Mapping (Ch 1 vs Ch 3)</h4>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Ch 1 (0x9E1E)</th>
+<th>Ch 3 (0xA064)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Base pulse width</td>
+<td><code>$3170</code></td>
+<td><code>$3174</code></td>
+</tr>
+<tr>
+<td>Enrichment countdown</td>
+<td><code>$31D2</code></td>
+<td><code>$31D4</code></td>
+</tr>
+<tr>
+<td>Injection schedule</td>
+<td><code>$3197</code></td>
+<td><code>$3199</code></td>
+</tr>
+<tr>
+<td>Timer compare ref</td>
+<td><code>$31FE</code></td>
+<td><code>$3200</code></td>
+</tr>
+<tr>
+<td>Step counter</td>
+<td><code>$3218</code></td>
+<td><code>$321A</code></td>
+</tr>
+<tr>
+<td>DP timer control</td>
+<td><code>$68</code></td>
+<td><code>$6A</code></td>
+</tr>
+<tr>
+<td>DP timer period</td>
+<td><code>$40</code></td>
+<td><code>$48</code></td>
+</tr>
+<tr>
+<td>DP timer compare</td>
+<td><code>$42</code></td>
+<td><code>$4A</code></td>
+</tr>
+<tr>
+<td>DP <code>$63</code> mask</td>
+<td>0xFE</td>
+<td>0xFB</td>
+</tr>
+<tr>
+<td>DP <code>$62</code> bit</td>
+<td>bit 0</td>
+<td>bit 2</td>
+</tr>
+<tr>
+<td>DP <code>$0D</code> abort bit</td>
+<td>bit 0</td>
+<td>bit 2</td>
+</tr>
+<tr>
+<td><code>$31B5</code> channel bit</td>
+<td>bit 0 (0x01)</td>
+<td>bit 2 (0x04)</td>
+</tr>
+<tr>
+<td>Re-fire cylinder match</td>
+<td><code>$319C</code> == 1</td>
+<td><code>$319C</code> == 3</td>
+</tr>
+<tr>
+<td>ROM timing table base</td>
+<td><code>$A2B9</code></td>
+<td><code>$A2B1</code></td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x9F41.html">0x9F41 Injection Timing Calculator (Channel 2)</a><a class="nav-next" href="0xA187.html">0xA187 Injection Timing Calculator (Channel 4)</a></nav>
+</body>
+</html>

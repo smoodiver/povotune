@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x7467 — Turbo Solenoid C Fault Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x7467 Turbo Solenoid C Fault Check</span></nav>
+<h3 id="0x7467-turbo-solenoid-c-fault-check">0x7467 — Turbo Solenoid C Fault Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x7467</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>92 bytes (0x7467–0x74C2)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (diagnostic callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (0x6B4D in periodic_diagnostics)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0x633D (saturating_increment) — walker reports 0 (missed due to X-indirect pattern); 2 JSR 0x633D calls total</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Dual-direction fault check for boost solenoid channel C. Identical structure to 0x73AF but checks 0x3275 bit 2 (port_control_mirror) for command state and 0x3806 bit 6 (ext_io_reg_1) for hardware feedback. Uses counter pair at 0x3338/0x3339 with threshold 0x28 (40 iterations). Faults reported in 0x333A bits 6+7; summary promoted to 0x3331 bit 3.</p>
+<h4 id="prerequisites">Prerequisites</h4>
+<ul>
+<li>0x316B (lookup_input_b) &gt;= 0x8A — engine must be warm enough</li>
+<li>If below threshold: counter cleared to 0x0000 and early return</li>
+</ul>
+<h4 id="per-direction-logic">Per-Direction Logic</h4>
+<pre><code>X = $3338 (counter base)
+SEI
+
+if 0x3275 bit 2 set (solenoid C commanded on):
+    if 0x3806 bit 6 set (solenoid C feedback active):
+        CLI
+        JSR $633D (increment counter at X)
+        if count &gt;= $28: SEB $333A bit 6
+    else (feedback inactive while commanded = stuck-low):
+        CLB $333A bit 6
+        BRA clear_and_exit
+else (solenoid C not commanded on):
+    INX (X = $3339)
+    if 0x3806 bit 6 NOT set (feedback inactive — expected):
+        ; skip to exit
+    else (feedback active while not commanded = stuck-high):
+        CLI
+        JSR $633D (increment counter at X+1)
+        if count &gt;= $28: SEB $333A bit 7
+        BRA exit
+    CLB $333A bit 7
+
+clear_and_exit:
+    CLI
+    LDM $00,X,#$00 (clear counter)
+
+exit:
+    if $333A bits 6+7 both set:
+        SEB $3331 bit 3
+    else:
+        CLB $3331 bit 3
+    RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x316B (lookup_input_b): warmup threshold &gt;= 0x8A</li>
+<li>0x3275 bit 2 (port_control_mirror): solenoid C command state</li>
+<li>0x3806 bit 6 (ext_io_reg_1): solenoid C hardware feedback</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3338 (boost_sol_c_counter): 16-bit debounce counter pair</li>
+<li>0x333A bit 6: solenoid C stuck-high fault</li>
+<li>0x333A bit 7: solenoid C stuck-low fault</li>
+<li>0x3331 bit 3: solenoid C summary fault (both directions confirmed)</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x633D — saturating increment (2 calls)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<p>None (threshold 0x28 is immediate).</p>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x740B.html">0x740B Turbo Solenoid B Fault Check</a><a class="nav-next" href="0x74C3.html">0x74C3 Turbo Solenoid D Fault Check</a></nav>
+</body>
+</html>

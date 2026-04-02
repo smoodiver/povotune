@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xDA52 — RPM Acceleration Filter — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xDA52 RPM Acceleration Filter</span></nav>
+<h3 id="0xda52-rpm-acceleration-filter">0xDA52 — RPM Acceleration Filter</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xDA52</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>156 bytes (0xDA52–0xDAED)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>26</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P2 (0xAAD1 at 0xAB30)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes a filtered signed RPM acceleration value used by the ignition timing retard controller (0xD90A). Processes the previous signed accumulator ($326C), applies a signed arithmetic shift right by 4 with rounding, adds current RPM ($3064), subtracts previous RPM snapshot ($3266), scales the delta by a gain of 15 (MPY #$0F), integrates with the previous accumulator ($326A) using signed saturation, and stores the result. The final output is doubled (ASL) with saturation and stored to $3008, from which $3009 (high byte) is copied to $326E as the 8-bit acceleration output.</p>
+<p>Called every P2 scheduler tick (every ~4th ISR tick), providing a smooth signed RPM rate-of-change estimate.</p>
+<h4 id="algorithm">Algorithm</h4>
+<ol>
+<li><strong>Signed shift right by 4</strong>: Load $326C (16-bit signed). If positive, AND with 0xFFF8 then CLC; if negative, OR with 0x0007 then SEC. Rotate right 4 times (arithmetic shift preserving sign via carry).</li>
+<li><strong>Delta computation</strong>: Add $3064 (current RPM full precision), subtract $3266 (previous RPM snapshot). Result is the instantaneous RPM change + filtered history.</li>
+<li><strong>Gain scaling</strong>: If delta &gt;= 0, multiply by 15 (MPY #$0F), clamp to 0x7FFF. If delta &lt; 0, negate, multiply by 15, clamp to 0x8000 (negate back).</li>
+<li><strong>Integration</strong>: Add result to $326A (previous accumulator, signed). Saturate at +0x7FFF or -0x8000 depending on signs.</li>
+<li><strong>Store</strong>: Result to $326C. Double via ASL with signed saturation to $3008.</li>
+<li><strong>Output capture</strong>: Switch to 8-bit mode (SEM), copy $3009 (high byte of $3008) to $326E. Snapshot $3064 to $3266 for next iteration.</li>
+</ol>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>DA52  CLM                    ; 16-bit mode
+DA53  LDA $326C              ; load signed accumulator
+DA56  BMI $DA5E              ; if negative, -&gt; round toward zero
+DA58  AND #$FFF8             ; clear low 3 bits (positive)
+DA5B  CLC                    ; clear carry for ROR
+DA5C  BRA $DA62
+DA5E  ORA #$07               ; set low 3 bits (negative rounding)
+DA61  SEC                    ; set carry for ROR
+DA62  ROR A                  ; arithmetic shift right ×4
+DA63  ROR A
+DA64  ROR A
+DA65  ROR A
+DA66  CLC
+DA67  ADC $3064              ; add current RPM
+DA6A  SEC
+DA6B  SBC $3266              ; subtract previous RPM snapshot
+DA6E  BMI $DAA0              ; if negative delta, -&gt; negative path
+; --- positive delta ---
+DA70  MPY #$0F               ; multiply by 15
+DA74  CMPB #$00              ; check overflow (high word)
+DA78  BNE $DA7F              ; if overflow, saturate
+DA7A  CMP #$8000             ; check if &gt; 0x7FFF
+DA7D  BCC $DA82
+DA7F  LDA #$7FFF             ; saturate positive
+DA82  LDB $326A              ; load previous accumulator
+DA86  BMI $DA98              ; if accumulator negative, -&gt; mixed sign add
+DA88  CLC
+DA89  ADC $326A              ; add (both positive)
+DA8C  BCS $DACB              ; overflow -&gt; store
+DA8E  CMP #$8000             ; check sign flip
+DA91  BCC $DACB              ; still positive -&gt; store
+DA93  LDA #$7FFF             ; saturate at +max
+DA96  BRA $DACB
+DA98  CLC
+DA99  ADC $326A              ; add (mixed signs)
+DA9C  BCS $DA8E              ; check result
+DA9E  BRA $DACB
+; --- negative delta ---
+DAA0  EOR #$FFFF             ; negate
+DAA3  INA
+DAA4  MPY #$0F               ; multiply by 15
+DAA8  CMPB #$00              ; check overflow
+DAAC  BNE $DAB9
+DAAE  CMP #$8000
+DAB1  BCS $DAB9
+DAB3  EOR #$FFFF             ; negate back
+DAB6  INA
+DAB7  BRA $DABC
+DAB9  LDA #$8000             ; saturate negative
+DABC  LDB $326A              ; load previous accumulator
+DAC0  BPL $DA98              ; if positive, -&gt; mixed sign add
+DAC2  CLC
+DAC3  ADC $326A              ; add (both negative)
+DAC6  BMI $DACB              ; still negative -&gt; store
+DAC8  LDA #$8000             ; saturate at -max
+; --- store ---
+DACB  STA $326C              ; store updated accumulator
+DACE  ASL A                  ; double
+DACF  BCS $DAD8              ; carry set -&gt; check sign
+DAD1  BPL $DADD              ; positive and no carry -&gt; ok
+DAD3  LDA #$7FFF             ; saturate positive
+DAD6  BRA $DADD
+DAD8  BMI $DADD              ; negative and carry -&gt; ok
+DADA  LDA #$8000             ; saturate negative
+DADD  STA $3008              ; store doubled value
+DAE0  SEM                    ; 8-bit mode
+DAE1  LDA $3009              ; load high byte
+DAE4  STA $326E              ; store as 8-bit acceleration output
+DAE7  LDX $3064              ; snapshot current RPM
+DAEA  STX $3266              ; store for next iteration
+DAED  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$326C</td>
+<td>rpm_accel_accumulator</td>
+<td>Previous signed accumulator (16-bit)</td>
+</tr>
+<tr>
+<td>$3064</td>
+<td>rpm_full_precision</td>
+<td>Current RPM (16-bit)</td>
+</tr>
+<tr>
+<td>$3266</td>
+<td>rpm_previous_snapshot</td>
+<td>Previous RPM snapshot (16-bit)</td>
+</tr>
+<tr>
+<td>$326A</td>
+<td>rpm_derived_signed</td>
+<td>Previous integration term (16-bit signed)</td>
+</tr>
+</tbody></table>
+<h4 id="outputs">Outputs</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$326C</td>
+<td>rpm_accel_accumulator</td>
+<td>Updated signed accumulator</td>
+</tr>
+<tr>
+<td>$326E</td>
+<td>rpm_acceleration</td>
+<td>8-bit signed acceleration output (high byte of doubled accumulator)</td>
+</tr>
+<tr>
+<td>$3266</td>
+<td>rpm_previous_snapshot</td>
+<td>Updated to current $3064</td>
+</tr>
+<tr>
+<td>$3008</td>
+<td>workspace</td>
+<td>Doubled accumulator (16-bit)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xD90A.html">0xD90A Ignition Timing Retard Controller</a><a class="nav-next" href="0xDAEE.html">0xDAEE Knock Feedback Delta Monitor</a></nav>
+</body>
+</html>

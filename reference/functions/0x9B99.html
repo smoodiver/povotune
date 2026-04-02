@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x9B99 — Injection Output & Dwell Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x9B99 Injection Output & Dwell Calculator</span></nav>
+<h3 id="0x9b99-injection-output-dwell-calculator">0x9B99 — Injection Output & Dwell Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9B99</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>408 bytes (0x9B99–0x9D30)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>58</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR phase 2 at 0x9A9B</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Injection output and dwell timing calculator called during Phase 2 of the Timer A ISR (0x98A1). Performs three major tasks: (1) selects and writes the injector output value to IO port 0x2800 via a cylinder-indexed ROM table, (2) computes the injection pulse width from base fuel value, timing result, and various corrections, and (3) calculates dwell (coil charge) timing by scaling the timing result and subtracting a timer-derived offset. The function arms the injection timer hardware by writing computed period and pulse width values to direct-page timer registers.</p>
+<h4 id="algorithm-detail">Algorithm Detail</h4>
+<p><strong>Phase 1 — Injector Output Select (0x9B99–0x9BE6)</strong></p>
+<ol>
+<li>Reads cylinder counter <code>$319C</code>. If zero (no cylinder identified), checks <code>$31A5</code> bit 3 (first tooth detected); if not set, returns immediately. If set, clears the bit and uses injector index 0.</li>
+<li>If <code>$319C</code> != 0 and <code>$31A1</code> bit 2 is set, skips the output write and jumps to dwell re-arm at 0x9BF2.</li>
+<li>Clears <code>$31A1</code> bit 5, decrements cylinder counter to get table index.</li>
+<li>Tests ROM <code>$448E</code> for 0xFF to select between standard table (<code>$9D31</code>, 4 bytes: <code>01 01 03 03</code>) or alternate table (<code>$9D35</code>, 4 bytes: <code>09 0A 0B 0C</code>).</li>
+<li>CLM (16-bit), masks index to 8-bit, adds to table base pointer to form X.</li>
+<li>Writes 0xFFFF to direct page <code>$88</code> (timer compare register), loads table[X] in 8-bit mode, writes to IO <code>$2800</code> (injector hardware port).</li>
+<li>Sets <code>$31A1</code> bit 3.</li>
+</ol>
+<p><strong>Phase 2 — Injection Pulse Width Calculation (0x9BF2–0x9CD7)</strong></p>
+<ol>
+<li>Calls <code>$A9ED</code> for pre-injection timing correction.</li>
+<li>Checks <code>$35A4</code> bit 0 for alternate mode: if set, loads injection base from <code>$3576</code>; otherwise computes from ROM <code>$4480</code> + <code>$309A</code> (saturating add), minus <code>$3050</code> (clamped to 0).</li>
+<li>Multiplies result by <code>$31B0</code> (timing_result_C), calls <code>$A3C1</code> (shift right by 4), adds <code>$3052</code> (saturating to 0xFFFF). Stores to <code>$3236</code>.</li>
+<li>Loads ROM <code>$4464</code> (max scale = 0x64 = 100), multiplies by <code>$31B0</code>, shift-right-by-4. If overflow, saturates to 0xFFFF. Clamps result against <code>$3236</code> (uses minimum).</li>
+<li>Stores final injection pulse width to <code>$3146</code>.</li>
+</ol>
+<p><strong>Phase 3 — Dwell Timing Calculation (0x9C49–0x9D01)</strong></p>
+<ol>
+<li>Multiplies constant 0xB4 (180) by <code>$31B0</code>, shift-right-by-4. If overflow, saturates. Subtracts <code>$3146</code> (injection pulse), clamps minimum to 0xFA (250).</li>
+<li>Stores dwell period to <code>$3148</code>.</li>
+<li>Computes corrected timing: 0x41 minus <code>$3050</code> (or <code>$3573</code> in alternate mode), clamped to minimum 0x0F.</li>
+<li>Multiplies by <code>$31B0</code>, shift-right-by-4. Stores to <code>$3004</code>.</li>
+</ol>
+<p><strong>Phase 4 — Timer Arm (0x9C92–0x9D30)</strong></p>
+<ol>
+<li>Manipulates direct-page <code>$B4</code> bits 2/4 (injection state machine toggles).</li>
+<li>Captures timer <code>$A0</code>, right-shifts by 4, adds 0x0C, stores as timer offset to <code>$3006</code>.</li>
+<li>Subtracts offset from <code>$3004</code> (dwell period), clamps minimum to 0x0B. Stores to <code>$314A</code>.</li>
+<li>Compares <code>$314A - $3146</code>: if difference &gt;= 0x14 (20), enters the &quot;normal dwell&quot; path setting direct-page timer registers <code>$80</code>, <code>$84</code>, <code>$88</code> for the hardware timer. Tests <code>$31A1</code> bit 3 and <code>$0E</code> bit 4 to determine output mode (0x0E or 0x02 loaded to A).</li>
+<li>If difference &lt; 0x14, enters the &quot;short dwell&quot; path: loads <code>$314A</code> to <code>$80</code>, <code>$3148</code> to <code>$84</code>, 0xFFFF to <code>$88</code>, loads 0x0D to A.</li>
+<li>Stores A to <code>$96</code> (injection timer mode), sets <code>$92</code> bit 7, clears <code>$94</code> to 0. Returns.</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$319C</code> — cylinder counter (0–4)</li>
+<li><code>$31A1</code> — engine running flags (bits 2, 3, 5, 8 tested)</li>
+<li><code>$31A5</code> — first tooth flags (bit 3)</li>
+<li><code>$31B0</code> — timing_result_C (from Phase 2 of ISR)</li>
+<li><code>$3050</code> — correction offset</li>
+<li><code>$309A</code> — injection base adjustment</li>
+<li><code>$3052</code> — injection additive term</li>
+<li><code>$35A4</code> — alternate mode flags (bit 0)</li>
+<li><code>$3573</code> — alternate correction value</li>
+<li><code>$3576</code> — alternate injection base</li>
+<li><code>$00A0</code> — free-running timer (direct page)</li>
+<li><code>$000E</code> — IO port (bit 4: output mode select)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>IO <code>$2800</code> — injector driver port (cylinder-specific output pattern)</li>
+<li><code>$3146</code> — computed injection pulse width</li>
+<li><code>$3148</code> — computed dwell period</li>
+<li><code>$314A</code> — dwell timing value (period minus timer offset)</li>
+<li><code>$314C</code> — dwell/injection difference</li>
+<li><code>$3236</code> — intermediate injection maximum</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x319C</td>
+<td>cylinder_counter</td>
+<td>Cylinder index for table lookup</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Phase/state bits tested</td>
+</tr>
+<tr>
+<td>0x31A5</td>
+<td>first_tooth_flags</td>
+<td>Bit 3: first gear tooth detected</td>
+</tr>
+<tr>
+<td>0x31B0</td>
+<td>timing_result_C</td>
+<td>Timing measurement used as multiplier</td>
+</tr>
+<tr>
+<td>0x3050</td>
+<td>correction_offset</td>
+<td>Subtracted from injection base</td>
+</tr>
+<tr>
+<td>0x309A</td>
+<td>injection_base_adj</td>
+<td>Added to ROM base offset</td>
+</tr>
+<tr>
+<td>0x3052</td>
+<td>injection_additive</td>
+<td>Added to scaled injection value</td>
+</tr>
+<tr>
+<td>0x3236</td>
+<td>injection_max_scratch</td>
+<td>Intermediate max injection value</td>
+</tr>
+<tr>
+<td>0x3573</td>
+<td>alt_correction_val</td>
+<td>Alternate mode correction</td>
+</tr>
+<tr>
+<td>0x3576</td>
+<td>alt_injection_base</td>
+<td>Alternate mode injection base</td>
+</tr>
+<tr>
+<td>0x35A4</td>
+<td>alt_mode_flags</td>
+<td>Bit 0: alternate injection mode</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3146</td>
+<td>injection_pulse_width</td>
+<td>Computed injection pulse width</td>
+</tr>
+<tr>
+<td>0x3148</td>
+<td>dwell_period</td>
+<td>Computed dwell (coil charge) period</td>
+</tr>
+<tr>
+<td>0x314A</td>
+<td>dwell_timing</td>
+<td>Dwell period minus timer offset</td>
+</tr>
+<tr>
+<td>0x314C</td>
+<td>dwell_inj_diff</td>
+<td>Difference between dwell and injection</td>
+</tr>
+<tr>
+<td>0x3236</td>
+<td>injection_max_scratch</td>
+<td>Saturated injection intermediate</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Bits 3, 5, 8 modified</td>
+</tr>
+<tr>
+<td>0x31A5</td>
+<td>first_tooth_flags</td>
+<td>Bit 3 cleared</td>
+</tr>
+<tr>
+<td>0x3004</td>
+<td>scratch_workspace</td>
+<td>Dwell calculation intermediate</td>
+</tr>
+<tr>
+<td>0x3006</td>
+<td>scratch_workspace_2</td>
+<td>Timer offset intermediate</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4464</td>
+<td>1 byte</td>
+<td>Injection max scale factor (value: 0x64 = 100)</td>
+</tr>
+<tr>
+<td>0x4480</td>
+<td>1 byte</td>
+<td>Injection base offset (value: 0x05)</td>
+</tr>
+<tr>
+<td>0x448E</td>
+<td>1 byte</td>
+<td>Alternate injection table selector (0xFF = use alternate)</td>
+</tr>
+<tr>
+<td>0x9D31</td>
+<td>4 bytes</td>
+<td>Dwell timing table (standard): <code>01 01 03 03</code></td>
+</tr>
+<tr>
+<td>0x9D35</td>
+<td>4 bytes</td>
+<td>Dwell timing table (alternate): <code>09 0A 0B 0C</code></td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xA9ED</td>
+<td>sub_A9ED</td>
+<td>Pre-injection timing correction</td>
+</tr>
+<tr>
+<td>0xA3C1</td>
+<td>Shift Right B:A by 4</td>
+<td>Divide MPY result by 16 (called 4 times)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x9852.html">0x9852 Knock Learning State Restore / Init</a><a class="nav-next" href="0x9D39.html">0x9D39 Cylinder Pair Injection Sequencer</a></nav>
+</body>
+</html>

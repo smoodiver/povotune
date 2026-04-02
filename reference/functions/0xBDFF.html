@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xBDFF — Turbo Transition Controller — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xBDFF Turbo Transition Controller</span></nav>
+<h3 id="0xbdff-turbo-transition-controller">0xBDFF — Turbo Transition Controller</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xBDFF</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>954 bytes (0xBDFF–0xC1B8)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>138</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler ISR (0xAAD1 at 0xABCB)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>The largest single function in the BD5A ROM at 954 bytes across 138 blocks. Controls the sequential twin-turbo transition for the EJ20H engine by managing the secondary turbo&#39;s wastegate duty cycle (<code>$30A2</code>) and associated ramp timing. The function implements a multi-state transition controller with entry/exit qualification, duty cycle ramping with rate limiting, and target tracking with asymmetric gain.</p>
+<p>The function has six major phases:</p>
+<ol>
+<li><p><strong>Gain calculation</strong> (0xBDFF): Calls <code>JSR $C1B9</code> (turbo_transition_gain_calculator) to compute RPM-dependent and speed-dependent ramp rates for the transition.</p>
+</li>
+<li><p><strong>Entry qualification</strong> (0xBE02–0xBE34): Tests whether transition conditions are met:</p>
+<ul>
+<li>Checks <code>$305A</code> bit 4 (stall/cranking flag) — if set, clears transition permission and skips.</li>
+<li>Compares <code>$306F</code> (airflow_load) against <code>$45F8</code> and <code>$3071</code> (vehicle_speed) against <code>$45F9</code> — both must exceed thresholds.</li>
+<li>Tests <code>$3029</code> bit 5 (adjustment map condition) — must be clear.</li>
+<li>Compares <code>$45FC</code> (max speed threshold) against <code>$30A2</code> (duty accumulator) — duty must be below threshold.</li>
+<li>On qualification, loads <code>$45FA</code> into <code>$30A2</code> (initial duty) and sets <code>$3029</code> bit 5.</li>
+</ul>
+</li>
+<li><p><strong>Differential pressure capture and mode dispatch</strong> (0xBE34–0xBE50): Reads hardware port <code>$20</code> bits via CLM/SEM mode switch, captures differential pressure reading <code>$22</code> -&gt; <code>$3040</code>, computes <code>$3040 &gt;&gt; 2</code> -&gt; <code>$3750</code> (8-bit mirror) and SSM port <code>$014A</code>. Then dispatches based on <code>$4039</code>: if nonzero, jumps to the abort/reset path at 0xBF85.</p>
+</li>
+<li><p><strong>Transition state machine</strong> (0xBE50–0xBF9E): A complex multi-branch state machine controlling the secondary turbo transition:</p>
+<ul>
+<li><strong>Overboost detection</strong> (0xBE50–0xBE8C): Compares RPM counter <code>$310A</code> against thresholds <code>$4D18</code>/<code>$4D1A</code>. Sets <code>$3028</code> bit 7 on high RPM. Separately checks warmup counter <code>$3239</code> against <code>$4E42</code> with <code>$3103</code> for conditional <code>$3028</code> bit 6 (warmup gate).</li>
+<li><strong>Deceleration management</strong> (0xBE8C–0xBEEF): When <code>$3026</code> bit 4 is set (decel condition), manages two deceleration timers (<code>$30D7</code>, <code>$30D8</code>) with ROM delays (<code>$4D39</code>, <code>$4D3B</code>, <code>$4D3C</code>). Sets <code>$3029</code> bit 6 and loads target into <code>$3010</code>. Handles timer expiry transitions.</li>
+<li><strong>Transition commit</strong> (0xBEEF–0xBF72): When <code>$3028</code> bit 0 is clear (not yet committed), qualifies on coolant temp (<code>$3092</code> &gt;= <code>$4D0C</code>), differential pressure (<code>$3040</code> in range <code>$4D0D</code>–<code>$4D11</code>), and absence of deceleration/inhibit flags. On commit: sets <code>$3028</code> bit 0, clears bits 1 and 4, zeros timers <code>$30D7</code>/<code>$30D8</code>, loads initial targets from ROM (<code>$4D13</code> -&gt; <code>$309E</code>, <code>$4D15</code> -&gt; <code>$310C</code>/<code>$30A0</code>, <code>$4D17</code> -&gt; <code>$3110</code>), clears accumulators <code>$3136</code>/<code>$323E</code>/<code>$3103</code>, and jumps to exit.</li>
+<li><strong>Transition abort</strong> (0xBF75–0xBF9E): Loads abort delay <code>$4D00</code> -&gt; <code>$30D9</code> and/or <code>$4D01</code> -&gt; <code>$30DA</code>. Sets duty to <code>$8000</code> (50% / neutral). Jumps to exit.</li>
+</ul>
+</li>
+<li><p><strong>Duty cycle ramping</strong> (0xBFB5–0xC168): The core control loop that ramps <code>$30A2</code> toward the target <code>$3010</code>:</p>
+<ul>
+<li><strong>Rate-limited approach</strong> (0xBFB8–0xBFDC): Compares current duty <code>$30A2</code> against target <code>$3010</code>. If above, subtracts step size <code>$4D0A</code> (clamped to target). If below, adds step size <code>$4D0A</code> (clamped to target). Implements smooth rate-limited transitions.</li>
+<li><strong>Above-target path</strong> (0xBFE0–0xC108): When <code>$3040</code> &gt;= <code>$30A0</code>, sets <code>$3028</code> bit 2. Selects base duty from <code>$310C</code> or <code>$310E</code> (depending on <code>$3028</code> bit 7 / overboost flag). Subtracts the up-ramp rate <code>$3316</code>/<code>$3318</code> (computed by 0xC1B9) from <code>$30A2</code>, clamped to zero.</li>
+<li><strong>Below-target path</strong> (0xC10A–0xC168): When <code>$3040</code> &lt; <code>$30A0</code>, clears <code>$3028</code> bit 2. Adds the down-ramp rate <code>$3317</code>/<code>$3319</code> to <code>$30A2</code>, clamped to 0xFFFF. Sets target ceiling from <code>$310C + $4D24</code> (or <code>$3302</code> for overboost mode), clamped to 0xFFFF.</li>
+</ul>
+</li>
+<li><p><strong>Target step-down and exit</strong> (0xC16B–0xC1B8): Clamps <code>$30A2</code> to range <code>[$4D1E</code>, <code>$4D20</code>]. Manages a step-down timer for <code>$310C</code>: compares against minimum <code>$4D22</code>, decrements with reload period <code>$4D17</code> via counter <code>$3110</code>. Writes final duty byte <code>$30A3</code> to SSM port <code>$0148</code> and diagnostic mirror <code>$377E</code>.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$22</code> — hardware differential pressure ADC (via CLM mode)</li>
+<li><code>$305A</code> — system_control_flags (bit 4: stall/cranking)</li>
+<li><code>$306F</code> — airflow_load</li>
+<li><code>$3071</code> — vehicle_speed</li>
+<li><code>$3092</code> — coolant_temp_raw</li>
+<li><code>$3094</code> — throttle_correction_output</li>
+<li><code>$3026</code> — condition flags (bit 4: decel)</li>
+<li><code>$3028</code> — engine_mode_flags (multi-bit)</li>
+<li><code>$3029</code> — adj_map_condition_flags</li>
+<li><code>$302C</code> — flags</li>
+<li><code>$3023</code> — flags</li>
+<li><code>$323F</code> — flags (bit 0, bit 1)</li>
+<li><code>$3040</code> — diff_pressure</li>
+<li><code>$310A</code> — RPM counter</li>
+<li><code>$3239</code> — warmup counter</li>
+<li><code>$30D9</code> — abort delay timer 1</li>
+<li><code>$30DA</code> — abort delay timer 2</li>
+<li><code>$4039</code> — ROM: abort trigger flag</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$30A2</code> — 16-bit duty accumulator (primary output)</li>
+<li><code>$30A3</code> — duty output byte (high byte of <code>$30A2</code>)</li>
+<li><code>$3028</code> — engine_mode_flags (bits 0–4, 6, 7 modified)</li>
+<li><code>$3029</code> — adj_map_condition_flags (bits 5, 6 modified)</li>
+<li><code>$3040</code> — diff_pressure (captured from ADC)</li>
+<li><code>$309E</code> — transition holdoff timer</li>
+<li><code>$30A0</code> — differential pressure target</li>
+<li><code>$30D7</code> — deceleration timer 1</li>
+<li><code>$30D8</code> — deceleration timer 2</li>
+<li><code>$30D9</code> — abort delay 1</li>
+<li><code>$30DA</code> — abort delay 2</li>
+<li><code>$3010</code> — working: duty target</li>
+<li><code>$3103</code> — warmup gate counter</li>
+<li><code>$3110</code> — step-down reload counter</li>
+<li><code>$310C</code> — base duty step target</li>
+<li><code>$3136</code> — accumulator (cleared on commit)</li>
+<li><code>$323E</code> — accumulator (cleared on commit)</li>
+<li><code>$3750</code> — 8-bit diff_pressure mirror (<code>$3040 &gt;&gt; 2</code>)</li>
+<li><code>$0148</code> — SSM port: duty output</li>
+<li><code>$014A</code> — SSM port: diff_pressure</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xC1B9</td>
+<td>turbo_transition_gain_calculator</td>
+<td>Computes RPM/speed-dependent ramp gains</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>$4039</code></td>
+<td>Abort trigger flag</td>
+</tr>
+<tr>
+<td><code>$45F8</code></td>
+<td>Airflow load entry threshold</td>
+</tr>
+<tr>
+<td><code>$45F9</code></td>
+<td>Vehicle speed entry threshold</td>
+</tr>
+<tr>
+<td><code>$45FA</code></td>
+<td>Initial duty on entry qualification</td>
+</tr>
+<tr>
+<td><code>$45FC</code></td>
+<td>Maximum duty threshold for entry</td>
+</tr>
+<tr>
+<td><code>$4D00</code></td>
+<td>Abort delay timer 1 initial value</td>
+</tr>
+<tr>
+<td><code>$4D01</code></td>
+<td>Abort delay timer 2 initial value</td>
+</tr>
+<tr>
+<td><code>$4D08</code></td>
+<td>Above-target step size (committed mode)</td>
+</tr>
+<tr>
+<td><code>$4D09</code></td>
+<td>Below-target step size (committed mode)</td>
+</tr>
+<tr>
+<td><code>$4D0A</code></td>
+<td>Rate-limit step size for duty approach</td>
+</tr>
+<tr>
+<td><code>$4D0C</code></td>
+<td>Coolant temperature minimum for transition commit</td>
+</tr>
+<tr>
+<td><code>$4D0D</code></td>
+<td>Diff pressure upper threshold for commit</td>
+</tr>
+<tr>
+<td><code>$4D0F</code></td>
+<td>Diff pressure mid-range check</td>
+</tr>
+<tr>
+<td><code>$4D11</code></td>
+<td>Diff pressure lower threshold for commit</td>
+</tr>
+<tr>
+<td><code>$4D13</code></td>
+<td>Transition holdoff timer initial value</td>
+</tr>
+<tr>
+<td><code>$4D15</code></td>
+<td>Base duty target initial value</td>
+</tr>
+<tr>
+<td><code>$4D17</code></td>
+<td>Step-down timer reload period</td>
+</tr>
+<tr>
+<td><code>$4D18</code></td>
+<td>RPM counter threshold for overboost flag</td>
+</tr>
+<tr>
+<td><code>$4D1A</code></td>
+<td>RPM counter threshold for warmup gate</td>
+</tr>
+<tr>
+<td><code>$4D1C</code></td>
+<td>Warmup gate counter initial value</td>
+</tr>
+<tr>
+<td><code>$4D1D</code></td>
+<td>Coolant temp threshold for idle path</td>
+</tr>
+<tr>
+<td><code>$4D1E</code></td>
+<td>Duty accumulator minimum clamp</td>
+</tr>
+<tr>
+<td><code>$4D20</code></td>
+<td>Duty accumulator maximum clamp</td>
+</tr>
+<tr>
+<td><code>$4D22</code></td>
+<td>Base duty step-down minimum</td>
+</tr>
+<tr>
+<td><code>$4D24</code></td>
+<td>Target ceiling offset (added to <code>$310C</code>)</td>
+</tr>
+<tr>
+<td><code>$4D39</code></td>
+<td>Deceleration timer 1 delay (decel entry)</td>
+</tr>
+<tr>
+<td><code>$4D3B</code></td>
+<td>Deceleration timer 1 delay (timer reload)</td>
+</tr>
+<tr>
+<td><code>$4D3C</code></td>
+<td>Deceleration timer 2 delay</td>
+</tr>
+<tr>
+<td><code>$4D45</code></td>
+<td>Duty target for <code>$3029</code> bit 3 condition</td>
+</tr>
+<tr>
+<td><code>$4D47</code></td>
+<td>Duty target for <code>$3029</code> bit 4 condition</td>
+</tr>
+<tr>
+<td><code>$4D4E</code></td>
+<td>Duty target for deceleration path</td>
+</tr>
+<tr>
+<td><code>$4D67</code></td>
+<td>Diff pressure threshold for idle qualification</td>
+</tr>
+<tr>
+<td><code>$4E42</code></td>
+<td>Warmup counter threshold</td>
+</tr>
+<tr>
+<td><code>$4E43</code></td>
+<td>Accumulator <code>$3136</code> trip threshold</td>
+</tr>
+<tr>
+<td><code>$4E44</code></td>
+<td>Accumulator <code>$323E</code> trip threshold</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xBDDB.html">0xBDDB Throttle Decay & Counter Maintenance</a><a class="nav-next" href="0xC1B9.html">0xC1B9 Turbo Transition Gain Calculator</a></nav>
+</body>
+</html>

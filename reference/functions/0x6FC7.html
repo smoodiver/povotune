@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6FC7 — Knock Sensor 4-Channel Health Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6FC7 Knock Sensor 4-Channel Health Check</span></nav>
+<h3 id="0x6fc7-knock-sensor-4-channel-health-check">0x6FC7 — Knock Sensor 4-Channel Health Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6FC7</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>375 bytes (0x6FC7–0x713D)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>61</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (health check callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (health_check_dispatcher 0x6B14, slot 12)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0x633D (saturating_increment) — walker reports 1 callee (0x633D at 0x634D = address 25405); 8 JSR 0x633D calls total</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>The largest health check callee (61 blocks). Tests all four knock sensor channels for both high-level and low-level faults, using 8 independent debounce counters and a dual-direction fault detection pattern. Reads knock sensor hardware registers from I/O ports $0C/$0D under interrupt protection (SEI/CLI), copies to workspace at 0x300C/0x300D, then processes each channel identically. Each channel checks an enable bit in 0x300C and a level bit in 0x300D, incrementing the appropriate counter (high-fault or low-fault) and comparing against threshold 0x32 (50 counts). Per-channel results aggregate into 0x31EB (8 bits, 2 per channel) and promote to 0x3330 bits 3–6 (one bit per channel, either direction triggers).</p>
+<h4 id="structure">Structure</h4>
+<p>The function consists of:</p>
+<ol>
+<li><strong>Enable/disable gate</strong> (0x6FC7–0x6FC9): LDA #$FF; BNE — always branches to main path (the #$FF is a patchable enable byte)</li>
+<li><strong>Disable path</strong> (0x6FCB–0x6FDF): Clears all knock diagnostic state (0x31EB, 0x3512, 0x3330 bits 3-6, 0x3508 bits 3-6, 0x350C bits 3-6)</li>
+<li><strong>Warmup gate</strong> (0x6FE0–0x6FF6): Requires 0x316B == 0xFF (fully warmed up); if not, clears all 8 counters (0x31F0–0x31F7) and returns</li>
+<li><strong>Hardware read</strong> (0x6FF7–0x7004): SEI; LDA $0D; LDB $0C; CLI — atomic read of knock sensor I/O registers, stored to 0x300C (low) and 0x300D (high)</li>
+<li><strong>Channel 1</strong> (0x7005–0x7053): Counter pair 0x31F0/0x31F1, enable bit 0x300C.0, level bit 0x300D.7, fault bits 0x31EB.0/.4, output 0x3330.3</li>
+<li><strong>Channel 2</strong> (0x7053–0x70A1): Counter pair 0x31F2/0x31F3, enable bit 0x300C.1, level bit 0x300D.6, fault bits 0x31EB.1/.5, output 0x3330.4</li>
+<li><strong>Channel 3</strong> (0x70A1–0x70EF): Counter pair 0x31F4/0x31F5, enable bit 0x300C.2, level bit 0x300D.5, fault bits 0x31EB.2/.6, output 0x3330.5</li>
+<li><strong>Channel 4</strong> (0x70EF–0x713D): Counter pair 0x31F6/0x31F7, enable bit 0x300C.3, level bit 0x300D.4, fault bits 0x31EB.3/.7, output 0x3330.6</li>
+</ol>
+<h4 id="per-channel-logic-identical-for-all-4">Per-Channel Logic (identical for all 4)</h4>
+<p>Using channel 1 as example (X = 0x31F0):</p>
+<pre><code>if 0x300C bit 0 set (channel enabled):
+    if 0x300D bit 7 set (level high):
+        JSR 0x633D (increment counter at X=0x31F0)
+        if count &gt;= 0x32: SEB 0x31EB bit 0 (high fault)
+    else:
+        MEM 0x31F0 = 0x00 (clear high counter)
+        CLB 0x31EB bit 0 (clear high fault)
+else (channel not enabled):
+    if 0x300D bit 7 NOT set (level low):
+        INX (X = 0x31F1)
+        JSR 0x633D (increment counter at X+1=0x31F1)
+        if count &gt;= 0x32: SEB 0x31EB bit 4 (low fault)
+    else:
+        MEM 0x31F1 = 0x00 (clear low counter)
+        CLB 0x31EB bit 4 (clear low fault)
+
+; Aggregate to output
+if 0x31EB bits 0+4 both set: SEB 0x3330 bit 3
+else: CLB 0x3330 bit 3
+</code></pre>
+<p><strong>Note</strong>: The aggregation check uses OR — if EITHER high or low fault bit is set for a channel, the channel fault bit in 0x3330 is set. The BBC check at e.g. 0x7044 tests mask 0x11 (bits 0+4), meaning either bit triggers the output.</p>
+<h4 id="channel-mapping-table">Channel Mapping Table</h4>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Counter High</th>
+<th>Counter Low</th>
+<th>Enable Bit</th>
+<th>Level Bit</th>
+<th>Fault High</th>
+<th>Fault Low</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0x31F0</td>
+<td>0x31F1</td>
+<td>0x300C.0</td>
+<td>0x300D.7</td>
+<td>0x31EB.0</td>
+<td>0x31EB.4</td>
+<td>0x3330.3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0x31F2</td>
+<td>0x31F3</td>
+<td>0x300C.1</td>
+<td>0x300D.6</td>
+<td>0x31EB.1</td>
+<td>0x31EB.5</td>
+<td>0x3330.4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0x31F4</td>
+<td>0x31F5</td>
+<td>0x300C.2</td>
+<td>0x300D.5</td>
+<td>0x31EB.2</td>
+<td>0x31EB.6</td>
+<td>0x3330.5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0x31F6</td>
+<td>0x31F7</td>
+<td>0x300C.3</td>
+<td>0x300D.4</td>
+<td>0x31EB.3</td>
+<td>0x31EB.7</td>
+<td>0x3330.6</td>
+</tr>
+</tbody></table>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>I/O port $0D: knock sensor level register (hardware, bits 7/6/5/4 = channels 1/2/3/4)</li>
+<li>I/O port $0C: knock sensor enable register (hardware, bits 0/1/2/3 = channels 1/2/3/4)</li>
+<li>0x316B: warmup counter (must be 0xFF = fully warmed)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x300C: knock enable snapshot (copied from port $0C)</li>
+<li>0x300D: knock level snapshot (copied from port $0D)</li>
+<li>0x31EB: knock sensor fault bits (8 bits: 4 high + 4 low)</li>
+<li>0x31F0–0x31F7: per-channel debounce counters (8 bytes, 2 per channel)</li>
+<li>0x3330 bits 3–6: per-channel confirmed knock sensor faults</li>
+<li>0x3512: diagnostic init state 2 (cleared on disable)</li>
+<li>0x3508 bits 3–6: diagnostic counter 2 (cleared on disable)</li>
+<li>0x350C bits 3–6: latched faults B (cleared on disable)</li>
+</ul>
+<h4 id="ram-references">RAM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x316B</td>
+<td>lookup_input_b / warmup_counter</td>
+<td>R</td>
+<td>Warmup gate (must be 0xFF)</td>
+</tr>
+<tr>
+<td>0x300C</td>
+<td>knock_enable_snapshot</td>
+<td>W</td>
+<td>Copy of port $0C enable bits</td>
+</tr>
+<tr>
+<td>0x300D</td>
+<td>knock_level_snapshot</td>
+<td>W</td>
+<td>Copy of port $0D level bits</td>
+</tr>
+<tr>
+<td>0x31EB</td>
+<td>diag_knock_sensor_bits</td>
+<td>R/W</td>
+<td>8-bit fault status (2 bits per channel)</td>
+</tr>
+<tr>
+<td>0x31F0</td>
+<td>knock_ch1_high_counter</td>
+<td>R/W</td>
+<td>Channel 1 high-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F1</td>
+<td>knock_ch1_low_counter</td>
+<td>R/W</td>
+<td>Channel 1 low-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F2</td>
+<td>knock_ch2_high_counter</td>
+<td>R/W</td>
+<td>Channel 2 high-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F3</td>
+<td>knock_ch2_low_counter</td>
+<td>R/W</td>
+<td>Channel 2 low-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F4</td>
+<td>knock_ch3_high_counter</td>
+<td>R/W</td>
+<td>Channel 3 high-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F5</td>
+<td>knock_ch3_low_counter</td>
+<td>R/W</td>
+<td>Channel 3 low-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F6</td>
+<td>knock_ch4_high_counter</td>
+<td>R/W</td>
+<td>Channel 4 high-fault debounce</td>
+</tr>
+<tr>
+<td>0x31F7</td>
+<td>knock_ch4_low_counter</td>
+<td>R/W</td>
+<td>Channel 4 low-fault debounce</td>
+</tr>
+<tr>
+<td>0x3330</td>
+<td>diag_fault_flags_B</td>
+<td>R/W</td>
+<td>Bits 3–6: per-channel fault output</td>
+</tr>
+<tr>
+<td>0x3512</td>
+<td>diag_init_state_2</td>
+<td>W</td>
+<td>Cleared on disable</td>
+</tr>
+<tr>
+<td>0x3508</td>
+<td>diag_counter_2</td>
+<td>W</td>
+<td>Bits 3–6 cleared on disable</td>
+</tr>
+<tr>
+<td>0x350C</td>
+<td>diag_latched_faults_B</td>
+<td>W</td>
+<td>Bits 3–6 cleared on disable</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6EFF.html">0x6EFF Cranking/Idle Speed Sensor Check</a><a class="nav-next" href="0x713E.html">0x713E O2 Sensor Lean Detect</a></nav>
+</body>
+</html>

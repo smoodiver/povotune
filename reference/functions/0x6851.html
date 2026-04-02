@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6851 — Periodic Diagnostics — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6851 Periodic Diagnostics</span></nav>
+<h3 id="0x6851-periodic-diagnostics">0x6851 — Periodic Diagnostics</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6851</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>707 bytes (0x6851–0x6B13)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>116</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Main diagnostic housekeeping routine (0x6851–0x6B13). Runs decay timers for coolant temp correction, speed-dependent values, EGT variables. Manages IAC target tracking with slew-rate limiting. Runs prescaler for IAC table lookups. Processes TPS/load rate-of-change filtering. Updates numerous debounce counters. Manages warm-up timers.</p>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6000</td>
+<td>graph_lookup_2d</td>
+</tr>
+<tr>
+<td>0x633D</td>
+<td>saturating_increment</td>
+</tr>
+<tr>
+<td>0x6346</td>
+<td>saturating_decrement</td>
+</tr>
+<tr>
+<td>0x634E</td>
+<td>saturating_increment_y</td>
+</tr>
+<tr>
+<td>0x7C3F</td>
+<td>self_test_toggle_timer</td>
+</tr>
+<tr>
+<td>0x8E5F</td>
+<td>(sub_8E5F)</td>
+</tr>
+<tr>
+<td>0x8F0C</td>
+<td>(sub_8F0C)</td>
+</tr>
+</tbody></table>
+<p>Note: The 25 fault detection subroutines (0x6B14–0x77E5) are dispatched by the separate health_check_dispatcher function at 0x6B14, not by this function directly.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>Coolant temp (0x3093, 0x306E), RPM (0x3062), speed (0x3071)</li>
+<li>Airflow (0x303E, 0x306F), TPS (0x3044)</li>
+<li>I/O ports 0x0E, 0x2000, 0x2200: sensor/switch inputs</li>
+<li>IAC position (0x30EF)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>Fault flags: 0x332E, 0x332F, 0x3330, 0x3331, 0x333A, 0x333B</li>
+<li>Latched faults: 0x350A, 0x350C → I/O 0x01AC–0x01B2</li>
+<li>MIL lamp via 0x35A5/port 0x2000</li>
+<li>Test mode flag: 0x3510</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x63E0.html">0x63E0 16-Bit Table Interpolation</a><a class="nav-next" href="0x6B14.html">0x6B14 Health Check Dispatcher</a></nav>
+</body>
+</html>

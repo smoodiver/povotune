@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xBAA3 — Fuel Enrichment Calculator — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xBAA3 Fuel Enrichment Calculator</span></nav>
+<h3 id="0xbaa3-fuel-enrichment-calculator">0xBAA3 — Fuel Enrichment Calculator</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xBAA3</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>234 bytes (0xBAA3–0xBB8C)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>33</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 at 0xAB65)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Computes the base fuel injection pulse width from RPM correction, boost compensation, and enrichment factors, then stores the result and produces SSM diagnostic outputs. The function has three main phases:</p>
+<ol>
+<li><p><strong>Precondition gate</strong> (0xBAA3–0xBADE): Checks multiple inhibit conditions. If <code>$305A</code> bit 3 is set, a debounce counter at <code>$3225</code> is cleared and execution continues; otherwise the counter is incremented via <code>JSR $633D</code> and must reach 2 before proceeding. Six additional bit tests (<code>$302A</code> bits 3/5/7, <code>$328B</code> bits 3/4, <code>$314E</code> bit 3) any of which being set forces the output to zero via <code>JMP $BB61</code>.</p>
+</li>
+<li><p><strong>Base enrichment calculation</strong> (0xBADF–0xBB62): Loads the RPM-based correction (<code>$309C</code>) and adds the fuel value shifted (<code>$3126</code>), optionally adding boost output base (<code>$30B4</code>) if <code>$305A</code> bit 4 is clear. If <code>$305C</code> bit 2 is set, performs a coolant temperature table lookup (<code>$3093</code> vs ROM table <code>$4760</code> via <code>JSR $6000</code>) and scales the result against the working accumulator. The running sum is further adjusted by adding <code>$3120</code> (ramp accumulator), subtracting <code>$3320</code> (IO output value), adding <code>$3122</code> (fuel value shifted), and clamping against the maximum at ROM <code>$4018</code>. If <code>$305A</code> bit 2 is set, applies a final scaling by ROM <code>$401F</code>. The result is stored to <code>$3054</code> (the main fuel pulse width accumulator).</p>
+</li>
+<li><p><strong>Diagnostic output and secondary calculations</strong> (0xBB62–0xBB8C): Stores the clamped fuel value to <code>$3054</code>, writes the high byte to SSM port <code>$0138</code>. Then scales by <code>$30A5</code> (an 8-bit factor), producing a secondary fuel value stored to <code>$30B8</code>, with its high byte written to SSM port <code>$013A</code>.</p>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$305A</code> (system_control_flags): bit 3 bypasses debounce, bit 4 gates boost addition, bit 2 enables scaling</li>
+<li><code>$3225</code>: fuel enrichment debounce counter</li>
+<li><code>$302A</code> (speed_control_flags): bits 3/5/7 inhibit enrichment</li>
+<li><code>$328B</code> (turbo_ctrl_state): bits 3/4 inhibit enrichment</li>
+<li><code>$314E</code> (limiter_flags): bit 3 inhibits enrichment</li>
+<li><code>$309C</code> (temp_rpm_correction_scaled): RPM-based correction</li>
+<li><code>$3126</code>: fuel correction addend</li>
+<li><code>$30B4</code> (boost_output_base): boost compensation</li>
+<li><code>$305C</code> (mode_select_flags): bit 2 enables coolant correction</li>
+<li><code>$3093</code> (coolant_temp): coolant temperature for table lookup</li>
+<li><code>$3120</code> (ramp_accumulator): accumulated ramp value</li>
+<li><code>$3320</code> (io_output_value): subtracted from enrichment sum</li>
+<li><code>$3122</code> (fuel_value_shifted): fuel correction addend</li>
+<li><code>$30A5</code>: secondary scaling factor</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$3054</code>: fuel pulse width accumulator (16-bit)</li>
+<li><code>$30B8</code>: secondary fuel value (scaled by <code>$30A5</code>)</li>
+<li><code>$0138</code>: SSM diagnostic — fuel pulse high byte</li>
+<li><code>$013A</code>: SSM diagnostic — secondary fuel high byte</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$4760</td>
+<td>coolant_fuel_correction_table</td>
+<td>1D table for coolant-based fuel correction (via sub_6000)</td>
+</tr>
+<tr>
+<td>$4018</td>
+<td>fuel_pulse_max</td>
+<td>Maximum fuel pulse width clamp</td>
+</tr>
+<tr>
+<td>$401F</td>
+<td>closed_loop_fuel_scale</td>
+<td>Scaling factor applied when closed-loop enabled</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x6000</td>
+<td>1d_table_interpolation</td>
+<td>Coolant temperature fuel correction lookup</td>
+</tr>
+<tr>
+<td>0x633D</td>
+<td>saturating_increment</td>
+<td>Debounce counter at <code>$3225</code></td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xBA6C.html">0xBA6C RPM/AFM Rate-of-Change History</a><a class="nav-next" href="0xBB8D.html">0xBB8D Injection Pulse Width & Cylinder Distribution</a></nav>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA745 — Timing Correction Decay — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA745 Timing Correction Decay</span></nav>
+<h3 id="0xa745-timing-correction-decay">0xA745 — Timing Correction Decay</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA745</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>42 bytes (0xA745–0xA76E)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — knock_control_dispatcher (0xA683 at 0xA6DF)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Decays the knock timing correction value (<code>$31B8</code>) toward zero or applies a fixed default. Behavior depends on the knock correction enable flags:</p>
+<ol>
+<li><strong>Knock correction fully enabled</strong> (<code>$31C2</code> = 0xFF): Loads the ROM default timing correction from <code>$4D9B</code> directly into <code>$31B8</code>, bypassing any decay.</li>
+<li><strong>Sensor active</strong> (<code>$31C1</code> nonzero): Adds a ROM step value (<code>$4D90</code>) to the current timing correction, clamping to a maximum from <code>$4D92</code>. This gradually increases the correction (recovery toward baseline).</li>
+<li><strong>Neither active</strong>: Returns immediately with no changes.</li>
+</ol>
+<p>The result is also mirrored to <code>$01B8</code> (likely a diagnostic/SSM output mirror).</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>A745  BBC $31C2,#$FF,$A74F ; if knock_corr_enable != 0xFF, -&gt; check sensor
+A74A  LDX $4D9B           ; load default correction from ROM
+A74D  BRA $A767           ; -&gt; store and return
+A74F  BBC $31C1,#$FF,$A76E ; if sensor_activity = 0, -&gt; return (no change)
+A754  CLM                 ; 16-bit mode
+A755  LDA $31B8           ; load current timing_correction
+A758  CLC
+A759  ADC $4D90           ; add ROM step value
+A75C  BCS $A764           ; if overflow, -&gt; clamp to max
+A75E  TAX
+A75F  CPX $4D92           ; compare against maximum
+A762  BCC $A767           ; if below max, keep value
+A764  LDX $4D92           ; clamp to maximum
+A767  STX $31B8           ; store updated correction
+A76A  STX $01B8           ; mirror to diagnostic output
+A76D  SEM                 ; back to 8-bit
+A76E  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$31C2</code> (knock_corr_enable) — 0xFF = fully enabled, controls dispatch</li>
+<li><code>$31C1</code> (sensor_activity_flags) — nonzero = sensor active, controls decay path</li>
+<li><code>$31B8</code> (timing_correction) — current correction value (16-bit)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$31B8</code> (timing_correction) — updated correction value</li>
+<li><code>$01B8</code> — diagnostic mirror of timing_correction</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4D90</td>
+<td>2 bytes</td>
+<td>Timing correction decay step (added per call)</td>
+</tr>
+<tr>
+<td>0x4D92</td>
+<td>2 bytes</td>
+<td>Timing correction maximum value (clamp)</td>
+</tr>
+<tr>
+<td>0x4D9B</td>
+<td>2 bytes</td>
+<td>Default timing correction (used when knock correction fully enabled)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA6EB.html">0xA6EB RPM Range Classifier (Limiter Flags)</a><a class="nav-next" href="0xA76F.html">0xA76F Knock Retard Ramp Controller</a></nav>
+</body>
+</html>

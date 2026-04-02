@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6B14 — Health Check Dispatcher — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6B14 Health Check Dispatcher</span></nav>
+<h3 id="0x6b14-health-check-dispatcher">0x6B14 — Health Check Dispatcher</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6B14</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>76 bytes</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>26</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (dispatcher)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>25</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Sequential dispatcher that unconditionally calls 25 diagnostic test subroutines via back-to-back JSR instructions. No conditional selection — all 25 tests run every invocation, with each test self-gating based on preconditions. The first callee (0x6B60) is a precondition gate that checks engine-running state, warmup progress (0x316B &gt;= 0x64), and sensor readiness before enabling remaining tests via 0x3031 bit 7.</p>
+<h4 id="dispatch-table">Dispatch Table</h4>
+<table>
+<thead>
+<tr>
+<th>Slot</th>
+<th>Target</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0x6B60</td>
+<td>Precondition gate / initializer</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0x6BC1</td>
+<td>Starter/battery voltage</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0x6C1A</td>
+<td>Coolant sensor pre-check</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0x6C2B</td>
+<td>Idle/load range</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0x6C76</td>
+<td>TPS/throttle sensor</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0x6CE4</td>
+<td>Intake air temp sensor</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0x6D15</td>
+<td>Knock sensor debounce</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0x6D8E</td>
+<td>ISC valve / idle speed</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0x6E5F</td>
+<td>Ignition signal</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0x6E7F</td>
+<td>Closed-throttle / idle</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0x6EFF</td>
+<td>Cranking/idle speed</td>
+</tr>
+<tr>
+<td>12</td>
+<td>0x6FC7</td>
+<td>Knock sensors (4ch)</td>
+</tr>
+<tr>
+<td>13</td>
+<td>0x71AA</td>
+<td>Turbo boost solenoid</td>
+</tr>
+<tr>
+<td>14</td>
+<td>0x7261</td>
+<td>Crank position sensors</td>
+</tr>
+<tr>
+<td>15</td>
+<td>0x7314</td>
+<td>Ignition signal detect</td>
+</tr>
+<tr>
+<td>16</td>
+<td>0x7212</td>
+<td>Coolant fan relay</td>
+</tr>
+<tr>
+<td>17–21</td>
+<td>0x7353–0x74C3</td>
+<td>Auxiliary sensor checks</td>
+</tr>
+<tr>
+<td>22</td>
+<td>0x751F</td>
+<td>Battery/charging</td>
+</tr>
+<tr>
+<td>23</td>
+<td>0x7588</td>
+<td>Fault code aggregation</td>
+</tr>
+<tr>
+<td>24</td>
+<td>0x7714</td>
+<td>Fault output stage</td>
+</tr>
+<tr>
+<td>25</td>
+<td>0x77E6</td>
+<td>MIL lamp driver</td>
+</tr>
+</tbody></table>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3051 bit 4: engine running (master gate)</li>
+<li>0x316B: warmup counter (&gt;= 0x64 required)</li>
+<li>0x306E: knock sensor (&gt;= 0x08 required)</li>
+<li>0x30B6: engine run timer (&gt;= 0x000A required)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3031 bit 7: health check initialized flag</li>
+<li>0x332E, 0x332F, 0x3330: diagnostic fault flags</li>
+<li>0x3510: diagnostic mode control</li>
+<li>Per-test fault counters in 0x317C–0x31FA range</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6851.html">0x6851 Periodic Diagnostics</a><a class="nav-next" href="0x6B60.html">0x6B60 Health Check Precondition Gate</a></nav>
+</body>
+</html>

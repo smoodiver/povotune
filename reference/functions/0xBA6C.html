@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xBA6C — RPM/AFM Rate-of-Change History — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xBA6C RPM/AFM Rate-of-Change History</span></nav>
+<h3 id="0xba6c-rpm-afm-rate-of-change-history">0xBA6C — RPM/AFM Rate-of-Change History</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xBA6C</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>55 bytes (0xBA6C–0xBAA2)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 at 0xAB62)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Maintains two 3-sample history buffers and computes rate-of-change deltas for RPM and AFM signals. The function is split into two halves:</p>
+<p><strong>RPM history</strong> (0xBA6C–0xBA8A): Uses a 3-entry FIFO at <code>$32D2</code>–<code>$32D7</code> (16-bit values). On each call, shifts entries: <code>[2] = [1]</code>, <code>[1] = [0]</code>, <code>[0] = $3064</code> (current full-precision RPM). Computes two deltas:</p>
+<ul>
+<li><code>$3268</code> = <code>$3064</code> - <code>$32D4</code> (current minus 1-sample-ago = first derivative)</li>
+<li><code>$326A</code> = <code>$3064</code> - <code>$32D6</code> (current minus 2-samples-ago = second derivative)</li>
+</ul>
+<p><strong>AFM history</strong> (0xBA8B–0xBAA2): Uses a 3-entry FIFO at <code>$32D8</code>–<code>$32DD</code> (8-bit values, indexed via Y register in SEM mode). On each call, shifts entries: <code>[2] = [1]</code>, <code>[1] = [0]</code>, <code>[0] = $3748</code> (AFM diagnostic processed). Computes:</p>
+<ul>
+<li><code>$32DD</code> = <code>$3748</code> - <code>$32DA</code> (current minus 1-sample-ago)</li>
+</ul>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$3064</code> (rpm_full_precision): current 16-bit RPM value</li>
+<li><code>$3748</code> (afm_diag_processed): current 8-bit AFM diagnostic value</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$32D2</code>–<code>$32D7</code>: RPM 3-entry history FIFO (16-bit each)</li>
+<li><code>$32D8</code>–<code>$32DD</code>: AFM 3-entry history FIFO (8-bit each)</li>
+<li><code>$3268</code>: RPM first derivative (signed, current - previous)</li>
+<li><code>$326A</code>: RPM second derivative (signed, current - 2-ago)</li>
+<li><code>$32DD</code>: AFM rate-of-change (signed, current - previous)</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB811.html">0xB811 O2 Feedback Correction Calculator</a><a class="nav-next" href="0xBAA3.html">0xBAA3 Fuel Enrichment Calculator</a></nav>
+</body>
+</html>

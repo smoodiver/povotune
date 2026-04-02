@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA2CE — Injection Period Scaling — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA2CE Injection Period Scaling</span></nav>
+<h3 id="0xa2ce-injection-period-scaling">0xA2CE — Injection Period Scaling</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA2CE</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>155 bytes (0xA2CE–0xA368)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>4 — 0x9F15 (ch1), 0xA018 (ch2), 0xA13B (ch3), 0xA27E (ch4)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Common injection helper called by all four injection timing calculators to convert a schedule index into a hardware timer period. Takes the schedule value in A, performs two multiply-and-scale passes using engine timing data and ROM constants, then applies timing compensation and clamping to produce the final injection timer period.</p>
+<h4 id="algorithm">Algorithm</h4>
+<ol>
+<li><p><strong>Input normalization</strong>: Clears M flag (16-bit mode), masks A to 8-bit, pushes schedule value to stack.</p>
+</li>
+<li><p><strong>First multiply pass</strong> (dwell offset calculation):</p>
+<ul>
+<li>Loads <code>$4016</code> (timer capture register / engine period reference).</li>
+<li>Selects timing multiplier based on <code>$31A1</code> bit 2: uses <code>$31AE</code> (timing_result_A) or <code>$31B2</code> (timing_result_B).</li>
+<li>Multiplies via <code>MPY</code> instruction, then calls <code>$A3C1</code> (shift right B:A by 4, i.e. divide by 16).</li>
+<li>Adds injection pulse width from <code>$3006</code>, stores 32-bit result to <code>$3004</code>/<code>$3002</code> (high/low).</li>
+</ul>
+</li>
+<li><p><strong>Second multiply pass</strong> (injection end-point calculation):</p>
+<ul>
+<li>Recovers schedule value from stack, doubles it (<code>ASL A</code>), adds ROM table base <code>$A368</code> to form index.</li>
+<li>Loads 16-bit ROM constant from table at <code>$A368</code> + (schedule * 2).</li>
+<li>Multiplies by same timing multiplier (<code>$31AE</code> or <code>$31B2</code> per <code>$31A1</code> bit 2).</li>
+<li>Calls <code>$A3C1</code> (divide by 16), stores result to <code>$3260</code>/<code>$3262</code>.</li>
+</ul>
+</li>
+<li><p><strong>Period calculation</strong>:</p>
+<ul>
+<li>Subtracts first-pass result (<code>$3002</code>/<code>$3004</code>) from second-pass result.</li>
+<li>If result is negative (borrow), clamps to minimum 0x14 (20).</li>
+</ul>
+</li>
+<li><p><strong>Timing compensation</strong> (positive result path):</p>
+<ul>
+<li>Sets SEM (8-bit mode), configures direct-page control registers <code>$FE</code>, <code>$B4</code> (timer sequencing flags).</li>
+<li>Reads direct-page <code>$A0</code> (current timer position), computes compensation offset: <code>($A0 &gt;&gt; 4) + 0x0C</code>.</li>
+<li>Subtracts compensation from period result.</li>
+<li>If high byte nonzero after subtraction, saturates to 0xFFFF.</li>
+<li>Clamps minimum to 0x14 (20 timer ticks).</li>
+</ul>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>A — schedule index (0–4, cylinder-dependent)</li>
+<li><code>$4016</code> — timer capture / engine period reference</li>
+<li><code>$31AE</code> — timing_result_A (multiplier for <code>$31A1</code> bit 2 set)</li>
+<li><code>$31B2</code> — timing_result_B (multiplier for <code>$31A1</code> bit 2 clear)</li>
+<li><code>$31A1</code> — engine running flags (bit 2 selects multiplier)</li>
+<li><code>$3006</code> — injection pulse width (from caller)</li>
+<li><code>$A0</code> — direct-page timer position (for compensation)</li>
+<li><code>$A368</code> — ROM scaling constant table base</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>A — computed timer period (16-bit, minimum 0x14)</li>
+<li><code>$3002</code> — intermediate dwell+pulse result (low word)</li>
+<li><code>$3004</code> — intermediate result (high byte)</li>
+<li><code>$3260</code> — injection endpoint high byte</li>
+<li><code>$3262</code> — injection endpoint low word</li>
+<li><code>$FE</code> — timer sequencing control</li>
+<li><code>$B4</code> — timer channel flags (bits 2, 4 toggled)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4016</td>
+<td>timer_capture</td>
+<td>Engine period reference</td>
+</tr>
+<tr>
+<td>0x31AE</td>
+<td>timing_result_A</td>
+<td>Timing multiplier (path A)</td>
+</tr>
+<tr>
+<td>0x31B2</td>
+<td>timing_result_B</td>
+<td>Timing multiplier (path B)</td>
+</tr>
+<tr>
+<td>0x31A1</td>
+<td>engine_running_flags</td>
+<td>Bit 2 selects multiplier</td>
+</tr>
+<tr>
+<td>0x3006</td>
+<td>scratch_workspace_2</td>
+<td>Injection pulse width from caller</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3002</td>
+<td>scratch_workspace_3</td>
+<td>Intermediate result low</td>
+</tr>
+<tr>
+<td>0x3004</td>
+<td>scratch_workspace</td>
+<td>Intermediate result high</td>
+</tr>
+<tr>
+<td>0x3260</td>
+<td>timing_norm_mask</td>
+<td>Reused as endpoint high byte</td>
+</tr>
+<tr>
+<td>0x3262</td>
+<td>inj_endpoint_low</td>
+<td>Injection endpoint low word</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xA368</td>
+<td>~20 bytes</td>
+<td>Injection period scaling constants (up to 10 entries x 2 bytes, indexed by schedule value)</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Context</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0xA3C1</td>
+<td>Shift Right B:A by 4 (Divide by 16)</td>
+<td>Normalizes multiply result (called twice)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA187.html">0xA187 Injection Timing Calculator (Channel 4)</a><a class="nav-next" href="0xA3CE.html">0xA3CE RPM Hysteresis Gate (Phase 2)</a></nav>
+</body>
+</html>

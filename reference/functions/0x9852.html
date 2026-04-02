@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x9852 — Knock Learning State Restore / Init — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x9852 Knock Learning State Restore / Init</span></nav>
+<h3 id="0x9852-knock-learning-state-restore-init">0x9852 — Knock Learning State Restore / Init</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x9852</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~79 bytes (0x9852–0x98A0)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (reset_handler 0x6431 at 0x66B4)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Restores or initializes knock sensor learning state during ECU reset, depending on whether the EEPROM learning system was previously initialized (0x3030 bit 6). This is a companion to sub_97CF and runs immediately after it.</p>
+<p><strong>Cold-start path (bit 6 clear — fresh EEPROM)</strong>: Zeroes the knock learned values table from 0x3630 to 0x366F (32 words / 64 bytes). Loads knock multiplier initial values from ROM (0x4D97 to 0x3503, 0x4D98 to 0x3502). Copies ignition zone control (0x3033) to ign_zone_status_mirror (0x3500), sets 0x3034 bit 3, then copies 0x3034 to ign_control_status_mirror (0x3501).</p>
+<p><strong>Warm-start path (bit 6 set — EEPROM valid)</strong>: Restores state from EEPROM-backed mirrors: copies 0x3500 through AND mask 0x48 back to 0x3033 and 0x3500 (preserving only bits 6 and 3), copies 0x3501 through AND 0x04 then OR 0x08 back to 0x3034 and 0x3501 (preserving bit 2, forcing bit 3).</p>
+<p><strong>Common tail (0x989C)</strong>: Sets 0x3036 bits 0 and 4 (ign_zone_flags = 0x11).</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3030 (throttle_state_flags): bit 6 — EEPROM initialized flag</li>
+<li>ROM 0x4D97: knock multiplier initial value 1</li>
+<li>ROM 0x4D98: knock multiplier initial value 2</li>
+<li>0x3033 (ign_zone_control): current ignition zone (cold-start)</li>
+<li>0x3500 (ign_zone_status_mirror): saved ignition zone (warm-start)</li>
+<li>0x3501 (ign_control_status_mirror): saved ignition control (warm-start)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3630–0x366F (knock_learned_values): zeroed on cold-start</li>
+<li>0x3503 (knock_multiplier): loaded from ROM 0x4D97 (cold-start)</li>
+<li>0x3502: loaded from ROM 0x4D98 (cold-start)</li>
+<li>0x3500 (ign_zone_status_mirror): initialized or restored</li>
+<li>0x3501 (ign_control_status_mirror): initialized or restored</li>
+<li>0x3033 (ign_zone_control): restored from mirror (warm-start)</li>
+<li>0x3034 (ign_control_flags): initialized or restored with bit 3 set</li>
+<li>0x3036 (ign_zone_flags): bits 0,4 set (0x11)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4D97: knock multiplier initial value 1 -&gt; 0x3503</li>
+<li>0x4D98: knock multiplier initial value 2 -&gt; 0x3502</li>
+</ul>
+<h4 id="assembly-listing">Assembly Listing</h4>
+<pre><code class="language-asm">; === Branch on EEPROM init state ===
+9852  3C 30 30 40 2D BBC $3030,#$40,$9884  ; bit 6 clear? -&gt; warm-start path
+
+; === Cold-start path: zero knock table, init from ROM ===
+9857  A0 00 00       LDY #$00
+985A  A2 30 36       LDX #$3630          ; knock table start
+985D  94 00          STY $00,X           ; zero cell
+985F  E8             INX
+9860  E8             INX
+9861  E0 70 36       CPX #$3670          ; knock table end
+9864  D0 F7          BNE $985D           ; loop
+9866  AD 97 4D       LDA $4D97           ; ROM knock multiplier 1
+9869  8D 03 35       STA $3503
+986C  AD 98 4D       LDA $4D98           ; ROM knock multiplier 2
+986F  8D 02 35       STA $3502
+9872  AD 33 30       LDA $3033           ; current ign_zone_control
+9875  8D 00 35       STA $3500           ; save to mirror
+9878  0C 34 30 08    SEB $3034,#$08      ; set ign_control_flags bit 3
+987C  AD 34 30       LDA $3034
+987F  8D 01 35       STA $3501           ; save to mirror
+9882  80 18          BRA $989C           ; -&gt; common tail
+
+; === Warm-start path: restore from mirrors ===
+9884  AD 00 35       LDA $3500           ; load ign_zone_status_mirror
+9887  29 48          AND #$48            ; keep bits 6,3 only
+9889  8D 33 30       STA $3033           ; restore ign_zone_control
+988C  8D 00 35       STA $3500           ; update mirror
+988F  AD 01 35       LDA $3501           ; load ign_control_status_mirror
+9892  29 04          AND #$04            ; keep bit 2 only
+9894  09 08          ORA #$08            ; force bit 3 set
+9896  8D 34 30       STA $3034           ; restore ign_control_flags
+9899  8D 01 35       STA $3501           ; update mirror
+
+; === Common tail ===
+989C  0C 36 30 11    SEB $3036,#$11      ; set ign_zone_flags bits 0,4
+98A0  60             RTS
+</code></pre>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x97CF.html">0x97CF Diagnostic State Restore / Init</a><a class="nav-next" href="0x9B99.html">0x9B99 Injection Output & Dwell Calculator</a></nav>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xB44B — Turbo Feedback Sensor Processor — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xB44B Turbo Feedback Sensor Processor</span></nav>
+<h3 id="0xb44b-turbo-feedback-sensor-processor">0xB44B — Turbo Feedback Sensor Processor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xB44B</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>384 bytes (0xB44B–0xB5CA)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P5 (0xAAD1 via 0xABB3)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>JSR 0x6E1D (sensor range check A), JSR 0x6E38 (turbo feedback sensor range check)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="cross-reference-heritage-warning">cross-reference Heritage Warning</h4>
+<p>This function is labeled &quot;Rear O2 Sensor Processor&quot; in the cross-reference SVX cross-reference. On the BD5A (EJ20H twin turbo), the ADC channel feeding this function (AN5, read by 0xB3A9) is connected to a <strong>turbo system feedback sensor</strong>, not a rear O2 sensor. The output (0x32AE) serves as the proportional controller feedback for the twin turbo duty controller (0xCC9F). The exact physical sensor identity (likely a pressure transducer related to the twin turbo exhaust routing) needs board-level pin trace verification. The sub-calls to 0x6E1D and 0x6E38 are generic sensor range validators that may have been repurposed from O2 checking on the SVX to turbo sensor checking on the BD5A.</p>
+<h4 id="summary">Summary</h4>
+<p>Turbo feedback sensor acquisition and processing. This large function has two major branches controlled by 0x35A4 bit 0: when set (secondary mode), it performs a quick output-port update and returns; when clear (normal mode), it runs the full sensor processing pipeline. The normal path increments sample counters, waits for a threshold number of samples, computes a nonlinear voltage conversion, accumulates a sensor voltage integrator, and — once sufficient samples are collected — produces an averaged reading that feeds the twin turbo duty controller&#39;s closed-loop proportional controller as feedback (0x32AE). It also manages the transition from open-loop to closed-loop feedback based on RPM and sensor readiness thresholds.</p>
+<h4 id="flow-short-path-0x35a4-bit-0-set">Flow — Short Path (0x35A4 bit 0 set)</h4>
+<ol>
+<li>Updates output port shadow: copies 0x35A4 bit 7 to 0x35A5 bit 2 (controls an external IO line).</li>
+<li>Writes 0x35A5 to IO port 0x2000 (atomic SEI/CLI bracketed).</li>
+<li>Computes <code>0x3360 &gt;&gt; 2</code> and stores to 0x376A (throttle position 8-bit mirror).</li>
+<li>Returns.</li>
+</ol>
+<h4 id="flow-normal-path-0x35a4-bit-0-clear">Flow — Normal Path (0x35A4 bit 0 clear)</h4>
+<ol>
+<li><p><strong>Counter management:</strong> If 0x3051 bit 2 is set, clears 0x31DF bit 2. Increments 0x32A6 (sample counter, saturating at 0xFF) and 0x32B7 (ISC activity counter, saturating at 0xFF, compared against 0x48C6 threshold).</p>
+</li>
+<li><p><strong>Early exit:</strong> If 0x32B7 &lt; 0x48C6 (10), returns — not enough samples yet.</p>
+</li>
+<li><p><strong>Branching on 0x31DF bit 3:</strong></p>
+<ul>
+<li><strong>Bit 3 set (closed-loop active):</strong> Performs nonlinear scaling of 0x3360 via <code>(0xA6AA * [0x3360]) &lt;&lt; 1 - 0x01D5</code>, clamped 0–0xFF. Stores to 0x32A2 (turbo feedback voltage scaled). Increments 0x32A3 (integration counter, saturating at 0xFF). Accumulates 0x32A2 into 16-bit integrator 0x32A4. When counter reaches ROM threshold (0x48CE=5 normal, 0x48CF=3 for advanced mode gated by 0x31DF bit 4), computes averaged turbo feedback reading <code>0x32A4 / 0x32A3</code>, updates 0x31FB/0x32C6 (turbo feedback reference/current values with intermittent fault tracking via 0x31EA bit 2). Calls JSR 0x6E1D (sensor range check). If 0x332E bit 4 is set (fault flag), overrides with 0xF0. Stores final turbo feedback value to 0x3279 (turbo speed threshold). Resets counters and clears output port bit, clears 0x31DF bit 3.</li>
+<li><strong>Bit 3 clear (open-loop):</strong> Falls through to averaging path at 0xB544.</li>
+</ul>
+</li>
+<li><p><strong>Averaging path (0xB544):</strong> Performs iterative averaging of 0x3362 (ISC scaled sample) with 0x32B8 using <code>count</code> iterations (ROM 0x48CD = 5): <code>avg = (avg + new) ROR</code> repeated. If 0x332E bit 4 set, clamps to 0x0550. Stores to 0x32B8 (sensor accumulator). Shifts right 3, clamps to 0xFF, stores to 0x32AE (turbo duty feedback), IO 0x01CC, and 0x3781.</p>
+</li>
+<li><p><strong>Open-to-closed-loop transition:</strong> Two-stage qualification gated by 0x31DF bit 2:</p>
+<ul>
+<li><strong>Stage 1 (bit 2 clear):</strong> Requires 0x306E &gt;= ROM 0x48C7 (0x0C = RPM threshold). Sets 0x31DF bit 2, clears bit 4.</li>
+<li><strong>Stage 2 (bit 2 set):</strong> Requires 0x306E &gt;= ROM 0x48C8 (0x28), 0x32B8 &gt;= ROM 0x48C9 (0x0C03), and 0x32A6 &gt;= ROM 0x48CB (0xAA44). When all met, sets 0x31DF bit 4 (advanced mode). Sets 0x35A5 bit 2, writes to IO 0x2000. Sets 0x31DF bit 3 (closed-loop active). Resets 0x32B7 and 0x32A6. Clears 0x3025 bit 7.</li>
+</ul>
+</li>
+<li><p><strong>Always:</strong> Calls JSR 0x6E38 (turbo feedback sensor range check) before returning.</p>
+</li>
+</ol>
+<h4 id="ram-variables">RAM Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x35A4</td>
+<td>output_port_shadow</td>
+<td>R</td>
+<td>Bit 0: mode select; bit 7: copied to 0x35A5 bit 2</td>
+</tr>
+<tr>
+<td>0x35A5</td>
+<td>output_port_shadow_2</td>
+<td>RW</td>
+<td>Bit 2: turbo feedback sensor enable line</td>
+</tr>
+<tr>
+<td>0x32A2</td>
+<td>turbo_fb_voltage_scaled</td>
+<td>W</td>
+<td>Nonlinear-scaled turbo feedback sensor voltage (8-bit)</td>
+</tr>
+<tr>
+<td>0x32A3</td>
+<td>turbo_fb_integration_counter</td>
+<td>RW</td>
+<td>Sample count for turbo feedback voltage averaging</td>
+</tr>
+<tr>
+<td>0x32A4</td>
+<td>turbo_fb_voltage_accumulator</td>
+<td>RW</td>
+<td>Running sum of turbo feedback voltage samples (16-bit)</td>
+</tr>
+<tr>
+<td>0x32A5</td>
+<td>turbo_fb_accumulator_prev</td>
+<td>R</td>
+<td>Previous accumulator value</td>
+</tr>
+<tr>
+<td>0x32A6</td>
+<td>turbo_fb_sample_counter</td>
+<td>RW</td>
+<td>Total sample counter (saturating 0xFF); qualifies closed-loop transition</td>
+</tr>
+<tr>
+<td>0x32B7</td>
+<td>isc_activity_counter</td>
+<td>RW</td>
+<td>Activity counter; must reach threshold for processing</td>
+</tr>
+<tr>
+<td>0x32B8</td>
+<td>sensor_scaling_input</td>
+<td>RW</td>
+<td>Running sensor average (16-bit)</td>
+</tr>
+<tr>
+<td>0x32AE</td>
+<td>turbo_duty_feedback</td>
+<td>W</td>
+<td>Final averaged sensor output (8-bit)</td>
+</tr>
+<tr>
+<td>0x31DF</td>
+<td>turbo_feedback_condition_flags</td>
+<td>RW</td>
+<td>Bit 2: stage 1 qualified; bit 3: closed-loop active; bit 4: advanced mode; bit 8: routing</td>
+</tr>
+<tr>
+<td>0x3279</td>
+<td>turbo_speed_threshold</td>
+<td>W</td>
+<td>Final turbo feedback value for turbo control</td>
+</tr>
+<tr>
+<td>0x31FB</td>
+<td>turbo_fb_reference</td>
+<td>W</td>
+<td>Turbo feedback reference value (first reading each cycle)</td>
+</tr>
+<tr>
+<td>0x32C6</td>
+<td>turbo_fb_current</td>
+<td>W</td>
+<td>Current turbo feedback reading</td>
+</tr>
+<tr>
+<td>0x31EA</td>
+<td>diag_intermittent_flags</td>
+<td>RW</td>
+<td>Bit 2: turbo feedback reading changed flag</td>
+</tr>
+<tr>
+<td>0x3025</td>
+<td>airflow_init_flags</td>
+<td>W</td>
+<td>Bit 7: cleared on closed-loop entry</td>
+</tr>
+<tr>
+<td>0x3051</td>
+<td>system_status</td>
+<td>R</td>
+<td>Bit 2: gates 0x31DF bit 2 clear</td>
+</tr>
+<tr>
+<td>0x306E</td>
+<td>knock_sensor_raw</td>
+<td>R</td>
+<td>RPM/engine speed indicator for threshold checks</td>
+</tr>
+<tr>
+<td>0x332E</td>
+<td>diag_fault_flags</td>
+<td>R</td>
+<td>Bit 4: sensor fault flag</td>
+</tr>
+<tr>
+<td>0x3062</td>
+<td>rpm_zone</td>
+<td>R</td>
+<td>RPM zone for averaging gate</td>
+</tr>
+<tr>
+<td>0x376A</td>
+<td>throttle_pos_8bit</td>
+<td>W</td>
+<td>Throttle position mirror (0x3360 &gt;&gt; 2)</td>
+</tr>
+<tr>
+<td>0x3781</td>
+<td>sensor_mirror_01CC</td>
+<td>W</td>
+<td>Mirror of 0x32AE</td>
+</tr>
+</tbody></table>
+<h4 id="rom-constants">ROM Constants</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x48C6</td>
+<td>0x0A</td>
+<td>Activity counter threshold</td>
+</tr>
+<tr>
+<td>0x48C7</td>
+<td>0x0C</td>
+<td>RPM threshold for stage 1 qualification</td>
+</tr>
+<tr>
+<td>0x48C8</td>
+<td>0x28</td>
+<td>RPM threshold for stage 2 qualification</td>
+</tr>
+<tr>
+<td>0x48C9</td>
+<td>0x0C03</td>
+<td>Sensor accumulator threshold for stage 2</td>
+</tr>
+<tr>
+<td>0x48CB</td>
+<td>0xAA44</td>
+<td>Sample counter threshold for stage 2</td>
+</tr>
+<tr>
+<td>0x48CD</td>
+<td>0x05</td>
+<td>Iteration count for averaging loop</td>
+</tr>
+<tr>
+<td>0x48CE</td>
+<td>0x05</td>
+<td>Turbo feedback integration threshold (normal mode)</td>
+</tr>
+<tr>
+<td>0x48CF</td>
+<td>0x03</td>
+<td>Turbo feedback integration threshold (advanced mode)</td>
+</tr>
+<tr>
+<td>0xA6AA (imm)</td>
+<td>42666</td>
+<td>Nonlinear scaling multiplier for turbo feedback voltage</td>
+</tr>
+<tr>
+<td>0x01D5 (imm)</td>
+<td>469</td>
+<td>Scaling offset (subtracted after multiply)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xB3A9.html">0xB3A9 ISC Valve Position Sampler</a><a class="nav-next" href="0xB5CB.html">0xB5CB Acceleration Enrichment Calculator</a></nav>
+</body>
+</html>

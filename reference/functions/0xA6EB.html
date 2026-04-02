@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xA6EB — RPM Range Classifier (Limiter Flags) — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xA6EB RPM Range Classifier (Limiter Flags)</span></nav>
+<h3 id="0xa6eb-rpm-range-classifier-limiter-flags">0xA6EB — RPM Range Classifier (Limiter Flags)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xA6EB</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>90 bytes (0xA6EB–0xA744)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — Timer A ISR Phase 2 (0x98A1 at 0x9A9E)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Classifies the combined timing value (<code>$31AA:$31AC</code>) against ROM thresholds to set limiter control flags in <code>$314E</code>. Also reads speed limit flags (<code>$31E0</code>) as a secondary input. The function produces a 4-bit flag pattern in <code>$314E</code> that controls the fuel cut / rev limiter system.</p>
+<p>The classification has three RPM ranges:</p>
+<ol>
+<li><strong>Very low RPM / overflow</strong> (<code>$31AC</code> nonzero): Clears bits 0+1, then checks speed flags for secondary classification.</li>
+<li><strong>Below low threshold</strong> (<code>$31AA</code> &lt;= <code>$441C</code>): Sets bits 0+1 (both limiter zones active).</li>
+<li><strong>Between thresholds</strong> (<code>$441C</code> &lt; <code>$31AA</code> &lt;= <code>$4418</code>): Sets bit 0 only, clears bit 1.</li>
+</ol>
+<p>For the secondary flags (bits 6 and 7):</p>
+<ul>
+<li>Speed limit bit 1 set -&gt; bit 6 set, bit 7 clear (partial limit)</li>
+<li>Speed limit bit 2 set -&gt; bit 6 clear, bit 7 set (full limit)</li>
+<li>Neither -&gt; bits 6 and 7 both cleared (no limit)</li>
+</ul>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>A6EB  LDA $31AC           ; load combined_timing_high
+A6EE  BNE $A71C           ; if nonzero (overflow), -&gt; low RPM path
+A6F0  CLM                 ; 16-bit mode
+A6F1  LDA $31AA           ; load combined_timing_low
+A6F4  CMP $4418           ; compare against upper threshold
+A6F7  BEQ $A6FB
+A6F9  BCS $A71C           ; if timing &gt; upper threshold, -&gt; low RPM
+A6FB  CMP $441C           ; compare against lower threshold
+A6FE  BEQ $A702
+A700  BCS $A70F           ; if timing &gt; lower threshold, -&gt; mid range
+; --- very low timing (high RPM) ---
+A702  SEB $314E,#$01      ; set limiter bit 0
+A707  SEB $314E,#$02      ; set limiter bit 1
+A70C  SEM                 ; back to 8-bit
+A70D  BRA $A73B           ; -&gt; set bit 7
+; --- mid range ---
+A70F  SEB $314E,#$01      ; set limiter bit 0
+A714  CLB $314E,#$02      ; clear limiter bit 1
+A719  SEM
+A71A  BRA $A731           ; -&gt; set bit 6
+; --- low RPM / overflow ---
+A71C  SEM
+A71D  CLB $314E,#$03      ; clear bits 0+1
+A721  BBS $31E0,#$02,$A73B ; if speed limit bit 1 set, -&gt; full limit
+A726  BBS $31E0,#$01,$A731 ; if speed limit bit 0 set, -&gt; partial limit
+A72B  CLB $314E,#$C0      ; clear bits 6+7 (no limit)
+A72F  BRA $A743           ; -&gt; return
+; --- secondary limit flags ---
+A731  SEB $314E,#$40      ; set bit 6 (partial limit)
+A735  CLB $314E,#$80      ; clear bit 7
+A739  BRA $A743
+A73B  CLB $314E,#$40      ; clear bit 6
+A73F  SEB $314E,#$80      ; set bit 7 (full limit)
+A743  SEM
+A744  RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><code>$31AA</code> (combined_timing_low) — 16-bit combined timing sum low word</li>
+<li><code>$31AC</code> (combined_timing_high) — timing sum high word (nonzero = overflow)</li>
+<li><code>$31E0</code> (speed_limit_flags) — bits 0+1: speed-based limit inputs</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><code>$314E</code> (limiter_flags) — bits 0,1,6,7 set/cleared based on RPM range and speed</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31AA</td>
+<td>combined_timing_low</td>
+<td>Three-channel timing sum, low word</td>
+</tr>
+<tr>
+<td>0x31AC</td>
+<td>combined_timing_high</td>
+<td>Three-channel timing sum, high word</td>
+</tr>
+<tr>
+<td>0x31E0</td>
+<td>speed_limit_flags</td>
+<td>Speed-based limit inputs</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x314E</td>
+<td>limiter_flags</td>
+<td>RPM zone and speed limit flags</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Size</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4418</td>
+<td>2 bytes</td>
+<td>Upper timing threshold (lower RPM boundary)</td>
+</tr>
+<tr>
+<td>0x441C</td>
+<td>2 bytes</td>
+<td>Lower timing threshold (higher RPM boundary)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xA683.html">0xA683 Knock Control Dispatcher (Phase 0)</a><a class="nav-next" href="0xA745.html">0xA745 Timing Correction Decay</a></nav>
+</body>
+</html>

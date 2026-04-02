@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xCB52 — Three-Map Selection — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xCB52 Three-Map Selection</span></nav>
+<h3 id="0xcb52-three-map-selection">0xCB52 — Three-Map Selection</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xCB52</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>79 bytes</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Selects one of three 16×16 maps (0x5200, 0x5300, or 0x5400) based on knock_multiplier (0x3503) and map_control_register (0x3291) bit 3, then performs a bilinear interpolation using RPM and engine_load through the selected map. Stores the scaled result to 0x3184.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3503 (knock_multiplier): selects map tier (above/below threshold 0x4045)</li>
+<li>0x3291 (map_control_register): bit 3 selects between maps 1 and 2</li>
+<li>0x3062 (rpm): RPM axis input</li>
+<li>0x313C (engine_load): load axis input</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3184 (three_map_result): scaled interpolation result</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x6080 — graph_lookup_3d: bilinear interpolation</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<ul>
+<li>0x3503 (knock_multiplier)</li>
+<li>0x3291 (map_control_register)</li>
+<li>0x3062 (rpm)</li>
+<li>0x313C (engine_load)</li>
+</ul>
+<h4 id="ram-writes">RAM Writes</h4>
+<ul>
+<li>0x3072 (map_table_ptr)</li>
+<li>0x3074 (rpm_axis_ptr)</li>
+<li>0x3076 (load_axis_ptr)</li>
+<li>0x307A (rpm_lookup_value)</li>
+<li>0x3078 (load_lookup_value)</li>
+<li>0x300C (tracker_lower_bound): scratch</li>
+<li>0x3184 (three_map_result)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<ul>
+<li>0x4045 (three_map_threshold): selection threshold</li>
+<li>0x5200 (three_map_1): selected when knock_multiplier &gt;= threshold, bit 3 clear</li>
+<li>0x5300 (three_map_2): selected when knock_multiplier &gt;= threshold, bit 3 set</li>
+<li>0x5400 (three_map_3): selected when knock_multiplier &lt; threshold</li>
+<li>0x4100 (rpm_axis_primary): shared RPM axis</li>
+<li>0x4110 (engine_load_axis_primary): shared load axis</li>
+</ul>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xCB1A.html">0xCB1A Three-Map Ramp Integrator</a><a class="nav-next" href="0xCBA1.html">0xCBA1 Vehicle Speed Processor</a></nav>
+</body>
+</html>

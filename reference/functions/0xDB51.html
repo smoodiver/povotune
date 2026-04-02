@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xDB51 — Ignition Timing Recovery Gate — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xDB51 Ignition Timing Recovery Gate</span></nav>
+<h3 id="0xdb51-ignition-timing-recovery-gate">0xDB51 — Ignition Timing Recovery Gate</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xDB51</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>106 bytes (0xDB51–0xDBBA)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>16</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler ISR at 0xAAB5</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Controls the slow ignition timing recovery flag (<code>$3276</code> bit 7) based on a multi-condition qualification window. When all operating conditions are within range and the learned correction counter <code>$3300</code> is below a threshold, enables slow timing advance recovery. Otherwise disables the recovery path and clears the ramp counter.</p>
+<p>The qualification window checks (all must pass to reach the enable path):</p>
+<ol>
+<li><code>$305C</code> bit 5 must be set (engine running in normal mode)</li>
+<li><code>$3092</code> (coolant temperature) &gt;= ROM <code>$4470</code> (minimum coolant for recovery)</li>
+<li><code>$306F</code> (airflow load) within ROM range <code>$4473</code>–<code>$4474</code></li>
+<li><code>$3071</code> (vehicle speed) within ROM range <code>$4471</code>–<code>$4472</code></li>
+<li><code>$305A</code> bit 0 must be clear (no stall condition)</li>
+<li><code>$3044</code> (throttle position) &lt; ROM <code>$4475</code> (maximum throttle for recovery)</li>
+<li>ROM <code>$4477</code> &gt;= <code>$3301</code> (learned correction 2 within limit)</li>
+</ol>
+<p>When all conditions pass and ROM <code>$4477</code> &gt;= <code>$3301</code>:</p>
+<ul>
+<li>Loads ROM <code>$4476</code> into <code>$309A</code> (overwrites dwell/cranking value with recovery timing base)</li>
+<li>Clears ramp counter <code>$3132</code> to 0</li>
+</ul>
+<p>After condition checking, compares <code>$3300</code> (learned correction 1) against ROM <code>$4478</code>:</p>
+<ul>
+<li>If <code>$3300</code> &lt; <code>$4478</code>: sets <code>$3276</code> bit 7 (slow recovery active)</li>
+<li>Otherwise: clears <code>$3276</code> bit 7 and clears ramp counter <code>$3132</code></li>
+</ul>
+<p>Finally, calls saturating increment on <code>$3301</code> (learned correction 2 accumulator).</p>
+<h4 id="inputs">Inputs</h4>
+<p>None (reads RAM state directly).</p>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$305C</td>
+<td>mode_select_flags</td>
+<td>Bit 5: engine running qualification</td>
+</tr>
+<tr>
+<td>$3092</td>
+<td>coolant_temp_raw</td>
+<td>Must exceed minimum for recovery</td>
+</tr>
+<tr>
+<td>$306F</td>
+<td>airflow_load</td>
+<td>Must be in recovery window</td>
+</tr>
+<tr>
+<td>$3071</td>
+<td>vehicle_speed</td>
+<td>Must be in recovery window</td>
+</tr>
+<tr>
+<td>$305A</td>
+<td>system_control_flags</td>
+<td>Bit 0: stall condition inhibits recovery</td>
+</tr>
+<tr>
+<td>$3044</td>
+<td>throttle_position</td>
+<td>Must be below maximum</td>
+</tr>
+<tr>
+<td>$3300</td>
+<td>learned_correction_1</td>
+<td>Compared against slow ramp threshold</td>
+</tr>
+<tr>
+<td>$3301</td>
+<td>learned_correction_2</td>
+<td>Compared against recovery limit</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$3276 bit 7</td>
+<td>turbo_knock_flags</td>
+<td>Set = slow timing recovery active; cleared = recovery off</td>
+</tr>
+<tr>
+<td>$309A</td>
+<td>dwell_cranking</td>
+<td>Overwritten with recovery timing base from ROM $4476</td>
+</tr>
+<tr>
+<td>$3132</td>
+<td>slow_ramp_counter</td>
+<td>Cleared to 0 when entering/exiting recovery mode</td>
+</tr>
+<tr>
+<td>$3301</td>
+<td>learned_correction_2</td>
+<td>Incremented via saturating increment (JSR $633D)</td>
+</tr>
+</tbody></table>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x633D — saturating_increment: increments learned_correction_2 ($3301)</li>
+</ul>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$4470</td>
+<td>recovery_min_coolant</td>
+<td>Minimum coolant temperature for recovery</td>
+</tr>
+<tr>
+<td>$4471</td>
+<td>recovery_min_speed</td>
+<td>Minimum vehicle speed for recovery window</td>
+</tr>
+<tr>
+<td>$4472</td>
+<td>recovery_max_speed</td>
+<td>Maximum vehicle speed for recovery window</td>
+</tr>
+<tr>
+<td>$4473</td>
+<td>recovery_min_airflow</td>
+<td>Minimum airflow for recovery window</td>
+</tr>
+<tr>
+<td>$4474</td>
+<td>recovery_max_airflow</td>
+<td>Maximum airflow for recovery window</td>
+</tr>
+<tr>
+<td>$4475</td>
+<td>recovery_max_throttle</td>
+<td>Maximum throttle for recovery</td>
+</tr>
+<tr>
+<td>$4476</td>
+<td>recovery_timing_base</td>
+<td>Base timing value loaded to $309A on recovery entry</td>
+</tr>
+<tr>
+<td>$4477</td>
+<td>recovery_learned_limit</td>
+<td>Maximum learned correction for recovery entry</td>
+</tr>
+<tr>
+<td>$4478</td>
+<td>slow_ramp_enable_threshold</td>
+<td>Threshold for $3300 to enable slow ramp mode</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xDAEE.html">0xDAEE Knock Feedback Delta Monitor</a><a class="nav-next" href="0xDBBB.html">0xDBBB Idle Dashpot Controller</a></nav>
+</body>
+</html>

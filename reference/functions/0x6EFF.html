@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6EFF — Cranking/Idle Speed Sensor Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6EFF Cranking/Idle Speed Sensor Check</span></nav>
+<h3 id="0x6eff-cranking-idle-speed-sensor-check">0x6EFF — Cranking/Idle Speed Sensor Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6EFF</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>200 bytes (0x6EFF–0x6FC6)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>37</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (health check callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (health_check_dispatcher 0x6B14, slot 11)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>0x633D (saturating_increment) — walker reports 0 callees; JSR 0x633D called at 0x6F32, 0x6F5A</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Two-phase cranking/idle speed sensor check that validates the neutral/park position switch and idle contact signals against RPM. The first phase (0x6EFF–0x6F78) checks switch consistency at two RPM ranges: low RPM (4–20, cranking/idle) and high RPM (&gt;=40, running). Each range has its own debounce counter and fault bit. The second phase (0x6F79–0x6FC6) handles diagnostic mode confirmation and cross-checks both port directions to detect intermittent faults, with a &quot;both-sides-seen&quot; latch pattern using 0x32B1.</p>
+<h4 id="phase-1-rpm-based-switch-check-0x6eff-0x6f78">Phase 1: RPM-Based Switch Check (0x6EFF–0x6F78)</h4>
+<ol>
+<li><strong>Precondition gates</strong> (0x6EFF–0x6F0C): Exit if 0x3330 bit 0 set (prior fault) or 0x332F bit 6 set (ignition fault)</li>
+<li><strong>Engine running</strong> (0x6F0D): BBC 0x3051 bit 2 — engine must be running</li>
+<li><strong>RPM load</strong> (0x6F12): LDX 0x3062 — load 16-bit RPM value</li>
+<li><strong>RPM range routing</strong>:<ul>
+<li>RPM &lt; 4: exit (too low, no valid data)</li>
+<li>RPM 4–20 (0x6F21): <strong>Low-RPM path</strong> (cranking/idle)<ul>
+<li>Clear high-RPM counter 0x3189</li>
+<li>Check vehicle speed 0x3071 == 0 (must be stationary)</li>
+<li>Check port 0x2000 bit 2 (idle switch): if set, clear counter and fault</li>
+<li>If idle switch NOT set: increment counter 0x3188, threshold 0x27 (39 counts)</li>
+<li>On trip: SEB 0x3032 bit 4 (low-speed idle fault)</li>
+</ul>
+</li>
+<li>RPM &gt;= 20 (0x6F49): <strong>High-RPM path</strong> (running)<ul>
+<li>Clear low-RPM counter 0x3188</li>
+<li>RPM must be &gt;= 40 (0x28) for test to proceed</li>
+<li>Check port 0x2000 bit 2 (idle switch): if NOT set, clear counter and fault</li>
+<li>If idle switch set at high RPM: increment counter 0x3189, threshold 0x62 (98 counts)</li>
+<li>On trip: SEB 0x3032 bit 5 (high-speed idle fault)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="phase-2-diagnostic-confirmation-0x6f79-0x6fc6">Phase 2: Diagnostic Confirmation (0x6F79–0x6FC6)</h4>
+<ol>
+<li><strong>Normal mode</strong> (0x3510 == 0): Check 0x3032 bits 4+5 — if either fault set, promote to 0x3330 bit 1</li>
+<li><strong>Diagnostic mode</strong> (0x3510 != 0):<ul>
+<li>Check 0x32B1 bit 5 (already in fault tracking) or 0x31CF bit 7 (pending fault from other test)</li>
+<li>Cross-check pattern using 0x32B1 bits 5/6/7:<ul>
+<li>Port 0x2000 bit 2 = 0 → set 0x32B1 bit 6 (&quot;off seen&quot;)</li>
+<li>Port 0x2000 bit 2 = 1 → set 0x32B1 bit 7 (&quot;on seen&quot;)</li>
+<li>Both bits 6+7 set → SEB 0x31EA bit 7 (cross-check passed — intermittent fault confirmed)</li>
+</ul>
+</li>
+<li>If cross-check not complete: check timer 0x318C &gt;= 0x030D before promoting to 0x3330 bit 1</li>
+</ul>
+</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x3330 bit 0: prior VSS fault (inhibits test)</li>
+<li>0x332F bit 6: prior ignition fault (inhibits test)</li>
+<li>0x3051 bit 2: engine running</li>
+<li>0x3062: RPM (16-bit)</li>
+<li>0x3071: vehicle speed (must be 0 for low-RPM path)</li>
+<li>0x2000 bit 2: idle/closed-throttle switch (I/O port)</li>
+<li>0x3510: diagnostic mode control</li>
+<li>0x31CF bit 7: pending fault from other test</li>
+<li>0x318C: diagnostic elapsed timer (16-bit)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x3032 bit 4: low-RPM idle switch fault</li>
+<li>0x3032 bit 5: high-RPM idle switch fault</li>
+<li>0x3188: low-RPM fault debounce counter (8-bit)</li>
+<li>0x3189: high-RPM fault debounce counter (8-bit)</li>
+<li>0x32B1 bits 5/6/7: diagnostic cross-check latch (both-sides-seen pattern)</li>
+<li>0x31EA bit 7: intermittent fault confirmed</li>
+<li>0x3330 bit 1: confirmed neutral/park switch fault</li>
+</ul>
+<h4 id="ram-references">RAM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>R/W</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x3062</td>
+<td>rpm</td>
+<td>R</td>
+<td>RPM range routing</td>
+</tr>
+<tr>
+<td>0x3071</td>
+<td>vehicle_speed</td>
+<td>R</td>
+<td>Must be 0 for low-RPM test</td>
+</tr>
+<tr>
+<td>0x3188</td>
+<td>idle_low_rpm_counter</td>
+<td>R/W</td>
+<td>Low-RPM debounce (threshold 0x27)</td>
+</tr>
+<tr>
+<td>0x3189</td>
+<td>idle_high_rpm_counter</td>
+<td>R/W</td>
+<td>High-RPM debounce (threshold 0x62)</td>
+</tr>
+<tr>
+<td>0x3032</td>
+<td>idle_switch_faults</td>
+<td>R/W</td>
+<td>Bit 4: low-RPM fault, bit 5: high-RPM fault</td>
+</tr>
+<tr>
+<td>0x32B1</td>
+<td>diag_crosscheck_latch</td>
+<td>R/W</td>
+<td>Bits 5/6/7: both-sides-seen pattern</td>
+</tr>
+<tr>
+<td>0x31EA</td>
+<td>diag_intermittent_flags</td>
+<td>W</td>
+<td>Bit 7: intermittent fault confirmed</td>
+</tr>
+<tr>
+<td>0x31CF</td>
+<td>diag_pending_faults</td>
+<td>R</td>
+<td>Bit 7: pending fault gate</td>
+</tr>
+<tr>
+<td>0x3330</td>
+<td>diag_fault_flags_B</td>
+<td>R/W</td>
+<td>Bit 1: confirmed neutral/park switch fault</td>
+</tr>
+<tr>
+<td>0x3510</td>
+<td>control_reg_3510</td>
+<td>R</td>
+<td>Diagnostic mode flag</td>
+</tr>
+<tr>
+<td>0x318C</td>
+<td>diag_elapsed_timer</td>
+<td>R</td>
+<td>Timer gate (&gt;= 0x030D)</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6E7F.html">0x6E7F Closed-Throttle Position Switch Check</a><a class="nav-next" href="0x6FC7.html">0x6FC7 Knock Sensor 4-Channel Health Check</a></nav>
+</body>
+</html>

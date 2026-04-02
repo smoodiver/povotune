@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0xAFF5 — Throttle Rate-of-Change Processor — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0xAFF5 Throttle Rate-of-Change Processor</span></nav>
+<h3 id="0xaff5-throttle-rate-of-change-processor">0xAFF5 — Throttle Rate-of-Change Processor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0xAFF5</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>361 bytes (0xAFF5–0xB15D)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>41</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine (ISR callee)</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 — scheduler P4 (0xAAD1 at 0xAB4D)</td>
+</tr>
+<tr>
+<td>Callees</td>
+<td>2 — adc_dual_capture (0xAF02), graph_lookup_2d (0x6000)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Processes throttle position rate-of-change data to compute a fuel correction factor. Called from scheduler priority 4 (1/20 ticks). First calls adc_dual_capture (0xAF02) to acquire fresh ADC readings, then classifies the throttle rate into one of 6 severity bands using a cascade of ROM threshold comparisons. The band index selects a fuel enrichment multiplier from a ROM table, which is then combined with coolant temperature compensation and an RPM-based scaling factor to produce a 16-bit fuel correction value stored at 0x30CA. Also handles a deceleration path that computes an alternative correction using a separate ROM table lookup. A delta-based safety check at the end can zero out the correction if the throttle position change between successive samples exceeds a ROM threshold.</p>
+<h4 id="algorithm-detail">Algorithm Detail</h4>
+<ol>
+<li><strong>ADC Capture</strong>: Calls 0xAF02 (adc_dual_capture) to read fresh throttle position</li>
+<li><strong>Stall check</strong>: If $305A bit 4 is set, clears $314F and zeros $3094, jumps to exit</li>
+<li><strong>Rate classification (acceleration path)</strong>:<ul>
+<li>Computes index into circular throttle history buffer at $3044+offset (offset from ROM $4070)</li>
+<li>Subtracts historical throttle value from current $3044</li>
+<li>If delta is positive and exceeds threshold $4075:<ul>
+<li>Classifies delta against ROM thresholds $4072/$4073/$4074 (ascending) to produce band B = 0..3</li>
+</ul>
+</li>
+<li>If delta is negative or below $4075: switches to deceleration path</li>
+</ul>
+</li>
+<li><strong>Rate classification (deceleration path)</strong>:<ul>
+<li>Uses offset from ROM $4071 and threshold $4076/$4077</li>
+<li>Produces band B = 4 or 5</li>
+</ul>
+</li>
+<li><strong>Band processing</strong>:<ul>
+<li>Clamps combined band to 0..5, stores to $3749 (diagnostic mirror) and IO $0128</li>
+<li>If band &lt;= ROM $4D70: loads $4D71 into $31CC (A/F ratio mode control)</li>
+<li>Adds $30C7 (temp_zone_index) to band, uses as index into ROM table at $4220</li>
+<li>Loads enrichment factor from table into $3009</li>
+</ul>
+</li>
+<li><strong>Fuel correction computation</strong>:<ul>
+<li>Reads $3008 (16-bit), shifts right 1 (divide by 2)</li>
+<li>Multiplies by $3181 using MPY hardware multiply</li>
+<li>Stores high byte result back to $3008</li>
+<li>Looks up coolant correction from ROM table $4380 using $306F via 1D interpolation (JSR $6000)</li>
+<li>Stores correction to $300B</li>
+<li>Multiplies $300A by $3008, extracts upper bits</li>
+<li>Saturates to 0xFFFF if overflow, otherwise shifts left 2 to produce 16-bit correction</li>
+</ul>
+</li>
+<li><strong>Deceleration alternative</strong>: If on decel path, computes from $313C via ROM table $4350 (JSR $6000), stores $3182, forces band=6 in diagnostic mirrors, zeros the 16-bit correction</li>
+<li><strong>Table selection</strong>: Selects between ROM tables $4270 and $4260 based on $305C bit 4, indexes by $30C7/4 to get $30CC</li>
+<li><strong>Delta safety check</strong>: Computes |$3044 - $3046|; if exceeds ROM $4029, zeros $3094 and skips update</li>
+<li><strong>Output clamping</strong>: If $3023 bit 1 is set, skips the max-update. Otherwise updates $3094 only if new value &gt;= old</li>
+</ol>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li><strong>dp+$20/$22</strong> — ADC control/result registers (passed to adc_dual_capture)</li>
+<li><strong>$305A</strong> — system flags (bit 4: stall/cranking state)</li>
+<li><strong>$3044</strong> — current throttle position (16-bit)</li>
+<li><strong>$3046</strong> — previous throttle position</li>
+<li><strong>$30C7</strong> — temperature zone index</li>
+<li><strong>$306F</strong> — coolant temperature derivative</li>
+<li><strong>$3181</strong> — RPM-based scaling factor (16-bit)</li>
+<li><strong>$313C</strong> — deceleration input value</li>
+<li><strong>$3023</strong> — control flags (bit 1: skip max-update gate)</li>
+<li><strong>$305C</strong> — mode flags (bit 4: table selection)</li>
+<li><strong>$314F</strong> — stall persistence counter</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li><strong>$30CA</strong> — 16-bit fuel correction value (acceleration enrichment / deceleration enleanment)</li>
+<li><strong>$30CC</strong> — temperature-compensated enrichment base</li>
+<li><strong>$3094</strong> — clamped correction output (max of successive values unless zeroed)</li>
+<li><strong>$3095</strong> — mirrored to IO $012C at exit</li>
+<li><strong>$3009</strong> — enrichment factor from ROM table $4220</li>
+<li><strong>$300B</strong> — coolant correction factor</li>
+<li><strong>$3182</strong> — deceleration correction (from $4350 table)</li>
+<li><strong>$3749</strong> — diagnostic mirror of rate band (0–6)</li>
+<li><strong>$31CC</strong> — A/F ratio mode flag (set when band &lt;= $4D70 threshold)</li>
+<li><strong>$314F</strong> — cleared on stall detect</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x305A</td>
+<td>system_flags</td>
+<td>Bit 4: stall/cranking detection gate</td>
+</tr>
+<tr>
+<td>0x3044</td>
+<td>throttle_position</td>
+<td>Current throttle position</td>
+</tr>
+<tr>
+<td>0x3046</td>
+<td>throttle_position_prev</td>
+<td>Previous throttle position for delta check</td>
+</tr>
+<tr>
+<td>0x30C7</td>
+<td>temp_zone_index</td>
+<td>Temperature zone for table indexing</td>
+</tr>
+<tr>
+<td>0x306F</td>
+<td>coolant_temp_deriv</td>
+<td>Coolant temperature input for 1D interp</td>
+</tr>
+<tr>
+<td>0x3181</td>
+<td>rpm_scale_factor</td>
+<td>RPM-based multiplier</td>
+</tr>
+<tr>
+<td>0x313C</td>
+<td>decel_input</td>
+<td>Deceleration path input for table lookup</td>
+</tr>
+<tr>
+<td>0x3023</td>
+<td>control_flags</td>
+<td>Bit 1: skip max-update</td>
+</tr>
+<tr>
+<td>0x305C</td>
+<td>mode_flags</td>
+<td>Bit 4: selects $4260 vs $4270 table</td>
+</tr>
+<tr>
+<td>0x3008</td>
+<td>scratch_16</td>
+<td>Workspace for intermediate calculation</td>
+</tr>
+<tr>
+<td>0x300A</td>
+<td>scratch_high</td>
+<td>High byte workspace</td>
+</tr>
+<tr>
+<td>0x3095</td>
+<td>correction_mirror</td>
+<td>Copied to IO $012C on exit</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x30CA</td>
+<td>fuel_correction</td>
+<td>16-bit throttle rate fuel correction</td>
+</tr>
+<tr>
+<td>0x30CC</td>
+<td>enrichment_base</td>
+<td>Temperature-compensated enrichment base value</td>
+</tr>
+<tr>
+<td>0x3094</td>
+<td>correction_output</td>
+<td>Clamped correction (max of successive, or zeroed on safety trip)</td>
+</tr>
+<tr>
+<td>0x3009</td>
+<td>enrich_factor</td>
+<td>ROM table $4220 enrichment factor</td>
+</tr>
+<tr>
+<td>0x300B</td>
+<td>coolant_correction</td>
+<td>Coolant correction from $4380 table</td>
+</tr>
+<tr>
+<td>0x3182</td>
+<td>decel_correction</td>
+<td>Deceleration correction value</td>
+</tr>
+<tr>
+<td>0x3749</td>
+<td>rate_band_mirror</td>
+<td>Diagnostic mirror of rate band (0–6)</td>
+</tr>
+<tr>
+<td>0x314F</td>
+<td>stall_counter</td>
+<td>Cleared on stall detect</td>
+</tr>
+<tr>
+<td>0x31CC</td>
+<td>af_mode_flag</td>
+<td>A/F ratio mode control</td>
+</tr>
+<tr>
+<td>0x3008</td>
+<td>scratch_16</td>
+<td>Workspace</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x4025</td>
+<td>throttle_rate_min</td>
+<td>Minimum throttle rate for stall path comparison</td>
+</tr>
+<tr>
+<td>0x4029</td>
+<td>throttle_delta_max</td>
+<td>Maximum allowed throttle delta between samples</td>
+</tr>
+<tr>
+<td>0x4070</td>
+<td>accel_history_offset</td>
+<td>Offset into throttle history buffer (acceleration)</td>
+</tr>
+<tr>
+<td>0x4071</td>
+<td>decel_history_offset</td>
+<td>Offset into throttle history buffer (deceleration)</td>
+</tr>
+<tr>
+<td>0x4072</td>
+<td>accel_band_threshold_1</td>
+<td>Acceleration band boundary 1</td>
+</tr>
+<tr>
+<td>0x4073</td>
+<td>accel_band_threshold_2</td>
+<td>Acceleration band boundary 2</td>
+</tr>
+<tr>
+<td>0x4074</td>
+<td>accel_band_threshold_3</td>
+<td>Acceleration band boundary 3</td>
+</tr>
+<tr>
+<td>0x4075</td>
+<td>accel_rate_minimum</td>
+<td>Minimum acceleration rate to enter enrichment</td>
+</tr>
+<tr>
+<td>0x4076</td>
+<td>decel_band_threshold</td>
+<td>Deceleration band boundary</td>
+</tr>
+<tr>
+<td>0x4077</td>
+<td>decel_rate_minimum</td>
+<td>Minimum deceleration rate to enter enleanment</td>
+</tr>
+<tr>
+<td>0x4220</td>
+<td>enrichment_table</td>
+<td>Enrichment factor table (indexed by band + temp_zone)</td>
+</tr>
+<tr>
+<td>0x4260</td>
+<td>enrichment_base_alt</td>
+<td>Alternative enrichment base table (when $305C bit 4 set)</td>
+</tr>
+<tr>
+<td>0x4270</td>
+<td>enrichment_base_table</td>
+<td>Primary enrichment base table (indexed by $30C7/4)</td>
+</tr>
+<tr>
+<td>0x4350</td>
+<td>decel_correction_table</td>
+<td>8-entry table for deceleration correction (via JSR $6000)</td>
+</tr>
+<tr>
+<td>0x4380</td>
+<td>coolant_correction_table</td>
+<td>8-entry coolant correction table (via JSR $6000)</td>
+</tr>
+<tr>
+<td>0x4D70</td>
+<td>af_mode_threshold</td>
+<td>Band threshold for A/F ratio mode activation</td>
+</tr>
+<tr>
+<td>0x4D71</td>
+<td>af_mode_value</td>
+<td>Value written to $31CC when band &lt;= $4D70</td>
+</tr>
+</tbody></table>
+<h4 id="io-references">IO References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x0128</td>
+<td>rate_band_output</td>
+<td>Rate band diagnostic output</td>
+</tr>
+<tr>
+<td>0x012C</td>
+<td>correction_output</td>
+<td>Mirrors $3095 on exit</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0xAE9E.html">0xAE9E Cranking Initialization</a><a class="nav-next" href="0xB2B1.html">0xB2B1 AN2 Boost Pressure Reader</a></nav>
+</body>
+</html>

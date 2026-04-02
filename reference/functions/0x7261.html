@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x7261 — Crank Position Sensor Fault Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x7261 Crank Position Sensor Fault Check</span></nav>
+<h3 id="0x7261-crank-position-sensor-fault-check">0x7261 — Crank Position Sensor Fault Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x7261</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>~179 bytes (0x7261–0x7313)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (periodic_diagnostics dispatcher at 0x6B3B)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Dual-section diagnostic checking crank position sensors and the idle/closed-throttle switch circuit. The function has two halves that share a common structural pattern.</p>
+<p><strong>Part 1 (Crank Position Sensors, 0x7261–0x72C1):</strong> Requires 0x316B &gt;= 0x8A (engine running). Uses Port 0x0E bit 4 to distinguish between sensor A and sensor B paths. For each sensor, reads Port 0x0E bit 3 as the sensor signal. If signal is present and sensor is active, increments a saturating counter (0x32A8 for sensor A, 0x32A9 for sensor B via X-indexed). When counter reaches 0x28 (40), sets the corresponding fault bit in 0x31F8 (bit 6 for sensor A, bit 7 for sensor B). If the signal contradicts expectations, clears the counter and fault bit. When both 0x31F8 bits 6+7 are set (mask 0xC0), sets 0x332E bit 3 (O2 heater fault code — likely overloaded diagnostic code).</p>
+<p><strong>Part 2 (Idle/Closed-Throttle Switch, 0x72C2–0x7313):</strong> Uses Port 0x0E bit 5 to distinguish between two switch circuit paths. For each path, reads Port 0x2000 bit 7 as the switch signal. Increments saturating counters at 0x334A / 0x334B. When counter reaches 0x28 (40), sets the corresponding fault bit in 0x3032 (bit 0 or bit 1). If signal contradicts expectations, clears counter and fault bit. When both 0x3032 bits 0+1 are set (mask 0x03), sets 0x3331 bit 7.</p>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x316B (lookup_input_b): &gt;= 0x8A required (engine running gate)</li>
+<li>Port 0x0E: bits 3 (sensor signal), 4 (sensor A/B select), 5 (switch path select), 8 (secondary)</li>
+<li>Port 0x2000: bit 7 (idle/throttle switch signal)</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x31F8 (o2_sensor_status): bits 6, 7 (crank pos sensor A/B faults)</li>
+<li>0x332E (diag_fault_flags_A): bit 3 (combined crank sensor fault)</li>
+<li>0x3032 (idle_switch_faults): bits 0, 1 (idle switch circuit faults)</li>
+<li>0x3331 (control_reg_3331): bit 7 (combined idle switch fault)</li>
+<li>0x32A8: crank sensor A debounce counter</li>
+<li>0x32A9: crank sensor B debounce counter</li>
+<li>0x334A: idle switch path A debounce counter</li>
+<li>0x334B: idle switch path B debounce counter</li>
+</ul>
+<h4 id="calls">Calls</h4>
+<ul>
+<li>0x633D — saturating_increment (×4, once per path per section)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x316B</td>
+<td>lookup_input_b</td>
+<td>engine running gate</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x32A8</td>
+<td>(crank_pos_A_debounce)</td>
+<td>sensor A counter</td>
+</tr>
+<tr>
+<td>0x32A9</td>
+<td>(crank_pos_B_debounce)</td>
+<td>sensor B counter</td>
+</tr>
+<tr>
+<td>0x334A</td>
+<td>(idle_sw_A_debounce)</td>
+<td>idle switch A counter</td>
+</tr>
+<tr>
+<td>0x334B</td>
+<td>(idle_sw_B_debounce)</td>
+<td>idle switch B counter</td>
+</tr>
+<tr>
+<td>0x31F8</td>
+<td>o2_sensor_status</td>
+<td>bits 6, 7</td>
+</tr>
+<tr>
+<td>0x332E</td>
+<td>diag_fault_flags_A</td>
+<td>bit 3</td>
+</tr>
+<tr>
+<td>0x3032</td>
+<td>idle_switch_faults</td>
+<td>bits 0, 1</td>
+</tr>
+<tr>
+<td>0x3331</td>
+<td>control_reg_3331</td>
+<td>bit 7</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<p>None (thresholds are immediate: 0x8A, 0x28, 0xC0, 0x03).</p>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x7212.html">0x7212 Coolant Fan Relay Fault Check</a><a class="nav-next" href="0x7314.html">0x7314 Ignition Signal / Decel Detect</a></nav>
+</body>
+</html>

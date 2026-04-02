@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>0x6D8E — Idle Speed Control Valve Check — PovoTune Reference</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111827; color: #e5e7eb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto;
+  }
+  a { color: #60a5fa; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3, h4, h5, h6 { color: #f9fafb; margin: 1.5em 0 0.5em; }
+  h1 { font-size: 1.75rem; border-bottom: 2px solid #374151; padding-bottom: 0.5rem; }
+  h2 { font-size: 1.4rem; border-bottom: 1px solid #374151; padding-bottom: 0.4rem; }
+  h3 { font-size: 1.15rem; }
+  h4 { font-size: 1rem; color: #60a5fa; }
+  p { margin: 0.5em 0; }
+  code {
+    background: #1f2937; padding: 0.15em 0.4em; border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.9em;
+  }
+  pre {
+    background: #1f2937; padding: 1rem; border-radius: 6px; overflow-x: auto;
+    margin: 1em 0; border: 1px solid #374151;
+  }
+  pre code { background: none; padding: 0; font-size: 0.85em; }
+  table {
+    border-collapse: collapse; width: 100%; margin: 1em 0;
+    font-size: 0.9em;
+  }
+  th, td {
+    border: 1px solid #374151; padding: 0.5em 0.75em; text-align: left;
+  }
+  th { background: #1f2937; color: #f9fafb; font-weight: 600; }
+  tr:nth-child(even) { background: rgba(31, 41, 55, 0.5); }
+  ul, ol { margin: 0.5em 0 0.5em 1.5em; }
+  li { margin: 0.25em 0; }
+  blockquote {
+    border-left: 3px solid #4b5563; padding-left: 1em; margin: 1em 0;
+    color: #9ca3af;
+  }
+  hr { border: none; border-top: 2px solid #374151; margin: 2.5em 0; }
+  .breadcrumb {
+    font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.5rem;
+  }
+  .breadcrumb a { color: #9ca3af; }
+  .breadcrumb a:hover { color: #60a5fa; }
+  .breadcrumb .sep { margin: 0 0.5em; }
+  .nav-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #374151;
+    font-size: 0.9rem;
+  }
+  .nav-footer a { padding: 0.25em 0; }
+  .nav-prev::before { content: '\2190 '; }
+  .nav-next::after { content: ' \2192'; }
+  strong { color: #f9fafb; }
+  .toc {
+    background: #1f2937; border: 1px solid #374151; border-radius: 6px;
+    padding: 1.25rem 1.5rem; margin: 1.5rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #9ca3af; margin: 0 0 0.75rem; font-weight: 700;
+  }
+  .toc a {
+    display: block; padding: 0.3em 0; font-size: 0.9rem;
+  }
+  .toc .toc-sub {
+    padding-left: 1.25em; font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<nav class="breadcrumb"><a href="../../index.html">PovoTune</a><span class="sep">/</span><a href="../index.html">Reference</a><span class="sep">/</span><a href="index.html">Functions</a><span class="sep">/</span><span>0x6D8E Idle Speed Control Valve Check</span></nav>
+<h3 id="0x6d8e-idle-speed-control-valve-check">0x6D8E — Idle Speed Control Valve Check</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Address</td>
+<td>0x6D8E</td>
+</tr>
+<tr>
+<td>Size</td>
+<td>143 bytes (0x6D8E–0x6E1C)</td>
+</tr>
+<tr>
+<td>Blocks</td>
+<td>29</td>
+</tr>
+<tr>
+<td>Type</td>
+<td>subroutine</td>
+</tr>
+<tr>
+<td>Callers</td>
+<td>1 call site (health_check_dispatcher 0x6B14, slot 8)</td>
+</tr>
+<tr>
+<td>Confidence</td>
+<td>confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="summary">Summary</h4>
+<p>Two-part health check covering the idle speed control (ISC) valve and idle speed fault detection. Part 1 validates the ISC valve position sensor (0x329E) is within operational range. Part 2 checks for sustained idle speed deviation indicating a stuck or failed ISC valve.</p>
+<p><strong>Part 1 — ISC valve range check (0x6D8E–0x6DC7):</strong>
+Gated by 0x31DF bit 3 (must be clear) and 0x32B7 (must be nonzero, and value-1 must be &gt;= ROM threshold at 0x48C6 = 0x0A). If the gate fails, the function returns immediately. Then checks ISC position (0x329E) against range 0x0028–0x03D4. Out-of-range increments fault counter 0x31FA; when it trips the ROM threshold at 0x4C65 (0x27 = 39), sets 0x31F8 bit 2 (ISC valve fault). In-range clears the counter and fault bit.</p>
+<p><strong>Part 2 — Idle speed deviation check (0x6DC8–0x6E1C):</strong>
+Gated by 0x332F bit 4, 0x3330 bits 0+2, 0x305A bit 4 (closed-loop active), and 0x306F (airflow load must be &gt; 0x14). Checks ISC position (0x329E) must be &gt; 0x01F4 (500). If all conditions met, increments counter 0x32C7; when it trips ROM threshold at 0x4C66 (0x27 = 39), sets 0x31CF bit 0. If position &lt;= 0x01F4, clears 0x31CF bit 0.</p>
+<p>Final output decision: if 0x31F8 bits 0-2 (any of O2 front/rear/ISC faults) OR 0x31CF bit 0 are set, sets 0x332E bit 4 (idle speed fault confirmed). Otherwise clears it.</p>
+<h4 id="disassembly">Disassembly</h4>
+<pre><code>; Part 1: ISC valve range check
+6D8E  78             SEI                     ; Disable interrupts
+6D8F  2C DF 31 08 0B BBS $31DF,#$08,$6D9F   ; If bit 3 set -&gt; bail (CLI + RTS)
+6D94  AD B7 32       LDA $32B7               ; ISC activity counter
+6D97  F0 06          BEQ $6D9F               ; If zero -&gt; bail
+6D99  1A             DEA                     ; Decrement
+6D9A  CD C6 48       CMP $48C6               ; Compare vs ROM threshold (0x0A)
+6D9D  B0 02          BCS $6DA1               ; If &gt;= threshold -&gt; proceed
+6D9F  58             CLI                     ; Re-enable interrupts
+6DA0  60             RTS                     ; Early return
+6DA1  58             CLI                     ; Re-enable interrupts
+6DA2  AE 9E 32       LDX $329E               ; ISC valve position (16-bit)
+6DA5  E0 28 00       CPX #$0028             ; Low threshold
+6DA8  90 05          BCC $6DAF               ; Below -&gt; out of range
+6DAA  E0 D4 03       CPX #$03D4             ; High threshold
+6DAD  90 11          BCC $6DC0               ; Below -&gt; in range, clear fault
+6DAF  A2 FA 31       LDX #$31FA             ; Counter address
+6DB2  20 3D 63       JSR $633D               ; Saturating increment
+6DB5  CD 65 4C       CMP $4C65               ; Trip threshold from ROM (0x27 = 39)
+6DB8  90 0E          BCC $6DC8               ; Not tripped -&gt; part 2
+6DBA  0C F8 31 04    SEB $31F8,#$04         ; Set ISC valve fault: 0x31F8 bit 2
+6DBE  80 08          BRA $6DC8               ; -&gt; part 2
+6DC0  9C FA 31 00    LDM $31FA,#$00         ; Clear fault counter
+6DC4  1C F8 31 04    CLB $31F8,#$04         ; Clear ISC valve fault
+; Part 2: Idle speed deviation check
+6DC8  3C 2F 33 10 02 BBC $332F,#$10,$6DCF   ; If intake air temp fault clear -&gt; continue
+6DCD  80 38          BRA $6E07               ; Skip to output decision
+6DCF  3C 30 33 05 02 BBC $3330,#$05,$6DD6   ; If VSS+coolant faults clear -&gt; continue
+6DD4  80 31          BRA $6E07               ; Skip to output decision
+6DD6  3C 5A 30 10 28 BBC $305A,#$10,$6E03   ; If closed-loop not active -&gt; clear counter
+6DDB  AD 6F 30       LDA $306F               ; Airflow load
+6DDE  C9 14          CMP #$14               ; &gt;= 0x14?
+6DE0  F0 21          BEQ $6E03               ; If equal -&gt; clear counter (borderline)
+6DE2  90 1F          BCC $6E03               ; If below -&gt; clear counter
+6DE4  AE 9E 32       LDX $329E               ; ISC valve position
+6DE7  E0 F4 01       CPX #$01F4             ; &gt; 500?
+6DEA  F0 13          BEQ $6DFF               ; If equal -&gt; clear pending
+6DEC  90 11          BCC $6DFF               ; If below -&gt; clear pending
+6DEE  A2 C7 32       LDX #$32C7             ; Counter address
+6DF1  20 3D 63       JSR $633D               ; Saturating increment
+6DF4  CD 66 4C       CMP $4C66               ; Trip threshold from ROM (0x27 = 39)
+6DF7  90 0E          BCC $6E07               ; Not tripped -&gt; output decision
+6DF9  0C CF 31 01    SEB $31CF,#$01         ; Set pending: idle deviation fault
+6DFD  80 08          BRA $6E07               ; -&gt; output decision
+6DFF  1C CF 31 01    CLB $31CF,#$01         ; Clear pending fault
+6E03  9C C7 32 00    LDM $32C7,#$00         ; Clear deviation counter
+; Output decision
+6E07  3C F8 31 07 02 BBC $31F8,#$07,$6E0E   ; If any of bits 0-2 set -&gt; fault confirmed
+6E0C  80 05          BRA $6E13
+6E0E  3C CF 31 01 05 BBC $31CF,#$01,$6E18   ; If idle deviation pending -&gt; fault confirmed
+6E13  0C 2E 33 10    SEB $332E,#$10         ; Set idle speed fault: 0x332E bit 4
+6E17  60             RTS
+6E18  1C 2E 33 10    CLB $332E,#$10         ; Clear idle speed fault
+6E1C  60             RTS
+</code></pre>
+<h4 id="inputs">Inputs</h4>
+<ul>
+<li>0x31DF bit 3: ISC check inhibit flag</li>
+<li>0x32B7: ISC activity counter (must be nonzero and decremented value &gt;= ROM[0x48C6])</li>
+<li>0x329E: ISC valve position (16-bit)</li>
+<li>0x31FA: ISC range fault counter</li>
+<li>0x332F bit 4: intake air temp fault (inhibits part 2)</li>
+<li>0x3330 bits 0, 2: VSS/coolant faults (inhibit part 2)</li>
+<li>0x305A bit 4: closed-loop flag</li>
+<li>0x306F: airflow load</li>
+<li>0x32C7: idle deviation counter</li>
+<li>0x31F8: O2/ISC sensor status bits</li>
+<li>0x31CF: diagnostic pending faults</li>
+</ul>
+<h4 id="outputs">Outputs</h4>
+<ul>
+<li>0x31FA: ISC range fault counter</li>
+<li>0x31F8 bit 2: ISC valve out-of-range fault</li>
+<li>0x32C7: idle deviation counter</li>
+<li>0x31CF bit 0: idle deviation pending fault</li>
+<li>0x332E bit 4: confirmed idle speed fault (output decision)</li>
+</ul>
+<h4 id="ram-reads">RAM Reads</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31DF</td>
+<td>isc_inhibit_flags</td>
+<td>Bit 3 gates entire check</td>
+</tr>
+<tr>
+<td>0x32B7</td>
+<td>isc_activity_counter</td>
+<td>Must be nonzero and above threshold</td>
+</tr>
+<tr>
+<td>0x329E</td>
+<td>isc_valve_position</td>
+<td>16-bit position value</td>
+</tr>
+<tr>
+<td>0x31FA</td>
+<td>isc_range_fault_counter</td>
+<td>Debounce counter for range check</td>
+</tr>
+<tr>
+<td>0x332F</td>
+<td>temp_override_flags</td>
+<td>Bit 4 inhibits part 2</td>
+</tr>
+<tr>
+<td>0x3330</td>
+<td>diag_fault_flags_B</td>
+<td>Bits 0, 2 inhibit part 2</td>
+</tr>
+<tr>
+<td>0x305A</td>
+<td>system_control_flags</td>
+<td>Bit 4: closed-loop active</td>
+</tr>
+<tr>
+<td>0x306F</td>
+<td>airflow_load</td>
+<td>Must be &gt; 0x14</td>
+</tr>
+<tr>
+<td>0x32C7</td>
+<td>idle_deviation_counter</td>
+<td>Debounce counter for deviation</td>
+</tr>
+<tr>
+<td>0x31F8</td>
+<td>o2_sensor_status</td>
+<td>Bits 0-2 contribute to output</td>
+</tr>
+<tr>
+<td>0x31CF</td>
+<td>diag_pending_faults</td>
+<td>Bit 0: idle deviation</td>
+</tr>
+<tr>
+<td>0x3510</td>
+<td>diag_mode_control</td>
+<td>Not directly read here</td>
+</tr>
+</tbody></table>
+<h4 id="ram-writes">RAM Writes</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x31FA</td>
+<td>isc_range_fault_counter</td>
+<td>Incremented or cleared</td>
+</tr>
+<tr>
+<td>0x31F8</td>
+<td>o2_sensor_status</td>
+<td>Bit 2: ISC valve range fault</td>
+</tr>
+<tr>
+<td>0x32C7</td>
+<td>idle_deviation_counter</td>
+<td>Incremented or cleared</td>
+</tr>
+<tr>
+<td>0x31CF</td>
+<td>diag_pending_faults</td>
+<td>Bit 0: idle deviation pending</td>
+</tr>
+<tr>
+<td>0x332E</td>
+<td>diag_fault_flags_A</td>
+<td>Bit 4: idle speed fault confirmed</td>
+</tr>
+</tbody></table>
+<h4 id="rom-references">ROM References</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x48C6</td>
+<td>isc_activity_threshold</td>
+<td>Minimum ISC activity to enable check (0x0A)</td>
+</tr>
+<tr>
+<td>0x4C65</td>
+<td>isc_range_trip_count</td>
+<td>Fault counter trip threshold (0x27 = 39)</td>
+</tr>
+<tr>
+<td>0x4C66</td>
+<td>idle_deviation_trip_count</td>
+<td>Deviation counter trip threshold (0x27 = 39)</td>
+</tr>
+</tbody></table>
+<h4 id="callees">Callees</h4>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Name</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x633D</td>
+<td>saturating_increment</td>
+<td>Two call sites: ISC range counter and deviation counter</td>
+</tr>
+</tbody></table>
+<hr>
+
+<nav class="nav-footer"><a class="nav-prev" href="0x6D15.html">0x6D15 Knock Sensor Debounce Check</a><a class="nav-next" href="0x6E1D.html">0x6E1D Front O2 Sensor Range Check</a></nav>
+</body>
+</html>
